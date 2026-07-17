@@ -333,18 +333,31 @@ export default function HomeScreen() {
   useEffect(() => {
     let isMounted = true;
 
+    const getCurrentWebUrl = () => {
+      if (typeof window === "undefined") {
+        return null;
+      }
+
+      const href = window.location?.href;
+      return typeof href === "string" ? href : null;
+    };
+
     if (Platform.OS === "web") {
-      applyRecoveryDeepLink(window.location.href);
+      applyRecoveryDeepLink(getCurrentWebUrl());
 
       const handlePopState = () => {
-        applyRecoveryDeepLink(window.location.href);
+        applyRecoveryDeepLink(getCurrentWebUrl());
       };
 
-      window.addEventListener("popstate", handlePopState);
+      if (typeof window.addEventListener === "function") {
+        window.addEventListener("popstate", handlePopState);
+      }
 
       return () => {
         isMounted = false;
-        window.removeEventListener("popstate", handlePopState);
+        if (typeof window.removeEventListener === "function") {
+          window.removeEventListener("popstate", handlePopState);
+        }
       };
     }
 
