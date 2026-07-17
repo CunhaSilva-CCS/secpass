@@ -1,0 +1,6 @@
+{
+  "installCommand": "npm install && npm --prefix backend install",
+  "buildCommand": "EXPO_PUBLIC_AUTH_MODE=remote EXPO_PUBLIC_API_URL=/api npm run build:web",
+  "outputDirectory": "dist",
+  "cleanUrls": true
+}

@@ -31,13 +31,19 @@ yarn-error.*
 *.pem
 
 # local env files
+.env
+.env.*
+!.env.example
+backend/.env
 .env*.local
+
+# backend local state
+backend/data/auth-store.json
 
 # typescript
 *.tsbuildinfo
 
-example
-
 # generated native folders
 /ios
 /android
+.vercel

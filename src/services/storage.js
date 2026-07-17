@@ -1,7 +1,12 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Platform } from "react-native";
 import * as SecureStore from "expo-secure-store";
+import { decryptVaultEnvelope, encryptVaultItems } from "./vaultCrypto";
 
 const KEY = "passwords";
+const STORAGE_WRITE_ERROR =
+  "Nao foi possivel salvar o cofre com seguranca neste dispositivo.";
+const IS_WEB = Platform.OS === "web";
 
 const parseData = (rawValue) => {
   if (!rawValue) return [];
@@ -14,37 +19,74 @@ const parseData = (rawValue) => {
   }
 };
 
-export const savePasswords = async (data) => {
-  const payload = JSON.stringify(data);
+const parsePayload = (rawValue) => {
+  if (!rawValue) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(rawValue);
+  } catch {
+    return null;
+  }
+};
+
+export const savePasswords = async (data, { vaultSecret } = {}) => {
+  const payload = vaultSecret
+    ? JSON.stringify(await encryptVaultItems(data, vaultSecret))
+    : JSON.stringify(data);
 
   try {
     await SecureStore.setItemAsync(KEY, payload);
     await AsyncStorage.removeItem(KEY);
     return;
   } catch {
-    await AsyncStorage.setItem(KEY, payload);
+    if (IS_WEB) {
+      await AsyncStorage.setItem(KEY, payload);
+      return;
+    }
+
+    throw new Error(STORAGE_WRITE_ERROR);
   }
 };
 
-export const loadPasswords = async () => {
+export const loadPasswords = async ({ vaultSecret } = {}) => {
+  const parseLoadedData = async (rawValue) => {
+    const parsedPayload = parsePayload(rawValue);
+
+    if (Array.isArray(parsedPayload)) {
+      return parsedPayload;
+    }
+
+    if (parsedPayload?.type === "encrypted_vault") {
+      if (!vaultSecret) {
+        throw new Error("Cofre criptografado. Faca login novamente.");
+      }
+
+      return decryptVaultEnvelope(parsedPayload, vaultSecret);
+    }
+
+    return parseData(rawValue);
+  };
+
   try {
     const encryptedData = await SecureStore.getItemAsync(KEY);
     if (encryptedData) {
-      return parseData(encryptedData);
+      return parseLoadedData(encryptedData);
     }
   } catch {
     // If SecureStore is unavailable, continue with legacy fallback.
   }
 
   const legacyData = await AsyncStorage.getItem(KEY);
-  const parsedLegacy = parseData(legacyData);
+  const parsedLegacy = await parseLoadedData(legacyData);
 
   if (legacyData) {
     try {
       await SecureStore.setItemAsync(KEY, legacyData);
       await AsyncStorage.removeItem(KEY);
     } catch {
-      // Keep legacy storage when secure migration is unavailable.
+      // Mantem leitura legada; migracao sera tentada novamente depois.
     }
   }
 
