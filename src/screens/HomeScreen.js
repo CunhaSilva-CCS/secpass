@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   AppState,
@@ -14,6 +14,7 @@ import {
   StatusBar,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import * as ScreenCapture from "expo-screen-capture";
 
 import PasswordForm from "../components/PasswordForm";
 import PasswordCard from "../components/PasswordCard";
@@ -59,6 +60,8 @@ import {
 import { clearSecurityEvents, logSecurityEvent } from "../services/securityAudit";
 
 import { generatePassword } from "../utils/passwordGenerator";
+
+const IDLE_LOCK_MS = 2 * 60 * 1000;
 
 export default function HomeScreen() {
   const colorScheme = useColorScheme();
@@ -133,12 +136,25 @@ export default function HomeScreen() {
   const [isImportModalVisible, setIsImportModalVisible] = useState(false);
   const [importText, setImportText] = useState("");
 
+  const idleTimerRef = useRef(null);
+
   const lockVault = useCallback((reason = "") => {
     setIsAppUnlocked(false);
     setAuthMessage(reason);
   }, []);
 
-  const registerUserActivity = useCallback(() => {}, []);
+  const registerUserActivity = useCallback(() => {
+    if (idleTimerRef.current) {
+      clearTimeout(idleTimerRef.current);
+      idleTimerRef.current = null;
+    }
+
+    if (isLoggedIn && isAppUnlocked) {
+      idleTimerRef.current = setTimeout(() => {
+        lockVault("Cofre bloqueado por inatividade.");
+      }, IDLE_LOCK_MS);
+    }
+  }, [isLoggedIn, isAppUnlocked, lockVault]);
 
   const requestAppUnlock = useCallback(async () => {
     setIsAuthenticating(true);
@@ -218,6 +234,54 @@ export default function HomeScreen() {
       subscription.remove();
     };
   }, [isLoggedIn, lockVault, requestAppUnlock]);
+
+  useEffect(() => {
+    if (isLoggedIn && isAppUnlocked) {
+      registerUserActivity();
+    } else if (idleTimerRef.current) {
+      clearTimeout(idleTimerRef.current);
+      idleTimerRef.current = null;
+    }
+
+    return () => {
+      if (idleTimerRef.current) {
+        clearTimeout(idleTimerRef.current);
+        idleTimerRef.current = null;
+      }
+    };
+  }, [isLoggedIn, isAppUnlocked, registerUserActivity]);
+
+  useEffect(() => {
+    if (!isLoggedIn) {
+      return undefined;
+    }
+
+    ScreenCapture.enableAppSwitcherProtectionAsync().catch(() => {});
+
+    return () => {
+      ScreenCapture.disableAppSwitcherProtectionAsync().catch(() => {});
+    };
+  }, [isLoggedIn]);
+
+  useEffect(() => {
+    if (!(isLoggedIn && isAppUnlocked)) {
+      return undefined;
+    }
+
+    ScreenCapture.preventScreenCaptureAsync().catch(() => {});
+
+    const subscription = ScreenCapture.addScreenshotListener(() => {
+      logSecurityEvent({
+        type: "screenshot_detected",
+        status: "warning",
+      }).catch(() => {});
+    });
+
+    return () => {
+      ScreenCapture.allowScreenCaptureAsync().catch(() => {});
+      subscription?.remove?.();
+    };
+  }, [isLoggedIn, isAppUnlocked]);
 
   useEffect(() => {
     if (!hasLoadedLoginGuard) {

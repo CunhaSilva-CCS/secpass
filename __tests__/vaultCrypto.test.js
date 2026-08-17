@@ -170,6 +170,15 @@ describe("vaultCrypto", () => {
     );
   });
 
+  it("detecta mac truncado (tamanho diferente do esperado)", async () => {
+    const envelope = await encryptVaultItems(sampleItems, "secret");
+    const tampered = { ...envelope, mac: envelope.mac.slice(0, 10) };
+
+    await expect(decryptVaultEnvelope(tampered, "secret")).rejects.toThrow(
+      "Falha de integridade do cofre.",
+    );
+  });
+
   it("preserva itens com caracteres unicode e especiais", async () => {
     const vaultSecret = "secret";
     const unicodeItems = [

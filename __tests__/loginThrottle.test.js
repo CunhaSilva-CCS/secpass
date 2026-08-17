@@ -88,6 +88,28 @@ describe("loginThrottle", () => {
     });
   });
 
+  it("usa Date.now() como padrao quando nowMs nao e informado", () => {
+    const futureLockUntil = Date.now() + 5000;
+
+    expect(getLockRemainingSeconds(futureLockUntil)).toBeGreaterThan(0);
+    expect(getLockRemainingSeconds(Date.now() - 5000)).toBe(0);
+  });
+
+  it("trata lockUntil ausente como zero ao aplicar decay", () => {
+    const state = applyLockDecay({
+      failedAttempts: 2,
+      lockLevel: 1,
+      lockUntil: undefined,
+      nowMs: 1000,
+    });
+
+    expect(state).toEqual({
+      failedAttempts: 0,
+      lockLevel: 0,
+      lockUntil: 0,
+    });
+  });
+
   it("reduz multiplos niveis apos longo periodo", () => {
     const state = applyLockDecay({
       failedAttempts: 0,

@@ -54,6 +54,15 @@ describe("session service", () => {
     expect(AsyncStorage.setItem).not.toHaveBeenCalled();
   });
 
+  it("retorna o token quando presente no SecureStore", async () => {
+    SecureStore.getItemAsync.mockResolvedValueOnce("session:abc123");
+
+    const token = await loadSessionToken();
+
+    expect(token).toBe("session:abc123");
+    expect(AsyncStorage.getItem).not.toHaveBeenCalled();
+  });
+
   it("retorna null quando leitura do SecureStore falha", async () => {
     SecureStore.getItemAsync.mockRejectedValueOnce(new Error("secure-failure"));
 

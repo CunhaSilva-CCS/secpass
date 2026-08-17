@@ -65,6 +65,25 @@ describe("loginGuard service", () => {
     );
   });
 
+  it("retorna null quando os dados armazenados sao invalidos", async () => {
+    SecureStore.getItemAsync.mockResolvedValueOnce("not-json");
+    AsyncStorage.getItem.mockResolvedValueOnce(null);
+
+    const guard = await loadLoginGuard();
+
+    expect(guard).toBeNull();
+  });
+
+  it("retorna null quando nao ha estado de guarda em nenhum armazenamento", async () => {
+    SecureStore.getItemAsync.mockResolvedValueOnce(null);
+    AsyncStorage.getItem.mockResolvedValueOnce(null);
+
+    const guard = await loadLoginGuard();
+
+    expect(guard).toBeNull();
+    expect(SecureStore.setItemAsync).not.toHaveBeenCalled();
+  });
+
   it("limpa estado de lock nas duas stores", async () => {
     await clearLoginGuard();
 

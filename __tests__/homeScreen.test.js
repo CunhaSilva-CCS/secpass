@@ -1,6 +1,6 @@
 import React from "react";
-import { fireEvent, render, waitFor } from "@testing-library/react-native";
-import { Alert, Platform, Share } from "react-native";
+import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
+import { Alert, AppState, Platform, Share } from "react-native";
 
 import HomeScreen from "../src/screens/HomeScreen";
 import { createVaultSecret, encryptVaultItems } from "../src/services/vaultCrypto";
@@ -119,8 +119,19 @@ jest.mock("../src/services/securityAudit", () => ({
   clearSecurityEvents: jest.fn().mockResolvedValue(),
 }));
 
-const { loadPasswords, clearVault } = require("../src/services/storage");
-const { loadSessionToken } = require("../src/services/session");
+jest.mock("expo-screen-capture", () => ({
+  preventScreenCaptureAsync: jest.fn().mockResolvedValue(),
+  allowScreenCaptureAsync: jest.fn().mockResolvedValue(),
+  enableAppSwitcherProtectionAsync: jest.fn().mockResolvedValue(),
+  disableAppSwitcherProtectionAsync: jest.fn().mockResolvedValue(),
+  addScreenshotListener: jest.fn().mockReturnValue({ remove: jest.fn() }),
+}));
+
+const { loadPasswords, clearVault, savePasswords } = require("../src/services/storage");
+const { loadSessionToken, clearSessionToken } = require("../src/services/session");
+const { loadLoginGuard } = require("../src/services/loginGuard");
+const { logSecurityEvent } = require("../src/services/securityAudit");
+const ScreenCapture = require("expo-screen-capture");
 const {
   loadLocalAccount,
   saveLocalAccount,
@@ -169,6 +180,26 @@ async function loginInApp(findByPlaceholderText, getByText) {
   });
 }
 
+// O efeito do AppState e re-registrado sempre que isLoggedIn muda (login ou
+// logout), entao o listener mais recente e o unico com os closures atuais do
+// componente. Mockamos addEventListener para sempre devolver uma subscription
+// valida (evita comportamento inconsistente do modulo nativo em teste) e
+// guardamos cada listener registrado para pegar o mais recente sob demanda.
+function mockAppStateChange() {
+  const listeners = [];
+
+  jest
+    .spyOn(AppState, "addEventListener")
+    .mockImplementation((eventName, handler) => {
+      if (eventName === "change") {
+        listeners.push(handler);
+      }
+      return { remove: jest.fn() };
+    });
+
+  return () => listeners[listeners.length - 1];
+}
+
 describe("HomeScreen", () => {
   beforeEach(() => {
     let account = null;
@@ -188,6 +219,11 @@ describe("HomeScreen", () => {
         !!account && account.email === email && account.password === password
       );
     });
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+    jest.restoreAllMocks();
   });
 
   it("adiciona nova credencial", async () => {
@@ -249,6 +285,77 @@ describe("HomeScreen", () => {
       expect(getByText("GitHub")).toBeTruthy();
       expect(queryByText("Email")).toBeNull();
     });
+  });
+
+  it("ativa protecao de captura de tela ao desbloquear e desativa ao sair", async () => {
+    loadPasswords.mockResolvedValueOnce([]);
+
+    const { findByPlaceholderText, getByText } = render(<HomeScreen />);
+    await loginInApp(findByPlaceholderText, getByText);
+
+    await waitFor(() => {
+      expect(ScreenCapture.enableAppSwitcherProtectionAsync).toHaveBeenCalled();
+      expect(ScreenCapture.preventScreenCaptureAsync).toHaveBeenCalled();
+    });
+
+    fireEvent.press(getByText("Sair"));
+
+    await waitFor(() => {
+      expect(ScreenCapture.allowScreenCaptureAsync).toHaveBeenCalled();
+      expect(ScreenCapture.disableAppSwitcherProtectionAsync).toHaveBeenCalled();
+    });
+  });
+
+  it("registra evento de seguranca ao detectar uma captura de tela", async () => {
+    loadPasswords.mockResolvedValueOnce([]);
+
+    const { findByPlaceholderText, getByText } = render(<HomeScreen />);
+    await loginInApp(findByPlaceholderText, getByText);
+
+    await waitFor(() => {
+      expect(ScreenCapture.addScreenshotListener).toHaveBeenCalled();
+    });
+
+    const screenshotHandler =
+      ScreenCapture.addScreenshotListener.mock.calls[0][0];
+    screenshotHandler();
+
+    await waitFor(() => {
+      expect(logSecurityEvent).toHaveBeenCalledWith({
+        type: "screenshot_detected",
+        status: "warning",
+      });
+    });
+  });
+
+  it("bloqueia o cofre por inatividade apos o tempo limite", async () => {
+    loadPasswords.mockResolvedValueOnce([]);
+
+    const { findByPlaceholderText, getByText, getByPlaceholderText } = render(
+      <HomeScreen />,
+    );
+    await loginInApp(findByPlaceholderText, getByText);
+
+    await waitFor(() => {
+      expect(getByText("Sua central de credenciais")).toBeTruthy();
+    });
+
+    jest.useFakeTimers();
+
+    // Gera uma nova atividade agora que os timers falsos estao ativos, para
+    // que o proximo setTimeout do temporizador de inatividade seja criado
+    // sob o relogio falso (o anterior foi agendado com o relogio real).
+    fireEvent.changeText(
+      getByPlaceholderText("Pesquisar por titulo ou usuario"),
+      "a",
+    );
+
+    await act(async () => {
+      await jest.advanceTimersByTimeAsync(2 * 60 * 1000);
+    });
+
+    expect(getByText("Cofre bloqueado")).toBeTruthy();
+    expect(getByText("Cofre bloqueado por inatividade.")).toBeTruthy();
   });
 
   it("rejeita cadastro quando a confirmacao de senha nao confere", async () => {
@@ -566,4 +673,192 @@ describe("HomeScreen", () => {
     },
     REAL_CRYPTO_TIMEOUT,
   );
+
+  it("bloqueia e tenta reautenticar ao sair e voltar ao app", async () => {
+    loadPasswords.mockResolvedValueOnce([]);
+    const getLatestChangeHandler = mockAppStateChange();
+
+    const { findByPlaceholderText, getByText } = render(<HomeScreen />);
+    await loginInApp(findByPlaceholderText, getByText);
+
+    const changeHandler = getLatestChangeHandler();
+
+    await act(async () => {
+      changeHandler("background");
+    });
+
+    expect(getByText("Cofre bloqueado")).toBeTruthy();
+    expect(getByText("Cofre bloqueado ao sair do app.")).toBeTruthy();
+
+    const biometricAuth = require("../src/utils/biometricAuth");
+    biometricAuth.authenticateVaultAccess.mockResolvedValueOnce({
+      success: false,
+      error: "not_available",
+    });
+
+    await act(async () => {
+      changeHandler("active");
+    });
+
+    await waitFor(() => {
+      expect(
+        getByText("Face ID indisponivel neste dispositivo."),
+      ).toBeTruthy();
+    });
+
+  });
+
+  it("mantem cofre bloqueado sem mensagem quando o usuario cancela a biometria", async () => {
+    loadPasswords.mockResolvedValueOnce([]);
+    const getLatestChangeHandler = mockAppStateChange();
+
+    const { findByPlaceholderText, getByText, queryByText } = render(
+      <HomeScreen />,
+    );
+    await loginInApp(findByPlaceholderText, getByText);
+
+    const changeHandler = getLatestChangeHandler();
+
+    await act(async () => {
+      changeHandler("background");
+    });
+
+    const biometricAuth = require("../src/utils/biometricAuth");
+    biometricAuth.authenticateVaultAccess.mockResolvedValueOnce({
+      success: false,
+      error: "user_cancel",
+    });
+
+    await act(async () => {
+      changeHandler("active");
+    });
+
+    await waitFor(() => {
+      expect(getByText("Cofre bloqueado")).toBeTruthy();
+    });
+    expect(
+      queryByText("Face ID indisponivel neste dispositivo."),
+    ).toBeNull();
+
+  });
+
+  it("mostra falha quando a autenticacao biometrica lanca excecao", async () => {
+    loadPasswords.mockResolvedValueOnce([]);
+    const getLatestChangeHandler = mockAppStateChange();
+
+    const { findByPlaceholderText, getByText } = render(<HomeScreen />);
+    await loginInApp(findByPlaceholderText, getByText);
+
+    const changeHandler = getLatestChangeHandler();
+
+    await act(async () => {
+      changeHandler("background");
+    });
+
+    const biometricAuth = require("../src/utils/biometricAuth");
+    biometricAuth.authenticateVaultAccess.mockRejectedValueOnce(
+      new Error("hardware-error"),
+    );
+
+    await act(async () => {
+      changeHandler("active");
+    });
+
+    await waitFor(() => {
+      expect(getByText("Falha ao iniciar autenticacao.")).toBeTruthy();
+    });
+
+  });
+
+  it("limpa token de sessao orfao ao iniciar o app", async () => {
+    loadSessionToken.mockResolvedValueOnce("session:orphaned");
+    loadPasswords.mockResolvedValueOnce([]);
+
+    render(<HomeScreen />);
+
+    await waitFor(() => {
+      expect(clearSessionToken).toHaveBeenCalled();
+    });
+  });
+
+  it("restaura e decai um bloqueio de login salvo ao iniciar o app", async () => {
+    loadLocalAccount.mockResolvedValue({ email: "user@email.com" });
+    loadLoginGuard.mockResolvedValueOnce({
+      failedAttempts: 3,
+      lockLevel: 2,
+      lockUntil: Date.now() - 1000,
+    });
+    loadPasswords.mockResolvedValueOnce([]);
+
+    const { findByPlaceholderText, getByText } = render(<HomeScreen />);
+
+    const loginEmailInput = await findByPlaceholderText("Email");
+    const loginAccessPasswordInput =
+      await findByPlaceholderText("Senha de acesso");
+
+    fireEvent.changeText(loginEmailInput, "user@email.com");
+    fireEvent.changeText(loginAccessPasswordInput, "SenhaErrada!1");
+    fireEvent.press(getByText("Entrar"));
+
+    // O lock salvo tinha nivel 2 e ja expirou: decai 1 nivel (vira nivel 1)
+    // e reinicia as tentativas. A proxima falha deve contar como a 1a
+    // tentativa do ciclo (4 restantes), nao a continuacao do estado antigo.
+    await waitFor(() => {
+      expect(
+        getByText(
+          "Email ou senha incorretos. Restam 4 tentativa(s) antes do bloqueio.",
+        ),
+      ).toBeTruthy();
+    });
+  });
+
+  it("mostra alerta quando falha ao salvar o cofre localmente", async () => {
+    loadPasswords.mockResolvedValueOnce([]);
+    savePasswords.mockRejectedValueOnce(new Error("write-failure"));
+    const alertSpy = jest.spyOn(Alert, "alert").mockImplementation(() => {});
+
+    const { findByPlaceholderText, getByPlaceholderText, getByText } = render(
+      <HomeScreen />,
+    );
+    await loginInApp(findByPlaceholderText, getByText);
+
+    fireEvent.changeText(getByPlaceholderText("Titulo"), "GitHub");
+    fireEvent.changeText(getByPlaceholderText("Usuario"), "clemilton");
+    fireEvent.changeText(getByPlaceholderText("Senha"), "Segura!123");
+    fireEvent.press(getByText("Salvar"));
+
+    await waitFor(() => {
+      expect(alertSpy).toHaveBeenCalledWith(
+        "Falha de seguranca",
+        "Nao foi possivel salvar o cofre com seguranca neste dispositivo.",
+      );
+    });
+
+    alertSpy.mockRestore();
+  });
+
+  it("bloqueia tentativa de login imediatamente quando ja esta bloqueado", async () => {
+    loadLocalAccount.mockResolvedValueOnce({ email: "user@email.com" });
+    loadLoginGuard.mockResolvedValueOnce({
+      failedAttempts: 0,
+      lockLevel: 1,
+      lockUntil: Date.now() + 60000,
+    });
+    loadPasswords.mockResolvedValueOnce([]);
+
+    const { findByPlaceholderText, getByText } = render(<HomeScreen />);
+
+    const loginEmailInput = await findByPlaceholderText("Email");
+    const loginAccessPasswordInput =
+      await findByPlaceholderText("Senha de acesso");
+
+    fireEvent.changeText(loginEmailInput, "user@email.com");
+    fireEvent.changeText(loginAccessPasswordInput, ACCESS_PASSWORD);
+    fireEvent.press(getByText("Entrar"));
+
+    await waitFor(() => {
+      expect(getByText(/^Muitas tentativas\. Tente novamente em \d+s\.$/)).toBeTruthy();
+    });
+    expect(verifyLocalAccount).not.toHaveBeenCalled();
+  });
 });

@@ -1,7 +1,8 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as SecureStore from "expo-secure-store";
 
-import { loadPasswords, savePasswords } from "../src/services/storage";
+import { clearVault, loadPasswords, savePasswords } from "../src/services/storage";
+import { encryptVaultItems } from "../src/services/vaultCrypto";
 
 jest.mock("@react-native-async-storage/async-storage", () => ({
   setItem: jest.fn(),
@@ -12,6 +13,7 @@ jest.mock("@react-native-async-storage/async-storage", () => ({
 jest.mock("expo-secure-store", () => ({
   setItemAsync: jest.fn(),
   getItemAsync: jest.fn(),
+  deleteItemAsync: jest.fn(),
 }));
 
 const sampleList = [
@@ -82,5 +84,67 @@ describe("storage service", () => {
     const loaded = await loadPasswords();
 
     expect(loaded).toEqual([]);
+  });
+
+  it("retorna lista vazia quando o payload nao e array nem cofre cifrado", async () => {
+    SecureStore.getItemAsync.mockResolvedValueOnce(
+      JSON.stringify({ foo: "bar" }),
+    );
+
+    const loaded = await loadPasswords();
+
+    expect(loaded).toEqual([]);
+  });
+
+  it("retorna lista vazia quando nao ha dados em nenhum armazenamento", async () => {
+    SecureStore.getItemAsync.mockResolvedValueOnce(null);
+    AsyncStorage.getItem.mockResolvedValueOnce(null);
+
+    const loaded = await loadPasswords();
+
+    expect(loaded).toEqual([]);
+    expect(SecureStore.setItemAsync).not.toHaveBeenCalled();
+  });
+
+  it("descriptografa o cofre com sucesso quando vaultSecret esta presente", async () => {
+    const vaultSecret = "user@email.com:Senha!123";
+    const envelope = await encryptVaultItems(sampleList, vaultSecret);
+    SecureStore.getItemAsync.mockResolvedValueOnce(JSON.stringify(envelope));
+
+    const loaded = await loadPasswords({ vaultSecret });
+
+    expect(loaded).toEqual(sampleList);
+  });
+
+  it("lanca erro ao carregar cofre cifrado sem vaultSecret", async () => {
+    SecureStore.getItemAsync.mockResolvedValueOnce(
+      JSON.stringify({ type: "encrypted_vault" }),
+    );
+
+    await expect(loadPasswords()).rejects.toThrow(
+      "Cofre criptografado. Faca login novamente.",
+    );
+  });
+
+  it("clearVault remove o cofre do SecureStore e do AsyncStorage", async () => {
+    SecureStore.deleteItemAsync.mockResolvedValueOnce();
+
+    await clearVault();
+
+    expect(SecureStore.deleteItemAsync).toHaveBeenCalledWith(
+      "passwords",
+      expect.any(Object),
+    );
+    expect(AsyncStorage.removeItem).toHaveBeenCalledWith("passwords");
+  });
+
+  it("clearVault remove o fallback mesmo se o SecureStore falhar", async () => {
+    SecureStore.deleteItemAsync.mockRejectedValueOnce(
+      new Error("secure-down"),
+    );
+
+    await clearVault();
+
+    expect(AsyncStorage.removeItem).toHaveBeenCalledWith("passwords");
   });
 });

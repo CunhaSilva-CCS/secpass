@@ -3,6 +3,7 @@ import CryptoJS from "crypto-js";
 import * as SecureStore from "expo-secure-store";
 
 import {
+  deleteLocalAccount,
   loadLocalAccount,
   saveLocalAccount,
   verifyLocalAccount,
@@ -17,6 +18,7 @@ jest.mock("@react-native-async-storage/async-storage", () => ({
 jest.mock("expo-secure-store", () => ({
   setItemAsync: jest.fn(),
   getItemAsync: jest.fn(),
+  deleteItemAsync: jest.fn(),
 }));
 
 jest.mock("expo-crypto", () => ({
@@ -240,5 +242,154 @@ describe("account service", () => {
         password: "1234",
       }),
     ).rejects.toThrow("Falha ao salvar conta no armazenamento seguro.");
+  });
+
+  it("retorna null quando o payload armazenado nao tem email", async () => {
+    SecureStore.getItemAsync.mockResolvedValueOnce(
+      JSON.stringify({ passwordHash: "x", salt: "y" }),
+    );
+    AsyncStorage.getItem.mockResolvedValueOnce(null);
+
+    const loaded = await loadLocalAccount();
+
+    expect(loaded).toBeNull();
+  });
+
+  it("migra conta v3 legada do AsyncStorage para o SecureStore ao carregar", async () => {
+    const salt = "legacy-salt-v3";
+    const password = "Abc!2345";
+
+    SecureStore.getItemAsync.mockResolvedValueOnce(null);
+    AsyncStorage.getItem.mockResolvedValueOnce(
+      JSON.stringify({
+        email: "user@email.com",
+        salt,
+        passwordHash: pbkdf2Hash(password, salt),
+        version: 3,
+        kdf: "pbkdf2",
+        iterations: 310000,
+        keySize: 256,
+      }),
+    );
+    SecureStore.setItemAsync.mockResolvedValueOnce();
+
+    const loaded = await loadLocalAccount();
+
+    expect(loaded).toEqual({ email: "user@email.com" });
+    expect(SecureStore.setItemAsync).toHaveBeenCalledWith(
+      ACCOUNT_KEY,
+      expect.any(String),
+      expect.any(Object),
+    );
+    expect(AsyncStorage.removeItem).toHaveBeenCalledWith(ACCOUNT_KEY);
+  });
+
+  it("mantem leitura legada quando a migracao para SecureStore falha", async () => {
+    const salt = "legacy-salt-v3";
+    const password = "Abc!2345";
+
+    SecureStore.getItemAsync.mockResolvedValueOnce(null);
+    AsyncStorage.getItem.mockResolvedValueOnce(
+      JSON.stringify({
+        email: "user@email.com",
+        salt,
+        passwordHash: pbkdf2Hash(password, salt),
+        version: 3,
+        kdf: "pbkdf2",
+        iterations: 310000,
+        keySize: 256,
+      }),
+    );
+    SecureStore.setItemAsync.mockRejectedValueOnce(new Error("secure-down"));
+
+    const loaded = await loadLocalAccount();
+
+    expect(loaded).toEqual({ email: "user@email.com" });
+    expect(AsyncStorage.removeItem).not.toHaveBeenCalledWith(ACCOUNT_KEY);
+  });
+
+  it("valida senha legada v1 correta e migra para v3", async () => {
+    SecureStore.getItemAsync.mockResolvedValueOnce(
+      JSON.stringify({
+        email: "legacy@email.com",
+        password: "senha-certa",
+      }),
+    );
+    SecureStore.setItemAsync.mockResolvedValueOnce();
+
+    const isValid = await verifyLocalAccount({
+      email: "legacy@email.com",
+      password: "senha-certa",
+    });
+
+    expect(isValid).toBe(true);
+    expect(SecureStore.setItemAsync).toHaveBeenCalledWith(
+      ACCOUNT_KEY,
+      expect.any(String),
+      expect.any(Object),
+    );
+  });
+
+  it("retorna false para senha legada v1 incorreta", async () => {
+    SecureStore.getItemAsync.mockResolvedValueOnce(
+      JSON.stringify({
+        email: "legacy@email.com",
+        password: "senha-certa",
+      }),
+    );
+
+    const isValid = await verifyLocalAccount({
+      email: "legacy@email.com",
+      password: "senha-errada",
+    });
+
+    expect(isValid).toBe(false);
+    expect(SecureStore.setItemAsync).not.toHaveBeenCalled();
+  });
+
+  it("retorna false quando o email nao confere com a conta v3", async () => {
+    const salt = "salt-v3";
+    const password = "Abc!2345";
+
+    SecureStore.getItemAsync.mockResolvedValueOnce(
+      JSON.stringify({
+        email: "dono@email.com",
+        salt,
+        passwordHash: pbkdf2Hash(password, salt),
+        version: 3,
+        kdf: "pbkdf2",
+        iterations: 310000,
+        keySize: 256,
+      }),
+    );
+
+    const isValid = await verifyLocalAccount({
+      email: "outro@email.com",
+      password,
+    });
+
+    expect(isValid).toBe(false);
+  });
+
+  it("deleteLocalAccount remove a conta do SecureStore e do AsyncStorage", async () => {
+    SecureStore.deleteItemAsync.mockResolvedValueOnce();
+
+    await deleteLocalAccount();
+
+    expect(SecureStore.deleteItemAsync).toHaveBeenCalledWith(
+      ACCOUNT_KEY,
+      expect.any(Object),
+    );
+    expect(AsyncStorage.removeItem).toHaveBeenCalledWith(ACCOUNT_KEY);
+  });
+
+  it("deleteLocalAccount remove o fallback mesmo se o SecureStore falhar", async () => {
+    SecureStore.deleteItemAsync.mockRejectedValueOnce(
+      new Error("secure-down"),
+    );
+
+    await deleteLocalAccount();
+
+    expect(AsyncStorage.removeItem).toHaveBeenCalledWith(ACCOUNT_KEY);
   });
 });
