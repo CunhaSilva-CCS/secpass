@@ -28,6 +28,9 @@ Aplicativo mobile de gerenciamento de senhas (iOS/Android) com cofre local cript
 - Backup local: exportação/importação do cofre cifrado (mesmo formato
   `encrypted_vault`) via compartilhamento nativo, para mitigar a perda total
   de dados em caso de troca/perda do aparelho. Ver seção "Backup".
+- Exclusão de conta pelo próprio app (`"Excluir conta e todos os dados"`,
+  com biometria + confirmação), exigida pela Apple para apps com criação de
+  conta (App Store Review Guideline 5.1.1(v)) e recomendada pelo Google Play.
 
 ## Backup
 

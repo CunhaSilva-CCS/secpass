@@ -87,18 +87,31 @@ Termos.
 
 ## 10. Encerramento
 
-Você pode encerrar o uso do Aplicativo a qualquer momento desinstalando-o
-do seu dispositivo, o que apaga todos os dados armazenados localmente. O
-desenvolvedor pode descontinuar o Aplicativo ou seu suporte a qualquer
-momento, mediante aviso razoável quando possível.
+Você pode encerrar o uso do Aplicativo a qualquer momento pela função
+**"Excluir conta e todos os dados"**, disponível no próprio Aplicativo
+(apaga conta, cofre e demais dados locais após confirmação), ou
+desinstalando o Aplicativo do seu dispositivo — ambas as ações removem
+permanentemente todos os dados armazenados localmente e não podem ser
+desfeitas. O desenvolvedor pode descontinuar o Aplicativo ou seu suporte a
+qualquer momento, mediante aviso razoável quando possível.
 
-## 11. Lei aplicável
+## 11. Usuários fora do Brasil
+
+Para usuários no Espaço Econômico Europeu, Reino Unido, Estados Unidos ou
+outras jurisdições, direitos cogentes de proteção ao consumidor e de
+proteção de dados local (por exemplo, GDPR, CCPA/CPRA) prevalecem sobre
+qualquer disposição destes Termos que os contrarie. Consulte a
+[Política de Privacidade](PRIVACY_POLICY.md) para o tratamento desses
+direitos, que na prática são exercidos diretamente no Aplicativo por não
+haver dados armazenados fora do seu dispositivo.
+
+## 12. Lei aplicável
 
 Estes Termos são regidos pelas leis do Brasil, sem prejuízo de direitos do
 consumidor de caráter cogente previstos na legislação do país onde você
 reside.
 
-## 12. Contato
+## 13. Contato
 
 Dúvidas sobre estes Termos podem ser enviadas para:
 **clemilton.cunha.silva@gmail.com**

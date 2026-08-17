@@ -92,6 +92,7 @@ jest.mock("../src/utils/biometricAuth", () => ({
 jest.mock("../src/services/storage", () => ({
   loadPasswords: jest.fn(),
   savePasswords: jest.fn(),
+  clearVault: jest.fn().mockResolvedValue(),
 }));
 
 jest.mock("../src/services/session", () => ({
@@ -104,6 +105,7 @@ jest.mock("../src/services/account", () => ({
   loadLocalAccount: jest.fn(),
   saveLocalAccount: jest.fn(),
   verifyLocalAccount: jest.fn(),
+  deleteLocalAccount: jest.fn().mockResolvedValue(),
 }));
 
 jest.mock("../src/services/loginGuard", () => ({
@@ -114,14 +116,16 @@ jest.mock("../src/services/loginGuard", () => ({
 
 jest.mock("../src/services/securityAudit", () => ({
   logSecurityEvent: jest.fn().mockResolvedValue(),
+  clearSecurityEvents: jest.fn().mockResolvedValue(),
 }));
 
-const { loadPasswords } = require("../src/services/storage");
+const { loadPasswords, clearVault } = require("../src/services/storage");
 const { loadSessionToken } = require("../src/services/session");
 const {
   loadLocalAccount,
   saveLocalAccount,
   verifyLocalAccount,
+  deleteLocalAccount,
 } = require("../src/services/account");
 
 const ACCESS_PASSWORD = "Ab1!cd23";
@@ -376,6 +380,74 @@ describe("HomeScreen", () => {
     alertSpy.mockRestore();
   });
 
+  it("exclui a conta e todos os dados apos confirmacao", async () => {
+    loadPasswords.mockResolvedValueOnce([]);
+    const alertSpy = jest
+      .spyOn(Alert, "alert")
+      .mockImplementation((title, message, buttons) => {
+        if (Array.isArray(buttons)) {
+          const confirmButton = buttons.find(
+            (button) => button.text === "Excluir tudo",
+          );
+          confirmButton?.onPress();
+        }
+      });
+
+    const { findByPlaceholderText, getByText } = render(<HomeScreen />);
+    await loginInApp(findByPlaceholderText, getByText);
+
+    fireEvent.press(getByText("Excluir conta e todos os dados"));
+
+    await waitFor(() => {
+      expect(alertSpy).toHaveBeenCalledWith(
+        "Excluir conta e todos os dados",
+        expect.stringContaining("nao pode ser desfeita"),
+        expect.any(Array),
+      );
+    });
+
+    await waitFor(() => {
+      expect(clearVault).toHaveBeenCalled();
+      expect(deleteLocalAccount).toHaveBeenCalled();
+    });
+
+    await waitFor(() => {
+      expect(
+        getByText("Conta e dados excluidos deste aparelho."),
+      ).toBeTruthy();
+      expect(getByText("Criar conta")).toBeTruthy();
+    });
+
+    alertSpy.mockRestore();
+  });
+
+  it("exige biometria antes de permitir excluir a conta", async () => {
+    loadPasswords.mockResolvedValueOnce([]);
+    const alertSpy = jest.spyOn(Alert, "alert").mockImplementation(() => {});
+
+    const { findByPlaceholderText, getByText } = render(<HomeScreen />);
+    await loginInApp(findByPlaceholderText, getByText);
+
+    const biometricAuth = require("../src/utils/biometricAuth");
+    biometricAuth.authenticateVaultAccess.mockResolvedValueOnce({
+      success: false,
+      error: "not_available",
+    });
+
+    fireEvent.press(getByText("Excluir conta e todos os dados"));
+
+    await waitFor(() => {
+      expect(alertSpy).toHaveBeenCalledWith(
+        "Autenticacao necessaria",
+        "Autentique-se com biometria para excluir a conta e os dados.",
+      );
+    });
+    expect(clearVault).not.toHaveBeenCalled();
+    expect(deleteLocalAccount).not.toHaveBeenCalled();
+
+    alertSpy.mockRestore();
+  });
+
   it(
     "exporta o cofre cifrado via compartilhamento nativo",
     async () => {
@@ -400,14 +472,17 @@ describe("HomeScreen", () => {
 
       fireEvent.press(getByText("Exportar"));
 
-      await waitFor(() => {
-        expect(shareSpy).toHaveBeenCalledWith(
-          expect.objectContaining({
-            title: "Backup SecPass",
-            message: expect.stringContaining('"type":"encrypted_vault"'),
-          }),
-        );
-      });
+      await waitFor(
+        () => {
+          expect(shareSpy).toHaveBeenCalledWith(
+            expect.objectContaining({
+              title: "Backup SecPass",
+              message: expect.stringContaining('"type":"encrypted_vault"'),
+            }),
+          );
+        },
+        { timeout: REAL_CRYPTO_TIMEOUT },
+      );
 
       shareSpy.mockRestore();
     },
@@ -452,10 +527,13 @@ describe("HomeScreen", () => {
       fireEvent.changeText(pasteInput, JSON.stringify(envelope));
       fireEvent.press(getByText("Confirmar importacao"));
 
-      await waitFor(() => {
-        expect(getByText("Backup Site")).toBeTruthy();
-        expect(getByText("backup-user")).toBeTruthy();
-      });
+      await waitFor(
+        () => {
+          expect(getByText("Backup Site")).toBeTruthy();
+          expect(getByText("backup-user")).toBeTruthy();
+        },
+        { timeout: REAL_CRYPTO_TIMEOUT },
+      );
 
       alertSpy.mockRestore();
     },

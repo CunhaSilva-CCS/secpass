@@ -76,23 +76,64 @@ acesso a esse arquivo depois que ele é compartilhado — o controle sobre onde
 ele fica salvo é inteiramente seu. Proteja esse arquivo como protegeria sua
 senha mestra.
 
-## 5. Perda de dados e recuperação de senha
+## 5. Exclusão de conta e de dados
+
+Você pode excluir sua conta local e todos os dados do cofre a qualquer
+momento, diretamente no Aplicativo, pelo botão **"Excluir conta e todos os
+dados"** (requer autenticação biométrica e confirmação, por ser uma ação
+irreversível). Essa ação apaga localmente: a conta, o cofre de credenciais,
+a sessão salva, o histórico de tentativas de login e o registro de eventos
+de segurança. Desinstalar o Aplicativo também remove todos os dados
+armazenados por ele no dispositivo.
+
+Como nenhum dado é enviado a servidores, não existe cópia remota a ser
+apagada além da local — a exclusão no Aplicativo (ou a desinstalação) já
+é completa e definitiva.
+
+## 6. Perda de dados e recuperação de senha
 
 Como não existe backend, **o desenvolvedor do SecPass não tem como
 recuperar sua senha mestra nem seu cofre**. Se você esquecer a senha e
 recriar a conta local, o cofre salvo com a senha anterior se torna
 permanentemente inacessível, a menos que você tenha um backup exportado
-previamente. Ao desinstalar o Aplicativo, todos os dados armazenados
-localmente são apagados pelo sistema operacional.
+previamente.
 
-## 6. Menores de idade
+## 7. Seus direitos sobre os dados
 
-O SecPass não é direcionado a crianças e não coleta intencionalmente dados
-de menores, já que não coleta dados de ninguém. Ainda assim, o uso do
+Como todo o processamento acontece localmente, no seu próprio dispositivo,
+você já detém controle direto e imediato sobre seus dados — sem depender
+de pedidos ao desenvolvedor. Ainda assim, para fins de conformidade legal:
+
+- **LGPD (Lei nº 13.709/2018, Brasil)**: os direitos do titular previstos no
+  art. 18 (acesso, correção, exclusão, portabilidade) são exercidos
+  diretamente no Aplicativo — visualizar/editar itens do cofre, usar
+  "Exportar" para portabilidade e "Excluir conta e todos os dados" para
+  eliminação. Não há dado tratado por este desenvolvedor fora do
+  dispositivo do titular.
+- **GDPR (Regulamento UE 2016/679)**: para usuários no Espaço Econômico
+  Europeu, a base legal de tratamento é a execução do próprio Aplicativo a
+  pedido do usuário (art. 6(1)(b)), com processamento restrito ao
+  dispositivo do usuário ("privacy by design/by default", art. 25). Os
+  direitos de acesso, retificação, apagamento e portabilidade (arts.
+  15–20) são exercidos localmente, pelas funções descritas acima.
+- **CCPA/CPRA (Califórnia, EUA)**: o desenvolvedor não vende nem
+  compartilha informações pessoais, pois nenhuma informação é coletada ou
+  transmitida a este desenvolvedor ou a terceiros.
+
+Caso deseje contato formal sobre esses direitos ainda assim, use o e-mail
+na Seção 12 — mas note que, por não haver dados no lado do desenvolvedor,
+não há registro remoto para consultar, corrigir ou apagar.
+
+## 8. Menores de idade / COPPA
+
+O SecPass não é direcionado a crianças, não possui conteúdo destinado a
+menores de 13 anos e não coleta intencionalmente (nem de forma alguma)
+dados de nenhum usuário, incluindo menores — em conformidade com o
+espírito da COPPA (EUA) e legislações equivalentes. Ainda assim, o uso do
 Aplicativo por menores deve seguir a legislação local aplicável e, quando
 exigido, supervisão de um responsável.
 
-## 7. Segurança
+## 9. Segurança
 
 Nenhum sistema é 100% invulnerável. O SecPass usa práticas reconhecidas de
 mercado (PBKDF2, AES-256, HMAC-SHA256, armazenamento seguro do sistema
@@ -100,13 +141,34 @@ operacional, bloqueio progressivo contra tentativas de força bruta), mas
 isso não constitui garantia absoluta contra qualquer forma de acesso não
 autorizado ao seu dispositivo.
 
-## 8. Alterações a esta política
+## 10. Declarações para as lojas de aplicativos
+
+Para preencher os formulários de privacidade exigidos na submissão, com
+base no funcionamento atual do Aplicativo:
+
+**Apple App Store — App Privacy ("Nutrition Label")**: "Data Not
+Collected" — nenhuma categoria de dado é coletada pelo desenvolvedor
+(marcar todas as categorias como não coletadas, já que tudo permanece no
+dispositivo do usuário).
+
+**Google Play — Data safety**: "No data shared with third parties" e "No
+data collected" — o app não coleta nem transmite nenhum dos tipos de dados
+listados no formulário (localização, informações pessoais, financeiras,
+etc.), pois todo o processamento é local. Marcar "Data is encrypted in
+transit" como não aplicável (não há tráfego de rede) e confirmar que os
+dados armazenados no dispositivo são criptografados.
+
+> Reavalie estas declarações sempre que adicionar qualquer SDK de
+> terceiros, analytics, crash reporting ou comunicação de rede ao
+> Aplicativo — elas deixam de ser válidas nesse momento.
+
+## 11. Alterações a esta política
 
 Esta política pode ser atualizada para refletir mudanças no Aplicativo. A
 data no topo deste documento indica a versão mais recente. Mudanças
 relevantes serão comunicadas nas notas de versão do Aplicativo.
 
-## 9. Contato
+## 12. Contato
 
 Dúvidas sobre esta política podem ser enviadas para:
 **clemilton.cunha.silva@gmail.com**

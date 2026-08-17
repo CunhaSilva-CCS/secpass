@@ -94,3 +94,13 @@ export const loadPasswords = async ({ vaultSecret } = {}) => {
 
   return parsedLegacy;
 };
+
+export const clearVault = async () => {
+  try {
+    await SecureStore.deleteItemAsync(KEY, SECURE_STORE_OPTIONS);
+  } catch {
+    // Continua para limpar fallback.
+  }
+
+  await AsyncStorage.removeItem(KEY);
+};

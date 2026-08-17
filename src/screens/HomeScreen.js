@@ -22,8 +22,9 @@ import BrandLogo from "../components/BrandLogo";
 import { useColorScheme } from "../hooks/use-color-scheme";
 import { authenticateVaultAccess } from "../utils/biometricAuth";
 
-import { loadPasswords, savePasswords } from "../services/storage";
+import { clearVault, loadPasswords, savePasswords } from "../services/storage";
 import {
+  deleteLocalAccount,
   loadLocalAccount,
   saveLocalAccount,
   verifyLocalAccount,
@@ -55,7 +56,7 @@ import {
   loadLoginGuard,
   saveLoginGuard,
 } from "../services/loginGuard";
-import { logSecurityEvent } from "../services/securityAudit";
+import { clearSecurityEvents, logSecurityEvent } from "../services/securityAudit";
 
 import { generatePassword } from "../utils/passwordGenerator";
 
@@ -660,6 +661,63 @@ export default function HomeScreen() {
     setIsAppUnlocked(false);
   };
 
+  const handleDeleteAccount = async () => {
+    registerUserActivity();
+
+    let isAuthorized = false;
+    try {
+      const authResult = await authenticateVaultAccess();
+      isAuthorized = authResult.success;
+    } catch {
+      isAuthorized = false;
+    }
+
+    if (!isAuthorized) {
+      Alert.alert(
+        "Autenticacao necessaria",
+        "Autentique-se com biometria para excluir a conta e os dados.",
+      );
+      return;
+    }
+
+    Alert.alert(
+      "Excluir conta e todos os dados",
+      "Isso apaga permanentemente sua conta local e todas as credenciais salvas neste aparelho. Essa acao nao pode ser desfeita. Se quiser manter uma copia, exporte um backup antes de continuar. Deseja excluir tudo agora?",
+      [
+        { text: "Cancelar", style: "cancel" },
+        {
+          text: "Excluir tudo",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await clearVault();
+              await deleteLocalAccount();
+              await clearSessionToken();
+              await clearLoginGuard();
+              await clearSecurityEvents();
+            } catch {
+              // Segue para reiniciar o estado local mesmo se alguma limpeza falhar.
+            }
+
+            setItems([]);
+            setSearch("");
+            setHasLoadedData(false);
+            setVaultSecret("");
+            setIsLoggedIn(false);
+            setIsAppUnlocked(false);
+            setHasLocalAccount(false);
+            setIsRegisterMode(true);
+            setFailedLoginAttempts(0);
+            setLoginLockLevel(0);
+            setLoginLockUntil(0);
+            resetAuthFields();
+            setLoginMessage("Conta e dados excluidos deste aparelho.");
+          },
+        },
+      ],
+    );
+  };
+
   if (isCheckingSession) {
     return (
       <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.bg }]}>
@@ -964,6 +1022,14 @@ export default function HomeScreen() {
                   </Pressable>
                 </View>
               </View>
+              <Pressable
+                style={styles.dangerLinkWrap}
+                onPress={handleDeleteAccount}
+              >
+                <Text style={[styles.dangerLinkText, { color: theme.dangerText }]}>
+                  Excluir conta e todos os dados
+                </Text>
+              </Pressable>
               <Text style={[styles.title, { color: theme.text }]}>
                 Sua central de credenciais
               </Text>
@@ -1274,6 +1340,14 @@ const styles = StyleSheet.create({
   headerButtonText: {
     fontWeight: "700",
     fontSize: 12,
+  },
+  dangerLinkWrap: {
+    alignSelf: "flex-end",
+    marginTop: 8,
+  },
+  dangerLinkText: {
+    fontSize: 11,
+    fontWeight: "700",
   },
   title: {
     marginTop: 8,

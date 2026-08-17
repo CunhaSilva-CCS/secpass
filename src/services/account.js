@@ -248,3 +248,13 @@ export const verifyLocalAccount = async ({ email, password }) => {
   const inputHash = hashPasswordV3(password, parsedSecureAccount.salt);
   return parsedSecureAccount.passwordHash === inputHash;
 };
+
+export const deleteLocalAccount = async () => {
+  try {
+    await SecureStore.deleteItemAsync(ACCOUNT_KEY, SECURE_STORE_OPTIONS);
+  } catch {
+    // Continua para limpar fallback.
+  }
+
+  await AsyncStorage.removeItem(ACCOUNT_KEY);
+};
