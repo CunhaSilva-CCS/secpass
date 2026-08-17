@@ -14,15 +14,32 @@ Aplicativo mobile de gerenciamento de senhas (iOS/Android) com cofre local cript
 
 ## Segurança Aplicada
 
-- Proteção em `SecureStore` com autenticação obrigatória (`requireAuthentication: true`).
-- Credenciais locais com hash PBKDF2-SHA256 (310000 iterações).
+- Dados protegidos em `SecureStore` (Keychain/Keystore), acessíveis apenas
+  com o aparelho desbloqueado (`keychainAccessible: WHEN_UNLOCKED_THIS_DEVICE_ONLY`).
+  O acesso ao conteúdo sensível (abrir o cofre, revelar/copiar/editar uma
+  senha, excluir a conta) é gated por um único ponto de autenticação
+  explícito no app (Face ID, Touch ID ou senha do aparelho), em vez de pedir
+  autenticação do sistema a cada leitura/escrita interna do Keychain.
+- Criptografia consolidada em uma única lib nativa (`react-native-quick-crypto`):
+  PBKDF2, AES-256-CBC, HMAC-SHA256, SHA-256 e geração de bytes aleatórios
+  (CSPRNG) usam todos o mesmo módulo, substituindo `crypto-js` (JS puro,
+  descontinuado) e `expo-crypto`. Menos dependências, uma única superfície de
+  código criptográfico para auditar.
+- Credenciais locais com hash PBKDF2-SHA256 (310000 iterações), calculado em
+  código nativo via `react-native-quick-crypto` (a mesma quantidade de
+  iterações em JavaScript puro levava ~30s por operação em dispositivos
+  reais; nativo leva ~40ms).
+- Bloqueio automático do cofre: ao sair do app (ida para background) e após
+  2 minutos de inatividade com o app aberto.
+- Proteção contra captura de tela: bloqueia screenshot/gravação (Android e
+  iOS 13+) e borra o preview do app no app-switcher do iOS.
 - Política de senha local forte:
   - mínimo 8 caracteres (sem limite artificial de tamanho, até 64)
   - ao menos 1 letra
   - ao menos 1 número
   - ao menos 1 caractere especial
 - Bloqueio progressivo de tentativas de login inválidas.
-- Gerador de senhas usa CSPRNG (`expo-crypto`), não `Math.random`.
+- Gerador de senhas usa CSPRNG nativo (`react-native-quick-crypto`), não `Math.random`.
 - Senha copiada para a área de transferência é apagada automaticamente após 30s
   (somente se o clipboard ainda contiver o valor copiado).
 - Backup local: exportação/importação do cofre cifrado (mesmo formato
@@ -31,6 +48,10 @@ Aplicativo mobile de gerenciamento de senhas (iOS/Android) com cofre local cript
 - Exclusão de conta pelo próprio app (`"Excluir conta e todos os dados"`,
   com biometria + confirmação), exigida pela Apple para apps com criação de
   conta (App Store Review Guideline 5.1.1(v)) e recomendada pelo Google Play.
+- Histórico de segurança visível no app (`"Ver historico de seguranca"`, na
+  tela principal): lista os últimos eventos registrados localmente (login,
+  criação de conta, exportação/importação de backup, captura de tela
+  detectada, etc.), com opção de limpar o histórico.
 
 ## Backup
 

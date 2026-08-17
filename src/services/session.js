@@ -1,6 +1,11 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import * as ExpoCrypto from "expo-crypto";
 import * as SecureStore from "expo-secure-store";
+import QuickCrypto from "react-native-quick-crypto";
+
+import {
+  DEVICE_AUTH_NOT_CONFIGURED,
+  isDeviceAuthNotConfiguredError,
+} from "../utils/secureStoreErrors";
 
 const SESSION_KEY = "secpass_session";
 const SESSION_ERROR =
@@ -8,20 +13,18 @@ const SESSION_ERROR =
 const SECURE_STORE_OPTIONS = {
   keychainService: "secpass.session",
   keychainAccessible: SecureStore.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
-  requireAuthentication: true,
-  authenticationPrompt: "Autentique para restaurar sua sessao do SecPass.",
 };
 
 const toHex = (bytes) =>
   Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("");
 
-const createSessionToken = async () => {
-  const randomBytes = await ExpoCrypto.getRandomBytesAsync(32);
+const createSessionToken = () => {
+  const randomBytes = QuickCrypto.randomBytes(32);
   return `session:${toHex(randomBytes)}`;
 };
 
 export const saveSessionToken = async (token) => {
-  const tokenToPersist = token ?? (await createSessionToken());
+  const tokenToPersist = token ?? createSessionToken();
 
   try {
     await SecureStore.setItemAsync(
@@ -31,7 +34,10 @@ export const saveSessionToken = async (token) => {
     );
     await AsyncStorage.removeItem(SESSION_KEY);
     return tokenToPersist;
-  } catch {
+  } catch (err) {
+    if (isDeviceAuthNotConfiguredError(err)) {
+      throw new Error(DEVICE_AUTH_NOT_CONFIGURED);
+    }
     throw new Error(SESSION_ERROR);
   }
 };

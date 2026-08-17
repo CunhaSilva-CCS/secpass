@@ -1,6 +1,10 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as SecureStore from "expo-secure-store";
 import { decryptVaultEnvelope, encryptVaultItems } from "./vaultCrypto";
+import {
+  DEVICE_AUTH_NOT_CONFIGURED,
+  isDeviceAuthNotConfiguredError,
+} from "../utils/secureStoreErrors";
 
 const KEY = "passwords";
 const STORAGE_WRITE_ERROR =
@@ -8,8 +12,6 @@ const STORAGE_WRITE_ERROR =
 const SECURE_STORE_OPTIONS = {
   keychainService: "secpass.vault",
   keychainAccessible: SecureStore.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
-  requireAuthentication: true,
-  authenticationPrompt: "Autentique para abrir seu cofre criptografado.",
 };
 
 const parseData = (rawValue) => {
@@ -44,7 +46,10 @@ export const savePasswords = async (data, { vaultSecret } = {}) => {
     await SecureStore.setItemAsync(KEY, payload, SECURE_STORE_OPTIONS);
     await AsyncStorage.removeItem(KEY);
     return;
-  } catch {
+  } catch (err) {
+    if (isDeviceAuthNotConfiguredError(err)) {
+      throw new Error(DEVICE_AUTH_NOT_CONFIGURED);
+    }
     throw new Error(STORAGE_WRITE_ERROR);
   }
 };

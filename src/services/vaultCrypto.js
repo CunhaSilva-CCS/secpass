@@ -1,21 +1,20 @@
-import CryptoJS from "crypto-js";
-import * as ExpoCrypto from "expo-crypto";
+import { Buffer } from "@craftzdog/react-native-buffer";
+import QuickCrypto from "react-native-quick-crypto";
 
 const VAULT_VERSION = 1;
 const PBKDF2_ITERATIONS = 310000;
-const KEY_SIZE_WORDS = 512 / 32;
-
-const toWordArray = (bytes) => {
-  return bytes.reduce((words, byte, index) => {
-    words[index >>> 2] |= byte << (24 - (index % 4) * 8);
-    return words;
-  }, []);
-};
+const KEY_SIZE_BYTES = 64;
 
 const bytesToHex = (bytes) =>
   Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("");
 
-const hexToWordArray = (hex) => CryptoJS.enc.Hex.parse(hex);
+const hexToBytes = (hex) => {
+  const bytes = new Uint8Array(hex.length / 2);
+  for (let index = 0; index < bytes.length; index += 1) {
+    bytes[index] = parseInt(hex.substr(index * 2, 2), 16);
+  }
+  return bytes;
+};
 
 const constantTimeCompare = (left, right) => {
   if (!left || !right || left.length !== right.length) {
@@ -35,19 +34,17 @@ const deriveKeys = ({
   saltHex,
   iterations = PBKDF2_ITERATIONS,
 }) => {
-  const derived = CryptoJS.PBKDF2(vaultSecret, hexToWordArray(saltHex), {
-    keySize: KEY_SIZE_WORDS,
+  const derived = QuickCrypto.pbkdf2Sync(
+    vaultSecret,
+    hexToBytes(saltHex),
     iterations,
-    hasher: CryptoJS.algo.SHA256,
-  });
-
-  const derivedHex = derived.toString(CryptoJS.enc.Hex);
-  const encKeyHex = derivedHex.slice(0, 64);
-  const macKeyHex = derivedHex.slice(64, 128);
+    KEY_SIZE_BYTES,
+    "sha256",
+  );
 
   return {
-    encKey: hexToWordArray(encKeyHex),
-    macKey: hexToWordArray(macKeyHex),
+    encKey: derived.subarray(0, 32),
+    macKey: derived.subarray(32, 64),
   };
 };
 
@@ -64,24 +61,23 @@ export const encryptVaultItems = async (items, vaultSecret) => {
   const safeItems = Array.isArray(items) ? items : [];
   const plaintext = JSON.stringify({ items: safeItems });
 
-  const saltBytes = await ExpoCrypto.getRandomBytesAsync(16);
-  const ivBytes = await ExpoCrypto.getRandomBytesAsync(16);
+  const saltBytes = QuickCrypto.randomBytes(16);
+  const ivBytes = QuickCrypto.randomBytes(16);
   const saltHex = bytesToHex(saltBytes);
   const ivHex = bytesToHex(ivBytes);
 
   const { encKey, macKey } = deriveKeys({ vaultSecret, saltHex });
 
-  const encrypted = CryptoJS.AES.encrypt(plaintext, encKey, {
-    iv: CryptoJS.lib.WordArray.create(toWordArray(ivBytes), ivBytes.length),
-    mode: CryptoJS.mode.CBC,
-    padding: CryptoJS.pad.Pkcs7,
-  });
+  const cipher = QuickCrypto.createCipheriv("aes-256-cbc", encKey, ivBytes);
+  const ciphertext = Buffer.concat([
+    cipher.update(Buffer.from(plaintext, "utf8")),
+    cipher.final(),
+  ]).toString("base64");
 
-  const ciphertext = encrypted.ciphertext.toString(CryptoJS.enc.Base64);
   const macPayload = `${VAULT_VERSION}:${saltHex}:${ivHex}:${ciphertext}`;
-  const mac = CryptoJS.HmacSHA256(macPayload, macKey).toString(
-    CryptoJS.enc.Hex,
-  );
+  const mac = QuickCrypto.createHmac("sha256", macKey)
+    .update(macPayload)
+    .digest("hex");
 
   return {
     type: "encrypted_vault",
@@ -125,27 +121,29 @@ export const decryptVaultEnvelope = async (envelope, vaultSecret) => {
   });
 
   const macPayload = `${version}:${saltHex}:${ivHex}:${ciphertext}`;
-  const computedMac = CryptoJS.HmacSHA256(macPayload, macKey).toString(
-    CryptoJS.enc.Hex,
-  );
+  const computedMac = QuickCrypto.createHmac("sha256", macKey)
+    .update(macPayload)
+    .digest("hex");
 
   if (!constantTimeCompare(computedMac, expectedMac)) {
     throw new Error("Falha de integridade do cofre.");
   }
 
-  const decrypted = CryptoJS.AES.decrypt(
-    {
-      ciphertext: CryptoJS.enc.Base64.parse(ciphertext),
-    },
-    encKey,
-    {
-      iv: hexToWordArray(ivHex),
-      mode: CryptoJS.mode.CBC,
-      padding: CryptoJS.pad.Pkcs7,
-    },
-  );
+  let plaintext;
+  try {
+    const decipher = QuickCrypto.createDecipheriv(
+      "aes-256-cbc",
+      encKey,
+      hexToBytes(ivHex),
+    );
+    plaintext = Buffer.concat([
+      decipher.update(Buffer.from(ciphertext, "base64")),
+      decipher.final(),
+    ]).toString("utf8");
+  } catch {
+    throw new Error("Falha ao descriptografar cofre.");
+  }
 
-  const plaintext = decrypted.toString(CryptoJS.enc.Utf8);
   if (!plaintext) {
     throw new Error("Falha ao descriptografar cofre.");
   }

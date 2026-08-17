@@ -117,6 +117,7 @@ jest.mock("../src/services/loginGuard", () => ({
 jest.mock("../src/services/securityAudit", () => ({
   logSecurityEvent: jest.fn().mockResolvedValue(),
   clearSecurityEvents: jest.fn().mockResolvedValue(),
+  loadSecurityEvents: jest.fn().mockResolvedValue([]),
 }));
 
 jest.mock("expo-screen-capture", () => ({
@@ -130,7 +131,8 @@ jest.mock("expo-screen-capture", () => ({
 const { loadPasswords, clearVault, savePasswords } = require("../src/services/storage");
 const { loadSessionToken, clearSessionToken } = require("../src/services/session");
 const { loadLoginGuard } = require("../src/services/loginGuard");
-const { logSecurityEvent } = require("../src/services/securityAudit");
+const { logSecurityEvent, clearSecurityEvents, loadSecurityEvents } =
+  require("../src/services/securityAudit");
 const ScreenCapture = require("expo-screen-capture");
 const {
   loadLocalAccount,
@@ -285,6 +287,88 @@ describe("HomeScreen", () => {
       expect(getByText("GitHub")).toBeTruthy();
       expect(queryByText("Email")).toBeNull();
     });
+  });
+
+  it("mostra o historico de eventos de seguranca ao abrir o modal", async () => {
+    loadPasswords.mockResolvedValueOnce([]);
+    loadSecurityEvents.mockResolvedValueOnce([
+      {
+        id: "1",
+        type: "login_success",
+        status: "info",
+        createdAt: "2026-01-01T10:00:00.000Z",
+      },
+      {
+        id: "2",
+        type: "account_created",
+        status: "info",
+        createdAt: "2026-01-01T09:00:00.000Z",
+      },
+    ]);
+
+    const { findByPlaceholderText, getByText } = render(<HomeScreen />);
+    await loginInApp(findByPlaceholderText, getByText);
+
+    fireEvent.press(getByText("Ver historico de seguranca"));
+
+    await waitFor(() => {
+      expect(getByText("Login bem-sucedido")).toBeTruthy();
+      expect(getByText("Conta local criada")).toBeTruthy();
+    });
+  });
+
+  it("mostra mensagem quando nao ha eventos de seguranca", async () => {
+    loadPasswords.mockResolvedValueOnce([]);
+    loadSecurityEvents.mockResolvedValueOnce([]);
+
+    const { findByPlaceholderText, getByText } = render(<HomeScreen />);
+    await loginInApp(findByPlaceholderText, getByText);
+
+    fireEvent.press(getByText("Ver historico de seguranca"));
+
+    await waitFor(() => {
+      expect(getByText("Nenhum evento registrado.")).toBeTruthy();
+    });
+  });
+
+  it("limpa o historico de seguranca apos confirmacao", async () => {
+    loadPasswords.mockResolvedValueOnce([]);
+    loadSecurityEvents.mockResolvedValueOnce([
+      {
+        id: "1",
+        type: "login_success",
+        status: "info",
+        createdAt: "2026-01-01T10:00:00.000Z",
+      },
+    ]);
+    const alertSpy = jest
+      .spyOn(Alert, "alert")
+      .mockImplementation((title, message, buttons) => {
+        const confirmButton = buttons.find(
+          (button) => button.text === "Limpar",
+        );
+        confirmButton?.onPress();
+      });
+
+    const { findByPlaceholderText, getByText, queryByText } = render(
+      <HomeScreen />,
+    );
+    await loginInApp(findByPlaceholderText, getByText);
+
+    fireEvent.press(getByText("Ver historico de seguranca"));
+
+    await waitFor(() => {
+      expect(getByText("Login bem-sucedido")).toBeTruthy();
+    });
+
+    fireEvent.press(getByText("Limpar historico"));
+
+    await waitFor(() => {
+      expect(clearSecurityEvents).toHaveBeenCalled();
+      expect(queryByText("Login bem-sucedido")).toBeNull();
+    });
+
+    alertSpy.mockRestore();
   });
 
   it("ativa protecao de captura de tela ao desbloquear e desativa ao sair", async () => {
@@ -577,7 +661,7 @@ describe("HomeScreen", () => {
         expect(getByText("GitHub")).toBeTruthy();
       });
 
-      fireEvent.press(getByText("Exportar"));
+      fireEvent.press(getByText("Exportar backup"));
 
       await waitFor(
         () => {
@@ -628,7 +712,7 @@ describe("HomeScreen", () => {
       ];
       const envelope = await encryptVaultItems(backupItems, vaultSecret);
 
-      fireEvent.press(getByText("Importar"));
+      fireEvent.press(getByText("Importar backup"));
 
       const pasteInput = await findByPlaceholderText("Cole o backup aqui");
       fireEvent.changeText(pasteInput, JSON.stringify(envelope));
@@ -656,7 +740,7 @@ describe("HomeScreen", () => {
       const { findByPlaceholderText, getByText } = render(<HomeScreen />);
       await loginInApp(findByPlaceholderText, getByText);
 
-      fireEvent.press(getByText("Importar"));
+      fireEvent.press(getByText("Importar backup"));
 
       const pasteInput = await findByPlaceholderText("Cole o backup aqui");
       fireEvent.changeText(pasteInput, "isso nao e um json valido");
@@ -681,10 +765,8 @@ describe("HomeScreen", () => {
     const { findByPlaceholderText, getByText } = render(<HomeScreen />);
     await loginInApp(findByPlaceholderText, getByText);
 
-    const changeHandler = getLatestChangeHandler();
-
     await act(async () => {
-      changeHandler("background");
+      getLatestChangeHandler()("background");
     });
 
     expect(getByText("Cofre bloqueado")).toBeTruthy();
@@ -697,15 +779,14 @@ describe("HomeScreen", () => {
     });
 
     await act(async () => {
-      changeHandler("active");
+      getLatestChangeHandler()("active");
     });
 
     await waitFor(() => {
       expect(
-        getByText("Face ID indisponivel neste dispositivo."),
+        getByText("Biometria/senha do aparelho indisponivel."),
       ).toBeTruthy();
     });
-
   });
 
   it("mantem cofre bloqueado sem mensagem quando o usuario cancela a biometria", async () => {
@@ -717,10 +798,8 @@ describe("HomeScreen", () => {
     );
     await loginInApp(findByPlaceholderText, getByText);
 
-    const changeHandler = getLatestChangeHandler();
-
     await act(async () => {
-      changeHandler("background");
+      getLatestChangeHandler()("background");
     });
 
     const biometricAuth = require("../src/utils/biometricAuth");
@@ -730,16 +809,15 @@ describe("HomeScreen", () => {
     });
 
     await act(async () => {
-      changeHandler("active");
+      getLatestChangeHandler()("active");
     });
 
     await waitFor(() => {
       expect(getByText("Cofre bloqueado")).toBeTruthy();
     });
     expect(
-      queryByText("Face ID indisponivel neste dispositivo."),
+      queryByText("Biometria/senha do aparelho indisponivel."),
     ).toBeNull();
-
   });
 
   it("mostra falha quando a autenticacao biometrica lanca excecao", async () => {
@@ -749,10 +827,8 @@ describe("HomeScreen", () => {
     const { findByPlaceholderText, getByText } = render(<HomeScreen />);
     await loginInApp(findByPlaceholderText, getByText);
 
-    const changeHandler = getLatestChangeHandler();
-
     await act(async () => {
-      changeHandler("background");
+      getLatestChangeHandler()("background");
     });
 
     const biometricAuth = require("../src/utils/biometricAuth");
@@ -761,13 +837,12 @@ describe("HomeScreen", () => {
     );
 
     await act(async () => {
-      changeHandler("active");
+      getLatestChangeHandler()("active");
     });
 
     await waitFor(() => {
       expect(getByText("Falha ao iniciar autenticacao.")).toBeTruthy();
     });
-
   });
 
   it("limpa token de sessao orfao ao iniciar o app", async () => {

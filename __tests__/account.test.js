@@ -1,5 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import CryptoJS from "crypto-js";
+import crypto from "crypto";
 import * as SecureStore from "expo-secure-store";
 
 import {
@@ -21,30 +21,17 @@ jest.mock("expo-secure-store", () => ({
   deleteItemAsync: jest.fn(),
 }));
 
-jest.mock("expo-crypto", () => ({
-  digestStringAsync: jest.fn(),
-  getRandomBytesAsync: jest.fn(),
-  CryptoDigestAlgorithm: {
-    SHA256: "sha256",
-  },
-}));
-
 const ACCOUNT_KEY = "secpass_account";
 
 const pbkdf2Hash = (password, salt) =>
-  CryptoJS.PBKDF2(password, salt, {
-    keySize: 256 / 32,
-    iterations: 310000,
-    hasher: CryptoJS.algo.SHA256,
-  }).toString(CryptoJS.enc.Hex);
+  crypto.pbkdf2Sync(password, salt, 310000, 32, "sha256").toString("hex");
+
+const sha256Hex = (value) =>
+  crypto.createHash("sha256").update(value).digest("hex");
 
 describe("account service", () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    const expoCrypto = require("expo-crypto");
-    expoCrypto.getRandomBytesAsync.mockResolvedValue(
-      Uint8Array.from(Array(16).fill(11)),
-    );
   });
 
   it("salva conta no SecureStore em formato v3 (PBKDF2) e remove legado", async () => {
@@ -114,21 +101,21 @@ describe("account service", () => {
   });
 
   it("migra conta v2 para v3 no login bem-sucedido", async () => {
-    const expoCrypto = require("expo-crypto");
-    expoCrypto.digestStringAsync.mockResolvedValueOnce("legacy-v2-hash");
+    const salt = "legacy-salt";
+    const password = "1234";
 
     SecureStore.getItemAsync.mockResolvedValueOnce(
       JSON.stringify({
         email: "user@email.com",
-        salt: "legacy-salt",
-        passwordHash: "legacy-v2-hash",
+        salt,
+        passwordHash: sha256Hex(`${salt}:${password}`),
         version: 2,
       }),
     );
 
     const isValid = await verifyLocalAccount({
       email: "user@email.com",
-      password: "1234",
+      password,
     });
 
     expect(isValid).toBe(true);
@@ -212,22 +199,22 @@ describe("account service", () => {
   });
 
   it("valida login via fallback legado quando SecureStore falha", async () => {
-    const expoCrypto = require("expo-crypto");
-    expoCrypto.digestStringAsync.mockResolvedValueOnce("legacy-v2-hash");
+    const salt = "legacy-salt";
+    const password = "1234";
 
     SecureStore.getItemAsync.mockRejectedValueOnce(new Error("secure-down"));
     AsyncStorage.getItem.mockResolvedValueOnce(
       JSON.stringify({
         email: "legacy@email.com",
-        salt: "legacy-salt",
-        passwordHash: "legacy-v2-hash",
+        salt,
+        passwordHash: sha256Hex(`${salt}:${password}`),
         version: 2,
       }),
     );
 
     const isValid = await verifyLocalAccount({
       email: "legacy@email.com",
-      password: "1234",
+      password,
     });
 
     expect(isValid).toBe(true);

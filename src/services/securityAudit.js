@@ -6,8 +6,6 @@ const MAX_AUDIT_EVENTS = 200;
 const SECURE_STORE_OPTIONS = {
   keychainService: "secpass.audit",
   keychainAccessible: SecureStore.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
-  requireAuthentication: true,
-  authenticationPrompt: "Autentique para acessar eventos de seguranca.",
 };
 
 const parseEvents = (rawValue) => {

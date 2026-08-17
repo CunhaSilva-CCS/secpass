@@ -1,7 +1,11 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import CryptoJS from "crypto-js";
-import * as ExpoCrypto from "expo-crypto";
 import * as SecureStore from "expo-secure-store";
+import QuickCrypto from "react-native-quick-crypto";
+
+import {
+  DEVICE_AUTH_NOT_CONFIGURED,
+  isDeviceAuthNotConfiguredError,
+} from "../utils/secureStoreErrors";
 
 const ACCOUNT_KEY = "secpass_account";
 const ACCOUNT_VERSION = 3;
@@ -11,8 +15,6 @@ const SECURE_STORE_ERROR = "Falha ao salvar conta no armazenamento seguro.";
 const SECURE_STORE_OPTIONS = {
   keychainService: "secpass.account",
   keychainAccessible: SecureStore.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
-  requireAuthentication: true,
-  authenticationPrompt: "Autentique para acessar seus dados protegidos.",
 };
 
 const parseAccount = (rawValue) => {
@@ -66,26 +68,27 @@ const parseAccount = (rawValue) => {
   }
 };
 
-const createSalt = async () => {
-  const randomBytes = await ExpoCrypto.getRandomBytesAsync(16);
+const createSalt = () => {
+  const randomBytes = QuickCrypto.randomBytes(16);
   return Array.from(randomBytes, (byte) =>
     byte.toString(16).padStart(2, "0"),
   ).join("");
 };
 
-const hashPasswordV2 = async (password, salt) => {
-  return ExpoCrypto.digestStringAsync(
-    ExpoCrypto.CryptoDigestAlgorithm.SHA256,
-    `${salt}:${password}`,
-  );
+const hashPasswordV2 = (password, salt) => {
+  return QuickCrypto.createHash("sha256")
+    .update(`${salt}:${password}`)
+    .digest("hex");
 };
 
 const hashPasswordV3 = (password, salt) => {
-  return CryptoJS.PBKDF2(password, salt, {
-    keySize: PBKDF2_KEY_SIZE_WORDS,
-    iterations: PBKDF2_ITERATIONS,
-    hasher: CryptoJS.algo.SHA256,
-  }).toString(CryptoJS.enc.Hex);
+  return QuickCrypto.pbkdf2Sync(
+    password,
+    salt,
+    PBKDF2_ITERATIONS,
+    PBKDF2_KEY_SIZE_WORDS * 4,
+    "sha256",
+  ).toString("hex");
 };
 
 const writeSecureAccount = async ({
@@ -112,7 +115,10 @@ const writeSecureAccount = async ({
   try {
     await SecureStore.setItemAsync(ACCOUNT_KEY, payload, SECURE_STORE_OPTIONS);
     return "secure";
-  } catch {
+  } catch (err) {
+    if (isDeviceAuthNotConfiguredError(err)) {
+      throw new Error(DEVICE_AUTH_NOT_CONFIGURED);
+    }
     throw new Error(SECURE_STORE_ERROR);
   }
 };
@@ -149,7 +155,7 @@ const getStoredAccount = async () => {
 };
 
 export const saveLocalAccount = async ({ email, password }) => {
-  const salt = await createSalt();
+  const salt = createSalt();
   const passwordHash = hashPasswordV3(password, salt);
 
   const backend = await writeSecureAccount({ email, salt, passwordHash });
@@ -231,7 +237,7 @@ export const verifyLocalAccount = async ({ email, password }) => {
   }
 
   if (parsedSecureAccount.version === 2) {
-    const inputHash = await hashPasswordV2(password, parsedSecureAccount.salt);
+    const inputHash = hashPasswordV2(password, parsedSecureAccount.salt);
     const isValid = parsedSecureAccount.passwordHash === inputHash;
 
     if (isValid) {

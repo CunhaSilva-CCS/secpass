@@ -70,8 +70,8 @@ describe("PasswordCard", () => {
 
     await waitFor(() => {
       expect(Alert.alert).toHaveBeenCalledWith(
-        "Face ID indisponivel",
-        "Ative Face ID no iPhone para acessar o cofre.",
+        "Autenticacao indisponivel",
+        "Ative Face ID, Touch ID ou uma senha de bloqueio no aparelho para acessar o cofre.",
       );
     });
     expect(getByText("••••••••••")).toBeTruthy();

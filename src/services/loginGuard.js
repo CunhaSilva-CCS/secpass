@@ -5,8 +5,6 @@ const LOGIN_GUARD_KEY = "secpass_login_guard";
 const SECURE_STORE_OPTIONS = {
   keychainService: "secpass.login-guard",
   keychainAccessible: SecureStore.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
-  requireAuthentication: true,
-  authenticationPrompt: "Autentique para acessar protecoes de login.",
 };
 
 const parseGuard = (rawValue) => {

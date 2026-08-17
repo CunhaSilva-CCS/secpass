@@ -57,11 +57,45 @@ import {
   loadLoginGuard,
   saveLoginGuard,
 } from "../services/loginGuard";
-import { clearSecurityEvents, logSecurityEvent } from "../services/securityAudit";
+import {
+  clearSecurityEvents,
+  loadSecurityEvents,
+  logSecurityEvent,
+} from "../services/securityAudit";
 
 import { generatePassword } from "../utils/passwordGenerator";
+import { DEVICE_AUTH_NOT_CONFIGURED } from "../utils/secureStoreErrors";
+
+const DEVICE_AUTH_NOT_CONFIGURED_MESSAGE =
+  "Este aparelho nao tem senha, Face ID ou Touch ID configurado. Ative um metodo de bloqueio de tela nos Ajustes do sistema para usar o SecPass.";
 
 const IDLE_LOCK_MS = 2 * 60 * 1000;
+
+const SECURITY_EVENT_LABELS = {
+  login_success: "Login bem-sucedido",
+  login_failed: "Tentativa de login com senha incorreta",
+  login_blocked: "Login bloqueado (bloqueio ativo)",
+  login_lock_activated: "Bloqueio de login ativado",
+  login_without_account: "Tentativa de login sem conta local",
+  session_persist_failed: "Falha ao salvar sessao",
+  account_created: "Conta local criada",
+  account_create_failed: "Falha ao criar conta local",
+  logout: "Logout",
+  vault_exported: "Backup do cofre exportado",
+  vault_imported: "Backup do cofre importado",
+  vault_load_failed: "Falha ao descriptografar o cofre salvo",
+  screenshot_detected: "Captura de tela detectada",
+};
+
+const formatSecurityEventType = (type) => SECURITY_EVENT_LABELS[type] || type;
+
+const formatSecurityEventDate = (isoString) => {
+  try {
+    return new Date(isoString).toLocaleString("pt-BR");
+  } catch {
+    return isoString;
+  }
+};
 
 export default function HomeScreen() {
   const colorScheme = useColorScheme();
@@ -135,6 +169,10 @@ export default function HomeScreen() {
   const [authMessage, setAuthMessage] = useState("");
   const [isImportModalVisible, setIsImportModalVisible] = useState(false);
   const [importText, setImportText] = useState("");
+  const [isAuthSubmitting, setIsAuthSubmitting] = useState(false);
+  const [isSecurityLogVisible, setIsSecurityLogVisible] = useState(false);
+  const [securityEvents, setSecurityEvents] = useState([]);
+  const [isLoadingSecurityLog, setIsLoadingSecurityLog] = useState(false);
 
   const idleTimerRef = useRef(null);
 
@@ -169,18 +207,13 @@ export default function HomeScreen() {
           return;
         }
 
-        setAuthMessage("Face ID indisponivel neste dispositivo.");
+        setAuthMessage("Biometria/senha do aparelho indisponivel.");
         setIsAppUnlocked(false);
         return;
       }
 
-      if (authResult.success) {
-        setIsAppUnlocked(true);
-        setAuthMessage("");
-      } else {
-        setAuthMessage("Autenticacao nao concluida.");
-        setIsAppUnlocked(false);
-      }
+      setIsAppUnlocked(true);
+      setAuthMessage("");
     } catch {
       setAuthMessage("Falha ao iniciar autenticacao.");
       setIsAppUnlocked(false);
@@ -220,12 +253,20 @@ export default function HomeScreen() {
 
   useEffect(() => {
     const subscription = AppState.addEventListener("change", (nextState) => {
-      if (nextState !== "active") {
+      // "inactive" e um estado transitorio (inclui prompts do sistema como
+      // Face ID, share sheet, etc.) e nao significa que o app saiu de fato.
+      // So tratamos "background" como saida real do app.
+      if (nextState === "background") {
         lockVault("Cofre bloqueado ao sair do app.");
         return;
       }
 
-      if (isLoggedIn) {
+      if (
+        nextState === "active" &&
+        isLoggedIn &&
+        !isAppUnlocked &&
+        !isAuthenticating
+      ) {
         requestAppUnlock();
       }
     });
@@ -233,7 +274,7 @@ export default function HomeScreen() {
     return () => {
       subscription.remove();
     };
-  }, [isLoggedIn, lockVault, requestAppUnlock]);
+  }, [isLoggedIn, isAppUnlocked, isAuthenticating, lockVault, requestAppUnlock]);
 
   useEffect(() => {
     if (isLoggedIn && isAppUnlocked) {
@@ -319,9 +360,22 @@ export default function HomeScreen() {
     }
 
     async function init() {
-      const localItems = await loadPasswords({ vaultSecret });
-      setItems(localItems);
-      setHasLoadedData(true);
+      try {
+        const localItems = await loadPasswords({ vaultSecret });
+        setItems(localItems);
+      } catch {
+        Alert.alert(
+          "Nao foi possivel abrir o cofre salvo",
+          'Os dados salvos neste aparelho foram cifrados com uma senha diferente da atual (normalmente porque a conta foi recriada). Seu cofre comecou vazio para voce continuar usando; se quiser apagar os dados antigos, use "Excluir conta e todos os dados".',
+        );
+        logSecurityEvent({
+          type: "vault_load_failed",
+          status: "error",
+        }).catch(() => {});
+        setItems([]);
+      } finally {
+        setHasLoadedData(true);
+      }
     }
 
     init();
@@ -333,10 +387,12 @@ export default function HomeScreen() {
     const persistPasswords = async () => {
       try {
         await savePasswords(items, { vaultSecret });
-      } catch {
+      } catch (err) {
         Alert.alert(
           "Falha de seguranca",
-          "Nao foi possivel salvar o cofre com seguranca neste dispositivo.",
+          err?.message === DEVICE_AUTH_NOT_CONFIGURED
+            ? DEVICE_AUTH_NOT_CONFIGURED_MESSAGE
+            : "Nao foi possivel salvar o cofre com seguranca neste dispositivo.",
         );
       }
     };
@@ -421,7 +477,7 @@ export default function HomeScreen() {
     setConfirmAccessPassword("");
   };
 
-  const handleLogin = async () => {
+  const performLogin = async () => {
     const credentials = validateCredentials();
     if (!credentials) {
       return;
@@ -523,9 +579,11 @@ export default function HomeScreen() {
     if (rememberMe) {
       try {
         await saveSessionToken();
-      } catch {
+      } catch (err) {
         setLoginMessage(
-          "Nao foi possivel manter sua sessao com seguranca neste dispositivo.",
+          err?.message === DEVICE_AUTH_NOT_CONFIGURED
+            ? DEVICE_AUTH_NOT_CONFIGURED_MESSAGE
+            : "Nao foi possivel manter sua sessao com seguranca neste dispositivo.",
         );
         logSecurityEvent({
           type: "session_persist_failed",
@@ -555,7 +613,17 @@ export default function HomeScreen() {
     resetAuthFields();
   };
 
-  const handleCreateAccount = async () => {
+  const handleLogin = async () => {
+    if (isAuthSubmitting) return;
+    setIsAuthSubmitting(true);
+    try {
+      await performLogin();
+    } finally {
+      setIsAuthSubmitting(false);
+    }
+  };
+
+  const performCreateAccount = async () => {
     const credentials = validateCredentials();
     if (!credentials) {
       return;
@@ -579,9 +647,11 @@ export default function HomeScreen() {
         email: credentials.normalizedEmail,
         password: credentials.accessPassword,
       });
-    } catch {
+    } catch (err) {
       setLoginMessage(
-        "Nao foi possivel salvar a conta com seguranca neste dispositivo.",
+        err?.message === DEVICE_AUTH_NOT_CONFIGURED
+          ? DEVICE_AUTH_NOT_CONFIGURED_MESSAGE
+          : "Nao foi possivel salvar a conta com seguranca neste dispositivo.",
       );
       logSecurityEvent({
         type: "account_create_failed",
@@ -603,6 +673,16 @@ export default function HomeScreen() {
     setLoginMessage("Conta criada com sucesso. Faca login para continuar.");
     setAccessPassword("");
     setConfirmAccessPassword("");
+  };
+
+  const handleCreateAccount = async () => {
+    if (isAuthSubmitting) return;
+    setIsAuthSubmitting(true);
+    try {
+      await performCreateAccount();
+    } finally {
+      setIsAuthSubmitting(false);
+    }
   };
 
   const handleForgotPassword = async () => {
@@ -709,6 +789,42 @@ export default function HomeScreen() {
         "Backup invalido, corrompido ou criado com uma senha de acesso diferente da conta atual.",
       );
     }
+  };
+
+  const handleOpenSecurityLog = async () => {
+    registerUserActivity();
+    setIsSecurityLogVisible(true);
+    setIsLoadingSecurityLog(true);
+    try {
+      const events = await loadSecurityEvents();
+      setSecurityEvents(events);
+    } catch {
+      setSecurityEvents([]);
+    } finally {
+      setIsLoadingSecurityLog(false);
+    }
+  };
+
+  const handleClearSecurityLog = () => {
+    Alert.alert(
+      "Limpar historico de seguranca",
+      "Isso apaga permanentemente os eventos de seguranca registrados neste aparelho. Deseja continuar?",
+      [
+        { text: "Cancelar", style: "cancel" },
+        {
+          text: "Limpar",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await clearSecurityEvents();
+            } catch {
+              // Segue mesmo se a limpeza falhar parcialmente.
+            }
+            setSecurityEvents([]);
+          },
+        },
+      ],
+    );
   };
 
   const handleLogout = async () => {
@@ -893,15 +1009,21 @@ export default function HomeScreen() {
             style={({ pressed }) => [
               styles.loginButton,
               { backgroundColor: theme.primary },
+              isAuthSubmitting && styles.loginButtonDisabled,
               pressed && styles.pressed,
             ]}
+            disabled={isAuthSubmitting}
             onPress={isRegisterMode ? handleCreateAccount : handleLogin}
           >
-            <Text
-              style={[styles.loginButtonText, { color: theme.primaryText }]}
-            >
-              {isRegisterMode ? "Criar conta" : "Entrar"}
-            </Text>
+            {isAuthSubmitting ? (
+              <ActivityIndicator color={theme.primaryText} />
+            ) : (
+              <Text
+                style={[styles.loginButtonText, { color: theme.primaryText }]}
+              >
+                {isRegisterMode ? "Criar conta" : "Entrar"}
+              </Text>
+            )}
           </Pressable>
 
           <Pressable
@@ -1031,69 +1153,74 @@ export default function HomeScreen() {
           <View>
             <View style={styles.header}>
               <View style={styles.headerTopRow}>
-                <BrandLogo theme={theme} />
-                <View style={styles.headerActions}>
-                  <Pressable
-                    style={({ pressed }) => [
-                      styles.headerButton,
-                      { backgroundColor: theme.secondaryButton },
-                      pressed && styles.pressed,
+                <BrandLogo theme={theme} size="compact" />
+                <Pressable
+                  style={({ pressed }) => [
+                    styles.headerButton,
+                    { backgroundColor: theme.secondaryButton },
+                    pressed && styles.pressed,
+                  ]}
+                  onPress={handleLogout}
+                >
+                  <Text
+                    style={[
+                      styles.headerButtonText,
+                      { color: theme.secondaryText },
                     ]}
-                    onPress={handleExportVault}
                   >
-                    <Text
-                      style={[
-                        styles.headerButtonText,
-                        { color: theme.secondaryText },
-                      ]}
-                    >
-                      Exportar
-                    </Text>
-                  </Pressable>
-                  <Pressable
-                    style={({ pressed }) => [
-                      styles.headerButton,
-                      { backgroundColor: theme.secondaryButton },
-                      pressed && styles.pressed,
-                    ]}
-                    onPress={() => setIsImportModalVisible(true)}
-                  >
-                    <Text
-                      style={[
-                        styles.headerButtonText,
-                        { color: theme.secondaryText },
-                      ]}
-                    >
-                      Importar
-                    </Text>
-                  </Pressable>
-                  <Pressable
-                    style={({ pressed }) => [
-                      styles.headerButton,
-                      { backgroundColor: theme.secondaryButton },
-                      pressed && styles.pressed,
-                    ]}
-                    onPress={handleLogout}
-                  >
-                    <Text
-                      style={[
-                        styles.headerButtonText,
-                        { color: theme.secondaryText },
-                      ]}
-                    >
-                      Sair
-                    </Text>
-                  </Pressable>
-                </View>
+                    Sair
+                  </Text>
+                </Pressable>
               </View>
+
+              <View style={styles.backupRow}>
+                <Pressable
+                  style={({ pressed }) => [
+                    styles.backupButton,
+                    { backgroundColor: theme.secondaryButton },
+                    pressed && styles.pressed,
+                  ]}
+                  onPress={handleExportVault}
+                >
+                  <Text
+                    style={[
+                      styles.headerButtonText,
+                      { color: theme.secondaryText },
+                    ]}
+                  >
+                    Exportar backup
+                  </Text>
+                </Pressable>
+                <Pressable
+                  style={({ pressed }) => [
+                    styles.backupButton,
+                    { backgroundColor: theme.secondaryButton },
+                    pressed && styles.pressed,
+                  ]}
+                  onPress={() => setIsImportModalVisible(true)}
+                >
+                  <Text
+                    style={[
+                      styles.headerButtonText,
+                      { color: theme.secondaryText },
+                    ]}
+                  >
+                    Importar backup
+                  </Text>
+                </Pressable>
+              </View>
+
               <Pressable
-                style={styles.dangerLinkWrap}
-                onPress={handleDeleteAccount}
+                style={styles.securityLogLinkWrap}
+                onPress={handleOpenSecurityLog}
               >
-                <Text style={[styles.dangerLinkText, { color: theme.dangerText }]}>
-                  Excluir conta e todos os dados
+                <Text
+                  style={[styles.securityLogLinkText, { color: theme.accent }]}
+                >
+                  Ver historico de seguranca
                 </Text>
               </Pressable>
+
               <Text style={[styles.title, { color: theme.text }]}>
                 Sua central de credenciais
               </Text>
@@ -1194,6 +1321,24 @@ export default function HomeScreen() {
           />
         )}
         onScrollBeginDrag={registerUserActivity}
+        ListFooterComponent={
+          <View style={styles.dangerZone}>
+            <Pressable
+              style={({ pressed }) => [
+                styles.dangerZoneButton,
+                { borderColor: theme.border },
+                pressed && styles.pressed,
+              ]}
+              onPress={handleDeleteAccount}
+            >
+              <Text
+                style={[styles.dangerLinkText, { color: theme.dangerText }]}
+              >
+                Excluir conta e todos os dados
+              </Text>
+            </Pressable>
+          </View>
+        }
       />
 
       <Modal
@@ -1267,6 +1412,99 @@ export default function HomeScreen() {
           </View>
         </View>
       </Modal>
+
+      <Modal
+        visible={isSecurityLogVisible}
+        animationType="slide"
+        transparent
+        onRequestClose={() => setIsSecurityLogVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View
+            style={[
+              styles.modalCard,
+              styles.securityLogCard,
+              { backgroundColor: theme.card, borderColor: theme.border },
+            ]}
+          >
+            <Text style={[styles.modalTitle, { color: theme.text }]}>
+              Historico de seguranca
+            </Text>
+            <Text style={[styles.modalText, { color: theme.textSoft }]}>
+              Ultimos eventos registrados neste aparelho (login, criacao de
+              conta, backups, entre outros).
+            </Text>
+
+            {isLoadingSecurityLog ? (
+              <ActivityIndicator color={theme.accent} style={styles.loader} />
+            ) : securityEvents.length === 0 ? (
+              <Text style={[styles.modalText, { color: theme.textMuted }]}>
+                Nenhum evento registrado.
+              </Text>
+            ) : (
+              <FlatList
+                data={securityEvents}
+                keyExtractor={(event) => event.id}
+                style={styles.securityLogList}
+                renderItem={({ item }) => (
+                  <View
+                    style={[
+                      styles.securityLogItem,
+                      { borderColor: theme.border },
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.securityLogItemType,
+                        { color: theme.text },
+                      ]}
+                    >
+                      {formatSecurityEventType(item.type)}
+                    </Text>
+                    <Text
+                      style={[
+                        styles.securityLogItemDate,
+                        { color: theme.textMuted },
+                      ]}
+                    >
+                      {formatSecurityEventDate(item.createdAt)}
+                    </Text>
+                  </View>
+                )}
+              />
+            )}
+
+            <View style={styles.modalActions}>
+              <Pressable
+                style={({ pressed }) => [
+                  styles.secondaryButton,
+                  { backgroundColor: theme.secondaryButton },
+                  pressed && styles.pressed,
+                ]}
+                onPress={() => setIsSecurityLogVisible(false)}
+              >
+                <Text
+                  style={[styles.secondaryText, { color: theme.secondaryText }]}
+                >
+                  Fechar
+                </Text>
+              </Pressable>
+              <Pressable
+                style={({ pressed }) => [
+                  styles.secondaryButton,
+                  { backgroundColor: theme.dangerSoft },
+                  pressed && styles.pressed,
+                ]}
+                onPress={handleClearSecurityLog}
+              >
+                <Text style={[styles.secondaryText, { color: theme.dangerText }]}>
+                  Limpar historico
+                </Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -1332,6 +1570,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginTop: 4,
   },
+  loginButtonDisabled: {
+    opacity: 0.7,
+  },
   loginButtonText: {
     fontWeight: "700",
     fontSize: 14,
@@ -1392,25 +1633,46 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 8,
   },
-  headerActions: {
-    flexDirection: "row",
-    gap: 8,
-  },
   headerButton: {
     borderRadius: 10,
-    paddingVertical: 7,
-    paddingHorizontal: 12,
+    paddingVertical: 8,
+    paddingHorizontal: 14,
   },
   headerButtonText: {
     fontWeight: "700",
     fontSize: 12,
   },
-  dangerLinkWrap: {
-    alignSelf: "flex-end",
-    marginTop: 8,
+  backupRow: {
+    flexDirection: "row",
+    gap: 10,
+    marginTop: 14,
+  },
+  backupButton: {
+    flex: 1,
+    borderRadius: 10,
+    paddingVertical: 10,
+    alignItems: "center",
+  },
+  securityLogLinkWrap: {
+    alignSelf: "center",
+    marginTop: 12,
+  },
+  securityLogLinkText: {
+    fontSize: 12,
+    fontWeight: "700",
+  },
+  dangerZone: {
+    marginTop: 24,
+    alignItems: "center",
+  },
+  dangerZoneButton: {
+    borderWidth: 1,
+    borderRadius: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
   },
   dangerLinkText: {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: "700",
   },
   title: {
@@ -1517,6 +1779,24 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 20,
     padding: 20,
     gap: 10,
+  },
+  securityLogCard: {
+    maxHeight: "80%",
+  },
+  securityLogList: {
+    maxHeight: 360,
+  },
+  securityLogItem: {
+    borderBottomWidth: 1,
+    paddingVertical: 10,
+  },
+  securityLogItemType: {
+    fontSize: 14,
+    fontWeight: "700",
+  },
+  securityLogItemDate: {
+    fontSize: 12,
+    marginTop: 2,
   },
   modalTitle: {
     fontSize: 18,

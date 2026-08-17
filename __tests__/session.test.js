@@ -19,24 +19,16 @@ jest.mock("expo-secure-store", () => ({
   deleteItemAsync: jest.fn(),
 }));
 
-jest.mock("expo-crypto", () => ({
-  getRandomBytesAsync: jest.fn(),
-}));
-
 describe("session service", () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
   it("gera token aleatorio e salva no SecureStore", async () => {
-    const expoCrypto = require("expo-crypto");
-    expoCrypto.getRandomBytesAsync.mockResolvedValueOnce(
-      Uint8Array.from(Array(32).fill(15)),
-    );
-
     const token = await saveSessionToken();
 
     expect(token.startsWith("session:")).toBe(true);
+    expect(token).toHaveLength("session:".length + 64);
     expect(SecureStore.setItemAsync).toHaveBeenCalledWith(
       "secpass_session",
       token,

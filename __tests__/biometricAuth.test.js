@@ -1,18 +1,11 @@
 import * as LocalAuthentication from "expo-local-authentication";
-import { Platform } from "react-native";
 
 import { authenticateVaultAccess } from "../src/utils/biometricAuth";
 
 jest.mock("expo-local-authentication", () => ({
   hasHardwareAsync: jest.fn(),
   isEnrolledAsync: jest.fn(),
-  supportedAuthenticationTypesAsync: jest.fn(),
   authenticateAsync: jest.fn(),
-  AuthenticationType: {
-    FINGERPRINT: 1,
-    FACIAL_RECOGNITION: 2,
-    IRIS: 3,
-  },
 }));
 
 describe("biometricAuth", () => {
@@ -40,79 +33,32 @@ describe("biometricAuth", () => {
     expect(LocalAuthentication.authenticateAsync).not.toHaveBeenCalled();
   });
 
-  describe("no iOS", () => {
-    beforeEach(() => {
-      Platform.OS = "ios";
-      LocalAuthentication.hasHardwareAsync.mockResolvedValue(true);
-      LocalAuthentication.isEnrolledAsync.mockResolvedValue(true);
+  it("solicita autenticacao (Face ID, Touch ID ou senha do sistema) quando disponivel", async () => {
+    LocalAuthentication.hasHardwareAsync.mockResolvedValue(true);
+    LocalAuthentication.isEnrolledAsync.mockResolvedValue(true);
+    LocalAuthentication.authenticateAsync.mockResolvedValue({
+      success: true,
     });
 
-    it("recusa quando o aparelho nao suporta Face ID", async () => {
-      LocalAuthentication.supportedAuthenticationTypesAsync.mockResolvedValue([
-        LocalAuthentication.AuthenticationType.FINGERPRINT,
-      ]);
+    const result = await authenticateVaultAccess();
 
-      const result = await authenticateVaultAccess();
-
-      expect(result).toEqual({ success: false, error: "not_available" });
-      expect(LocalAuthentication.authenticateAsync).not.toHaveBeenCalled();
+    expect(LocalAuthentication.authenticateAsync).toHaveBeenCalledWith({
+      promptMessage: "Desbloquear cofre de senhas",
+      cancelLabel: "Cancelar",
     });
-
-    it("solicita Face ID quando suportado", async () => {
-      LocalAuthentication.supportedAuthenticationTypesAsync.mockResolvedValue([
-        LocalAuthentication.AuthenticationType.FACIAL_RECOGNITION,
-      ]);
-      LocalAuthentication.authenticateAsync.mockResolvedValue({
-        success: true,
-      });
-
-      const result = await authenticateVaultAccess();
-
-      expect(LocalAuthentication.authenticateAsync).toHaveBeenCalledWith({
-        promptMessage: "Desbloquear com Face ID",
-        cancelLabel: "Cancelar",
-        fallbackLabel: "",
-        disableDeviceFallback: true,
-      });
-      expect(result).toEqual({ success: true });
-    });
+    expect(result).toEqual({ success: true });
   });
 
-  describe("no Android", () => {
-    beforeEach(() => {
-      Platform.OS = "android";
-      LocalAuthentication.hasHardwareAsync.mockResolvedValue(true);
-      LocalAuthentication.isEnrolledAsync.mockResolvedValue(true);
+  it("repassa falha/cancelamento do authenticateAsync", async () => {
+    LocalAuthentication.hasHardwareAsync.mockResolvedValue(true);
+    LocalAuthentication.isEnrolledAsync.mockResolvedValue(true);
+    LocalAuthentication.authenticateAsync.mockResolvedValue({
+      success: false,
+      error: "user_cancel",
     });
 
-    it("nao checa tipos suportados e solicita biometria generica", async () => {
-      LocalAuthentication.authenticateAsync.mockResolvedValue({
-        success: true,
-      });
+    const result = await authenticateVaultAccess();
 
-      const result = await authenticateVaultAccess();
-
-      expect(
-        LocalAuthentication.supportedAuthenticationTypesAsync,
-      ).not.toHaveBeenCalled();
-      expect(LocalAuthentication.authenticateAsync).toHaveBeenCalledWith({
-        promptMessage: "Desbloquear cofre de senhas",
-        cancelLabel: "Cancelar",
-        fallbackLabel: "",
-        disableDeviceFallback: true,
-      });
-      expect(result).toEqual({ success: true });
-    });
-
-    it("repassa falha/cancelamento do authenticateAsync", async () => {
-      LocalAuthentication.authenticateAsync.mockResolvedValue({
-        success: false,
-        error: "user_cancel",
-      });
-
-      const result = await authenticateVaultAccess();
-
-      expect(result).toEqual({ success: false, error: "user_cancel" });
-    });
+    expect(result).toEqual({ success: false, error: "user_cancel" });
   });
 });

@@ -1,4 +1,4 @@
-import * as ExpoCrypto from "expo-crypto";
+import QuickCrypto from "react-native-quick-crypto";
 
 const CHARS =
   "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%";
@@ -10,7 +10,7 @@ export const generatePassword = () => {
   let password = "";
 
   while (password.length < PASSWORD_LENGTH) {
-    const randomBytes = ExpoCrypto.getRandomBytes(
+    const randomBytes = QuickCrypto.randomBytes(
       PASSWORD_LENGTH - password.length,
     );
 

@@ -4,30 +4,12 @@ import {
   encryptVaultItems,
 } from "../src/services/vaultCrypto";
 
-jest.mock("expo-crypto", () => ({
-  getRandomBytesAsync: jest.fn(),
-}));
-
-const expoCrypto = require("expo-crypto");
-
 const sampleItems = [
   { id: "1", title: "GitHub", username: "dev", password: "Secr3t!" },
   { id: "2", title: "Email", username: "user@mail.com", password: "Ou7r@Pass" },
 ];
 
-const mockRandomBytesSequential = () => {
-  let call = 0;
-  expoCrypto.getRandomBytesAsync.mockImplementation(async (byteCount) => {
-    call += 1;
-    return Uint8Array.from(Array(byteCount).fill(call));
-  });
-};
-
 describe("vaultCrypto", () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-    mockRandomBytesSequential();
-  });
 
   it("faz o round-trip completo de criptografia e descriptografia", async () => {
     const vaultSecret = createVaultSecret({
