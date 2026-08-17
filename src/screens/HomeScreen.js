@@ -1130,7 +1130,7 @@ export default function HomeScreen() {
                 onPress={handleImportVault}
               >
                 <Text style={[styles.secondaryText, { color: theme.primaryText }]}>
-                  Importar
+                  Confirmar importacao
                 </Text>
               </Pressable>
             </View>
