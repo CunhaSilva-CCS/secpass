@@ -1,15 +1,19 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import CryptoJS from "crypto-js";
 import * as ExpoCrypto from "expo-crypto";
-import { Platform } from "react-native";
 import * as SecureStore from "expo-secure-store";
 
 const ACCOUNT_KEY = "secpass_account";
 const ACCOUNT_VERSION = 3;
-const PBKDF2_ITERATIONS = 120000;
+const PBKDF2_ITERATIONS = 310000;
 const PBKDF2_KEY_SIZE_WORDS = 256 / 32;
 const SECURE_STORE_ERROR = "Falha ao salvar conta no armazenamento seguro.";
-const IS_WEB = Platform.OS === "web";
+const SECURE_STORE_OPTIONS = {
+  keychainService: "secpass.account",
+  keychainAccessible: SecureStore.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
+  requireAuthentication: true,
+  authenticationPrompt: "Autentique para acessar seus dados protegidos.",
+};
 
 const parseAccount = (rawValue) => {
   if (!rawValue) {
@@ -106,21 +110,19 @@ const writeSecureAccount = async ({
   });
 
   try {
-    await SecureStore.setItemAsync(ACCOUNT_KEY, payload);
+    await SecureStore.setItemAsync(ACCOUNT_KEY, payload, SECURE_STORE_OPTIONS);
     return "secure";
   } catch {
-    if (IS_WEB) {
-      await AsyncStorage.setItem(ACCOUNT_KEY, payload);
-      return "legacy";
-    }
-
     throw new Error(SECURE_STORE_ERROR);
   }
 };
 
 const getStoredAccount = async () => {
   try {
-    const secureAccount = await SecureStore.getItemAsync(ACCOUNT_KEY);
+    const secureAccount = await SecureStore.getItemAsync(
+      ACCOUNT_KEY,
+      SECURE_STORE_OPTIONS,
+    );
     const parsedSecureAccount = parseAccount(secureAccount);
 
     if (parsedSecureAccount) {

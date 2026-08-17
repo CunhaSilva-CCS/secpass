@@ -2,10 +2,6 @@ import * as LocalAuthentication from "expo-local-authentication";
 import { Platform } from "react-native";
 
 export async function authenticateVaultAccess() {
-  if (Platform.OS === "web") {
-    return { success: true };
-  }
-
   const hasHardware = await LocalAuthentication.hasHardwareAsync();
   const isEnrolled = await LocalAuthentication.isEnrolledAsync();
 

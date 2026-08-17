@@ -1,6 +1,6 @@
 import React from "react";
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
-import { Linking, Platform } from "react-native";
+import { Platform } from "react-native";
 
 import HomeScreen from "../src/screens/HomeScreen";
 
@@ -99,28 +99,6 @@ jest.mock("../src/services/session", () => ({
   clearSessionToken: jest.fn(),
 }));
 
-jest.mock("../src/services/remoteSession", () => ({
-  loadRefreshToken: jest.fn().mockResolvedValue(null),
-  saveRefreshToken: jest.fn().mockResolvedValue(),
-  clearRefreshToken: jest.fn().mockResolvedValue(),
-}));
-
-jest.mock("../src/services/apiAuth", () => ({
-  isRemoteAuthPreferred: jest.fn(() => true),
-  isRemoteAuthRequired: jest.fn(() => false),
-  loginRemoteAccount: jest
-    .fn()
-    .mockRejectedValue(new Error("backend-unavailable")),
-  logoutRemoteSession: jest.fn().mockResolvedValue(),
-  resetPasswordRemote: jest.fn().mockRejectedValue(new Error("invalid-token")),
-  requestPasswordResetRemote: jest
-    .fn()
-    .mockRejectedValue(new Error("backend-unavailable")),
-  registerRemoteAccount: jest
-    .fn()
-    .mockRejectedValue(new Error("backend-unavailable")),
-}));
-
 jest.mock("../src/services/account", () => ({
   loadLocalAccount: jest.fn(),
   saveLocalAccount: jest.fn(),
@@ -146,6 +124,8 @@ const {
 } = require("../src/services/account");
 
 async function loginInApp(findByPlaceholderText, getByText) {
+  const accessPassword = "Ab1!cd23";
+
   const emailInput = await findByPlaceholderText("Email");
   const createAccessPasswordInput = await findByPlaceholderText(
     "Crie sua senha de acesso",
@@ -154,8 +134,8 @@ async function loginInApp(findByPlaceholderText, getByText) {
     await findByPlaceholderText("Confirme sua senha");
 
   fireEvent.changeText(emailInput, "user@email.com");
-  fireEvent.changeText(createAccessPasswordInput, "Abc!123456");
-  fireEvent.changeText(confirmAccessPasswordInput, "Abc!123456");
+  fireEvent.changeText(createAccessPasswordInput, accessPassword);
+  fireEvent.changeText(confirmAccessPasswordInput, accessPassword);
   fireEvent.press(getByText("Criar conta"));
 
   await waitFor(() => {
@@ -167,7 +147,7 @@ async function loginInApp(findByPlaceholderText, getByText) {
     await findByPlaceholderText("Senha de acesso");
 
   fireEvent.changeText(loginEmailInput, "user@email.com");
-  fireEvent.changeText(loginAccessPasswordInput, "Abc!123456");
+  fireEvent.changeText(loginAccessPasswordInput, accessPassword);
   fireEvent.press(getByText("Entrar"));
 
   await waitFor(() => {
@@ -180,7 +160,7 @@ describe("HomeScreen", () => {
     let account = null;
 
     jest.clearAllMocks();
-    Platform.OS = "web";
+    Platform.OS = "ios";
     loadSessionToken.mockResolvedValue(null);
     loadLocalAccount.mockImplementation(async () => account);
     saveLocalAccount.mockImplementation(async ({ email, password }) => {
@@ -255,31 +235,5 @@ describe("HomeScreen", () => {
       expect(getByText("GitHub")).toBeTruthy();
       expect(queryByText("Email")).toBeNull();
     });
-  });
-
-  it("abre modo reset automaticamente ao receber deep link inicial", async () => {
-    Platform.OS = "ios";
-
-    const addListenerSpy = jest
-      .spyOn(Linking, "addEventListener")
-      .mockReturnValue({ remove: jest.fn() });
-    const initialUrlSpy = jest
-      .spyOn(Linking, "getInitialURL")
-      .mockResolvedValue(
-        "secpass://reset-password?token=token-abc-123&email=user@email.com",
-      );
-
-    const { findByPlaceholderText, findByDisplayValue, getByText } = render(
-      <HomeScreen />,
-    );
-
-    await findByPlaceholderText("Token de recuperacao");
-    await findByDisplayValue("token-abc-123");
-    await findByDisplayValue("user@email.com");
-
-    expect(getByText("Redefinir senha")).toBeTruthy();
-
-    addListenerSpy.mockRestore();
-    initialUrlSpy.mockRestore();
   });
 });

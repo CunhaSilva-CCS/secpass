@@ -32,7 +32,7 @@ const ACCOUNT_KEY = "secpass_account";
 const pbkdf2Hash = (password, salt) =>
   CryptoJS.PBKDF2(password, salt, {
     keySize: 256 / 32,
-    iterations: 120000,
+    iterations: 310000,
     hasher: CryptoJS.algo.SHA256,
   }).toString(CryptoJS.enc.Hex);
 
@@ -56,6 +56,7 @@ describe("account service", () => {
     expect(SecureStore.setItemAsync).toHaveBeenCalledWith(
       ACCOUNT_KEY,
       expect.any(String),
+      expect.any(Object),
     );
 
     const [, serializedAccount] = SecureStore.setItemAsync.mock.calls[0];
@@ -64,7 +65,7 @@ describe("account service", () => {
     expect(parsedAccount.email).toBe("user@email.com");
     expect(parsedAccount.version).toBe(3);
     expect(parsedAccount.kdf).toBe("pbkdf2");
-    expect(parsedAccount.iterations).toBe(120000);
+    expect(parsedAccount.iterations).toBe(310000);
     expect(parsedAccount.keySize).toBe(256);
     expect(parsedAccount.passwordHash).toBe(
       pbkdf2Hash("1234", parsedAccount.salt),
@@ -97,7 +98,7 @@ describe("account service", () => {
         passwordHash: pbkdf2Hash(password, salt),
         version: 3,
         kdf: "pbkdf2",
-        iterations: 120000,
+        iterations: 310000,
         keySize: 256,
       }),
     );
@@ -132,6 +133,7 @@ describe("account service", () => {
     expect(SecureStore.setItemAsync).toHaveBeenCalledWith(
       ACCOUNT_KEY,
       expect.any(String),
+      expect.any(Object),
     );
 
     const [, serializedAccount] = SecureStore.setItemAsync.mock.calls[0];
@@ -157,6 +159,7 @@ describe("account service", () => {
     expect(SecureStore.setItemAsync).toHaveBeenCalledWith(
       ACCOUNT_KEY,
       expect.any(String),
+      expect.any(Object),
     );
     expect(AsyncStorage.removeItem).toHaveBeenCalledWith(ACCOUNT_KEY);
   });

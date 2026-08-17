@@ -36,6 +36,7 @@ describe("storage service", () => {
     expect(SecureStore.setItemAsync).toHaveBeenCalledWith(
       "passwords",
       JSON.stringify(sampleList),
+      expect.any(Object),
     );
     expect(AsyncStorage.removeItem).toHaveBeenCalledWith("passwords");
     expect(AsyncStorage.setItem).not.toHaveBeenCalled();
@@ -70,6 +71,7 @@ describe("storage service", () => {
     expect(SecureStore.setItemAsync).toHaveBeenCalledWith(
       "passwords",
       JSON.stringify(sampleList),
+      expect.any(Object),
     );
     expect(AsyncStorage.removeItem).toHaveBeenCalledWith("passwords");
   });

@@ -35,6 +35,7 @@ describe("securityAudit service", () => {
     expect(SecureStore.setItemAsync).toHaveBeenCalledWith(
       "secpass_security_audit",
       expect.any(String),
+      expect.any(Object),
     );
   });
 
@@ -53,6 +54,7 @@ describe("securityAudit service", () => {
 
     expect(SecureStore.deleteItemAsync).toHaveBeenCalledWith(
       "secpass_security_audit",
+      expect.any(Object),
     );
     expect(AsyncStorage.removeItem).toHaveBeenCalledWith(
       "secpass_security_audit",

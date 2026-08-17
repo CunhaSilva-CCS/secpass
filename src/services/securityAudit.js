@@ -3,6 +3,12 @@ import * as SecureStore from "expo-secure-store";
 
 const AUDIT_KEY = "secpass_security_audit";
 const MAX_AUDIT_EVENTS = 200;
+const SECURE_STORE_OPTIONS = {
+  keychainService: "secpass.audit",
+  keychainAccessible: SecureStore.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
+  requireAuthentication: true,
+  authenticationPrompt: "Autentique para acessar eventos de seguranca.",
+};
 
 const parseEvents = (rawValue) => {
   if (!rawValue) {
@@ -19,7 +25,10 @@ const parseEvents = (rawValue) => {
 
 export const loadSecurityEvents = async () => {
   try {
-    const secureValue = await SecureStore.getItemAsync(AUDIT_KEY);
+    const secureValue = await SecureStore.getItemAsync(
+      AUDIT_KEY,
+      SECURE_STORE_OPTIONS,
+    );
     if (secureValue) {
       return parseEvents(secureValue);
     }
@@ -32,7 +41,11 @@ export const loadSecurityEvents = async () => {
 
   if (legacyEvents.length) {
     try {
-      await SecureStore.setItemAsync(AUDIT_KEY, JSON.stringify(legacyEvents));
+      await SecureStore.setItemAsync(
+        AUDIT_KEY,
+        JSON.stringify(legacyEvents),
+        SECURE_STORE_OPTIONS,
+      );
       await AsyncStorage.removeItem(AUDIT_KEY);
     } catch {
       // Mantem legado e tenta migrar novamente depois.
@@ -62,16 +75,18 @@ export const logSecurityEvent = async ({
   const payload = JSON.stringify(nextEvents);
 
   try {
-    await SecureStore.setItemAsync(AUDIT_KEY, payload);
+    await SecureStore.setItemAsync(AUDIT_KEY, payload, SECURE_STORE_OPTIONS);
     await AsyncStorage.removeItem(AUDIT_KEY);
   } catch {
-    await AsyncStorage.setItem(AUDIT_KEY, payload);
+    throw new Error(
+      "Nao foi possivel registrar evento de seguranca em armazenamento protegido.",
+    );
   }
 };
 
 export const clearSecurityEvents = async () => {
   try {
-    await SecureStore.deleteItemAsync(AUDIT_KEY);
+    await SecureStore.deleteItemAsync(AUDIT_KEY, SECURE_STORE_OPTIONS);
   } catch {
     // Continua para limpar fallback.
   }

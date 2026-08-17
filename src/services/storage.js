@@ -1,12 +1,16 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Platform } from "react-native";
 import * as SecureStore from "expo-secure-store";
 import { decryptVaultEnvelope, encryptVaultItems } from "./vaultCrypto";
 
 const KEY = "passwords";
 const STORAGE_WRITE_ERROR =
   "Nao foi possivel salvar o cofre com seguranca neste dispositivo.";
-const IS_WEB = Platform.OS === "web";
+const SECURE_STORE_OPTIONS = {
+  keychainService: "secpass.vault",
+  keychainAccessible: SecureStore.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
+  requireAuthentication: true,
+  authenticationPrompt: "Autentique para abrir seu cofre criptografado.",
+};
 
 const parseData = (rawValue) => {
   if (!rawValue) return [];
@@ -37,15 +41,10 @@ export const savePasswords = async (data, { vaultSecret } = {}) => {
     : JSON.stringify(data);
 
   try {
-    await SecureStore.setItemAsync(KEY, payload);
+    await SecureStore.setItemAsync(KEY, payload, SECURE_STORE_OPTIONS);
     await AsyncStorage.removeItem(KEY);
     return;
   } catch {
-    if (IS_WEB) {
-      await AsyncStorage.setItem(KEY, payload);
-      return;
-    }
-
     throw new Error(STORAGE_WRITE_ERROR);
   }
 };
@@ -70,7 +69,10 @@ export const loadPasswords = async ({ vaultSecret } = {}) => {
   };
 
   try {
-    const encryptedData = await SecureStore.getItemAsync(KEY);
+    const encryptedData = await SecureStore.getItemAsync(
+      KEY,
+      SECURE_STORE_OPTIONS,
+    );
     if (encryptedData) {
       return parseLoadedData(encryptedData);
     }
@@ -83,7 +85,7 @@ export const loadPasswords = async ({ vaultSecret } = {}) => {
 
   if (legacyData) {
     try {
-      await SecureStore.setItemAsync(KEY, legacyData);
+      await SecureStore.setItemAsync(KEY, legacyData, SECURE_STORE_OPTIONS);
       await AsyncStorage.removeItem(KEY);
     } catch {
       // Mantem leitura legada; migracao sera tentada novamente depois.

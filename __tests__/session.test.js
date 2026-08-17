@@ -40,6 +40,7 @@ describe("session service", () => {
     expect(SecureStore.setItemAsync).toHaveBeenCalledWith(
       "secpass_session",
       token,
+      expect.any(Object),
     );
     expect(AsyncStorage.removeItem).toHaveBeenCalledWith("secpass_session");
   });
@@ -64,7 +65,10 @@ describe("session service", () => {
   it("limpa sessao no SecureStore e legado", async () => {
     await clearSessionToken();
 
-    expect(SecureStore.deleteItemAsync).toHaveBeenCalledWith("secpass_session");
+    expect(SecureStore.deleteItemAsync).toHaveBeenCalledWith(
+      "secpass_session",
+      expect.any(Object),
+    );
     expect(AsyncStorage.removeItem).toHaveBeenCalledWith("secpass_session");
   });
 });

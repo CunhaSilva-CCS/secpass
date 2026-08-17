@@ -1,9 +1,8 @@
 import * as Clipboard from "expo-clipboard";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Alert,
   Animated,
-  Platform,
   Pressable,
   StyleSheet,
   Text,
@@ -12,6 +11,8 @@ import {
 } from "react-native";
 
 import { authenticateVaultAccess } from "../utils/biometricAuth";
+
+const CLIPBOARD_CLEAR_MS = 30000;
 
 const defaultTheme = {
   card: "#FFFFFF",
@@ -41,13 +42,7 @@ export default function PasswordCard({
   const [editTitle, setEditTitle] = useState(item.title);
   const [editUsername, setEditUsername] = useState(item.username);
   const [editPassword, setEditPassword] = useState(item.password);
-  const appear = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    setEditTitle(item.title);
-    setEditUsername(item.username);
-    setEditPassword(item.password);
-  }, [item.id, item.password, item.title, item.username]);
+  const [appear] = useState(() => new Animated.Value(0));
 
   useEffect(() => {
     Animated.timing(appear, {
@@ -59,10 +54,6 @@ export default function PasswordCard({
   }, [appear, index]);
 
   const authenticateSensitiveAction = async () => {
-    if (Platform.OS === "web") {
-      return true;
-    }
-
     try {
       const authResult = await authenticateVaultAccess();
 
@@ -96,6 +87,17 @@ export default function PasswordCard({
       await Clipboard.setStringAsync(item.password);
       setCopied(true);
       setTimeout(() => setCopied(false), 1400);
+
+      setTimeout(async () => {
+        try {
+          const currentClipboard = await Clipboard.getStringAsync();
+          if (currentClipboard === item.password) {
+            await Clipboard.setStringAsync("");
+          }
+        } catch {
+          // Nao interrompe o fluxo se a limpeza automatica falhar.
+        }
+      }, CLIPBOARD_CLEAR_MS);
     } catch (_error) {
       Alert.alert(
         "Falha ao copiar",
@@ -136,6 +138,9 @@ export default function PasswordCard({
     const isAuthorized = await authenticateSensitiveAction();
     if (!isAuthorized) return;
 
+    setEditTitle(item.title);
+    setEditUsername(item.username);
+    setEditPassword(item.password);
     setIsEditing(true);
   };
 

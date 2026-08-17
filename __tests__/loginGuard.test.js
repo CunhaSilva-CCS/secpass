@@ -34,6 +34,7 @@ describe("loginGuard service", () => {
     expect(SecureStore.setItemAsync).toHaveBeenCalledWith(
       "secpass_login_guard",
       JSON.stringify({ failedAttempts: 2, lockLevel: 1, lockUntil: 1000 }),
+      expect.any(Object),
     );
     expect(AsyncStorage.removeItem).toHaveBeenCalledWith("secpass_login_guard");
   });
@@ -60,6 +61,7 @@ describe("loginGuard service", () => {
     expect(SecureStore.setItemAsync).toHaveBeenCalledWith(
       "secpass_login_guard",
       JSON.stringify({ failedAttempts: 3, lockLevel: 1, lockUntil: 3000 }),
+      expect.any(Object),
     );
   });
 
@@ -68,6 +70,7 @@ describe("loginGuard service", () => {
 
     expect(SecureStore.deleteItemAsync).toHaveBeenCalledWith(
       "secpass_login_guard",
+      expect.any(Object),
     );
     expect(AsyncStorage.removeItem).toHaveBeenCalledWith("secpass_login_guard");
   });

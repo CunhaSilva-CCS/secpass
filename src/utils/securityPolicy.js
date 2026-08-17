@@ -1,14 +1,17 @@
+export const MIN_ACCESS_PASSWORD_LENGTH = 8;
+export const MAX_ACCESS_PASSWORD_LENGTH = 64;
+
 export const validateAccessPasswordPolicy = (password) => {
-  if (!password || password.length < 10) {
-    return "Senha deve ter pelo menos 10 caracteres.";
+  if (!password || password.length < MIN_ACCESS_PASSWORD_LENGTH) {
+    return `Senha deve ter no minimo ${MIN_ACCESS_PASSWORD_LENGTH} caracteres.`;
   }
 
-  if (!/[A-Z]/.test(password)) {
-    return "Senha deve incluir ao menos 1 letra maiuscula.";
+  if (password.length > MAX_ACCESS_PASSWORD_LENGTH) {
+    return `Senha deve ter no maximo ${MAX_ACCESS_PASSWORD_LENGTH} caracteres.`;
   }
 
-  if (!/[a-z]/.test(password)) {
-    return "Senha deve incluir ao menos 1 letra minuscula.";
+  if (!/[A-Za-z]/.test(password)) {
+    return "Senha deve incluir ao menos 1 letra.";
   }
 
   if (!/[0-9]/.test(password)) {

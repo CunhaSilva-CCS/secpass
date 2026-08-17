@@ -1,12 +1,19 @@
 {
   "cli": {
-    "version": ">= 11.0.0"
+    "version": ">= 11.0.0",
+    "appVersionSource": "remote"
   },
   "build": {
     "development": {
       "distribution": "internal",
       "ios": {
         "simulator": false
+      }
+    },
+    "preview-simulator": {
+      "distribution": "internal",
+      "ios": {
+        "simulator": true
       }
     },
     "preview": {

@@ -2,6 +2,12 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as SecureStore from "expo-secure-store";
 
 const LOGIN_GUARD_KEY = "secpass_login_guard";
+const SECURE_STORE_OPTIONS = {
+  keychainService: "secpass.login-guard",
+  keychainAccessible: SecureStore.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
+  requireAuthentication: true,
+  authenticationPrompt: "Autentique para acessar protecoes de login.",
+};
 
 const parseGuard = (rawValue) => {
   if (!rawValue) {
@@ -23,7 +29,10 @@ const parseGuard = (rawValue) => {
 
 export const loadLoginGuard = async () => {
   try {
-    const secureValue = await SecureStore.getItemAsync(LOGIN_GUARD_KEY);
+    const secureValue = await SecureStore.getItemAsync(
+      LOGIN_GUARD_KEY,
+      SECURE_STORE_OPTIONS,
+    );
     const parsedSecureValue = parseGuard(secureValue);
 
     if (parsedSecureValue) {
@@ -44,6 +53,7 @@ export const loadLoginGuard = async () => {
     await SecureStore.setItemAsync(
       LOGIN_GUARD_KEY,
       JSON.stringify(parsedLegacyValue),
+      SECURE_STORE_OPTIONS,
     );
     await AsyncStorage.removeItem(LOGIN_GUARD_KEY);
   } catch {
@@ -65,16 +75,20 @@ export const saveLoginGuard = async ({
   });
 
   try {
-    await SecureStore.setItemAsync(LOGIN_GUARD_KEY, payload);
+    await SecureStore.setItemAsync(
+      LOGIN_GUARD_KEY,
+      payload,
+      SECURE_STORE_OPTIONS,
+    );
     await AsyncStorage.removeItem(LOGIN_GUARD_KEY);
   } catch {
-    await AsyncStorage.setItem(LOGIN_GUARD_KEY, payload);
+    // Mantem apenas armazenamento seguro.
   }
 };
 
 export const clearLoginGuard = async () => {
   try {
-    await SecureStore.deleteItemAsync(LOGIN_GUARD_KEY);
+    await SecureStore.deleteItemAsync(LOGIN_GUARD_KEY, SECURE_STORE_OPTIONS);
   } catch {
     // Continua para limpar fallback.
   }

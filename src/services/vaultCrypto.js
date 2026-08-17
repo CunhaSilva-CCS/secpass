@@ -2,7 +2,7 @@ import CryptoJS from "crypto-js";
 import * as ExpoCrypto from "expo-crypto";
 
 const VAULT_VERSION = 1;
-const PBKDF2_ITERATIONS = 120000;
+const PBKDF2_ITERATIONS = 310000;
 const KEY_SIZE_WORDS = 512 / 32;
 
 const toWordArray = (bytes) => {

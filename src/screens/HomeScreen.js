@@ -1,12 +1,12 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   AppState,
   FlatList,
   Alert,
-  Linking,
-  Platform,
+  Modal,
   Pressable,
+  Share,
   StyleSheet,
   Text,
   TextInput,
@@ -34,7 +34,11 @@ import {
   getLockRemainingSeconds,
   isLoginLocked,
 } from "../utils/loginThrottle";
-import { validateAccessPasswordPolicy } from "../utils/securityPolicy";
+import {
+  MAX_ACCESS_PASSWORD_LENGTH,
+  MIN_ACCESS_PASSWORD_LENGTH,
+  validateAccessPasswordPolicy,
+} from "../utils/securityPolicy";
 
 import {
   clearSessionToken,
@@ -42,24 +46,10 @@ import {
   saveSessionToken,
 } from "../services/session";
 import {
-  clearRefreshToken,
-  loadRefreshToken,
-  saveRefreshToken,
-} from "../services/remoteSession";
-import {
-  isRemoteAuthPreferred,
-  isRemoteAuthRequired,
-  loginRemoteAccount,
-  logoutRemoteSession,
-  resetPasswordRemote,
-  requestPasswordResetRemote,
-  registerRemoteAccount,
-} from "../services/apiAuth";
-import {
-  loadRemoteVaultItems,
-  saveRemoteVaultItems,
-} from "../services/remoteVault";
-import { createVaultSecret } from "../services/vaultCrypto";
+  createVaultSecret,
+  decryptVaultEnvelope,
+  encryptVaultItems,
+} from "../services/vaultCrypto";
 import {
   clearLoginGuard,
   loadLoginGuard,
@@ -68,8 +58,6 @@ import {
 import { logSecurityEvent } from "../services/securityAudit";
 
 import { generatePassword } from "../utils/passwordGenerator";
-
-const AUTO_LOCK_OPTIONS = [30, 60, 120];
 
 export default function HomeScreen() {
   const colorScheme = useColorScheme();
@@ -128,78 +116,30 @@ export default function HomeScreen() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [hasLocalAccount, setHasLocalAccount] = useState(false);
   const [isRegisterMode, setIsRegisterMode] = useState(false);
-  const [isResetMode, setIsResetMode] = useState(false);
   const [email, setEmail] = useState("");
   const [accessPassword, setAccessPassword] = useState("");
   const [confirmAccessPassword, setConfirmAccessPassword] = useState("");
-  const [resetTokenInput, setResetTokenInput] = useState("");
-  const [newAccessPassword, setNewAccessPassword] = useState("");
-  const [confirmNewAccessPassword, setConfirmNewAccessPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(true);
   const [loginMessage, setLoginMessage] = useState("");
   const [failedLoginAttempts, setFailedLoginAttempts] = useState(0);
   const [loginLockLevel, setLoginLockLevel] = useState(0);
   const [loginLockUntil, setLoginLockUntil] = useState(0);
   const [hasLoadedLoginGuard, setHasLoadedLoginGuard] = useState(false);
-  const [remoteRefreshToken, setRemoteRefreshToken] = useState("");
-  const [remoteAccessToken, setRemoteAccessToken] = useState("");
-  const [isRemoteVaultEnabled, setIsRemoteVaultEnabled] = useState(false);
   const [vaultSecret, setVaultSecret] = useState("");
-  const [isAppUnlocked, setIsAppUnlocked] = useState(Platform.OS === "web");
+  const [isAppUnlocked, setIsAppUnlocked] = useState(false);
   const [isAuthenticating, setIsAuthenticating] = useState(false);
   const [authMessage, setAuthMessage] = useState("");
-  const [autoLockSeconds, setAutoLockSeconds] = useState(60);
-  const inactivityTimerRef = useRef(null);
-  const shouldTryRemoteAuth = isRemoteAuthPreferred();
-  const requireRemoteAuth = isRemoteAuthRequired();
+  const [isImportModalVisible, setIsImportModalVisible] = useState(false);
+  const [importText, setImportText] = useState("");
 
-  const clearInactivityTimer = useCallback(() => {
-    if (!inactivityTimerRef.current) {
-      return;
-    }
-
-    clearTimeout(inactivityTimerRef.current);
-    inactivityTimerRef.current = null;
+  const lockVault = useCallback((reason = "") => {
+    setIsAppUnlocked(false);
+    setAuthMessage(reason);
   }, []);
 
-  const lockVault = useCallback(
-    (reason = "") => {
-      if (Platform.OS === "web") {
-        return;
-      }
+  const registerUserActivity = useCallback(() => {}, []);
 
-      clearInactivityTimer();
-      setIsAppUnlocked(false);
-      setAuthMessage(reason);
-    },
-    [clearInactivityTimer],
-  );
-
-  const scheduleInactivityTimer = useCallback(() => {
-    if (Platform.OS === "web" || !isAppUnlocked) {
-      return;
-    }
-
-    clearInactivityTimer();
-    inactivityTimerRef.current = setTimeout(() => {
-      lockVault("Cofre bloqueado por inatividade.");
-    }, autoLockSeconds * 1000);
-  }, [autoLockSeconds, clearInactivityTimer, isAppUnlocked, lockVault]);
-
-  const registerUserActivity = useCallback(() => {
-    if (!isAppUnlocked || isAuthenticating) {
-      return;
-    }
-
-    scheduleInactivityTimer();
-  }, [isAppUnlocked, isAuthenticating, scheduleInactivityTimer]);
-
-  const requestAppUnlock = async () => {
-    if (Platform.OS === "web") {
-      setIsAppUnlocked(true);
-      return;
-    }
-
+  const requestAppUnlock = useCallback(async () => {
     setIsAuthenticating(true);
     setAuthMessage("");
 
@@ -230,18 +170,16 @@ export default function HomeScreen() {
     } finally {
       setIsAuthenticating(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     async function initializeSession() {
       const account = await loadLocalAccount();
       const sessionToken = await loadSessionToken();
-      const persistedRefreshToken = await loadRefreshToken();
       const loginGuard = await loadLoginGuard();
 
-      if (sessionToken || persistedRefreshToken) {
+      if (sessionToken) {
         await clearSessionToken();
-        await clearRefreshToken();
       }
 
       if (loginGuard) {
@@ -255,153 +193,30 @@ export default function HomeScreen() {
       setHasLocalAccount(Boolean(account));
       setIsRegisterMode(!account);
       setIsLoggedIn(false);
-      setRemoteRefreshToken("");
-      setRemoteAccessToken("");
-      setIsRemoteVaultEnabled(false);
       setVaultSecret("");
       setHasLoadedLoginGuard(true);
       setIsCheckingSession(false);
     }
 
     initializeSession();
-  }, [shouldTryRemoteAuth]);
+  }, []);
 
   useEffect(() => {
-    if (!isLoggedIn) {
-      setIsAppUnlocked(Platform.OS === "web");
-      clearInactivityTimer();
-      return;
-    }
-
-    requestAppUnlock();
-  }, [clearInactivityTimer, isLoggedIn]);
-
-  const applyRecoveryDeepLink = useCallback(
-    (url) => {
-      if (!url || !shouldTryRemoteAuth) {
-        return;
-      }
-
-      let token = "";
-      let emailFromLink = "";
-
-      try {
-        const parsedUrl = new URL(url);
-        const rawPath = `${parsedUrl.hostname}${parsedUrl.pathname}`
-          .replace(/^\/+/, "")
-          .toLowerCase();
-
-        if (!rawPath.includes("reset-password")) {
-          return;
-        }
-
-        token = parsedUrl.searchParams.get("token")?.trim() || "";
-        emailFromLink =
-          parsedUrl.searchParams.get("email")?.trim().toLowerCase() || "";
-      } catch {
-        const tokenMatch = url.match(/[?&]token=([^&]+)/i);
-        const emailMatch = url.match(/[?&]email=([^&]+)/i);
-
-        token = tokenMatch ? decodeURIComponent(tokenMatch[1]).trim() : "";
-        emailFromLink = emailMatch
-          ? decodeURIComponent(emailMatch[1]).trim().toLowerCase()
-          : "";
-      }
-
-      if (!token) {
-        return;
-      }
-
-      setIsResetMode(true);
-      setIsRegisterMode(false);
-      setResetTokenInput(token);
-      if (emailFromLink) {
-        setEmail(emailFromLink);
-      }
-      setLoginMessage(
-        "Token de recuperacao detectado. Defina a nova senha para continuar.",
-      );
-
-      logSecurityEvent({
-        type: "password_reset_link_opened",
-        status: "info",
-      }).catch(() => {});
-    },
-    [shouldTryRemoteAuth],
-  );
-
-  useEffect(() => {
-    let isMounted = true;
-
-    const getCurrentWebUrl = () => {
-      if (typeof window === "undefined") {
-        return null;
-      }
-
-      const href = window.location?.href;
-      return typeof href === "string" ? href : null;
-    };
-
-    if (Platform.OS === "web") {
-      applyRecoveryDeepLink(getCurrentWebUrl());
-
-      const handlePopState = () => {
-        applyRecoveryDeepLink(getCurrentWebUrl());
-      };
-
-      if (typeof window.addEventListener === "function") {
-        window.addEventListener("popstate", handlePopState);
-      }
-
-      return () => {
-        isMounted = false;
-        if (typeof window.removeEventListener === "function") {
-          window.removeEventListener("popstate", handlePopState);
-        }
-      };
-    }
-
-    const processInitialLink = async () => {
-      try {
-        const initialUrl = await Linking.getInitialURL();
-        if (isMounted) {
-          applyRecoveryDeepLink(initialUrl);
-        }
-      } catch {
-        // Ignora erro de leitura de deep link inicial.
-      }
-    };
-
-    processInitialLink();
-
-    const subscription = Linking.addEventListener("url", ({ url }) => {
-      applyRecoveryDeepLink(url);
-    });
-
-    return () => {
-      isMounted = false;
-      subscription.remove();
-    };
-  }, [applyRecoveryDeepLink]);
-
-  useEffect(() => {
-    if (Platform.OS === "web") {
-      return;
-    }
-
     const subscription = AppState.addEventListener("change", (nextState) => {
       if (nextState !== "active") {
         lockVault("Cofre bloqueado ao sair do app.");
         return;
       }
 
-      registerUserActivity();
+      if (isLoggedIn) {
+        requestAppUnlock();
+      }
     });
 
     return () => {
       subscription.remove();
     };
-  }, [lockVault, registerUserActivity]);
+  }, [isLoggedIn, lockVault, requestAppUnlock]);
 
   useEffect(() => {
     if (!hasLoadedLoginGuard) {
@@ -409,16 +224,20 @@ export default function HomeScreen() {
     }
 
     const persistLoginGuard = async () => {
-      if (!failedLoginAttempts && !loginLockLevel && !loginLockUntil) {
-        await clearLoginGuard();
-        return;
-      }
+      try {
+        if (!failedLoginAttempts && !loginLockLevel && !loginLockUntil) {
+          await clearLoginGuard();
+          return;
+        }
 
-      await saveLoginGuard({
-        failedAttempts: failedLoginAttempts,
-        lockLevel: loginLockLevel,
-        lockUntil: loginLockUntil,
-      });
+        await saveLoginGuard({
+          failedAttempts: failedLoginAttempts,
+          lockLevel: loginLockLevel,
+          lockUntil: loginLockUntil,
+        });
+      } catch {
+        // Mantem execucao da UI mesmo se persistencia segura falhar.
+      }
     };
 
     persistLoginGuard();
@@ -435,65 +254,18 @@ export default function HomeScreen() {
     }
 
     async function init() {
-      if (isRemoteVaultEnabled && remoteAccessToken) {
-        try {
-          const remoteItems = await loadRemoteVaultItems({
-            accessToken: remoteAccessToken,
-            vaultSecret,
-          });
-          setItems(remoteItems);
-          setHasLoadedData(true);
-          return;
-        } catch {
-          if (requireRemoteAuth) {
-            Alert.alert(
-              "Falha de sincronizacao",
-              "Nao foi possivel carregar seu cofre remoto no momento.",
-            );
-            setItems([]);
-            setHasLoadedData(true);
-            return;
-          }
-        }
-      }
-
       const localItems = await loadPasswords({ vaultSecret });
       setItems(localItems);
       setHasLoadedData(true);
     }
 
     init();
-  }, [
-    isLoggedIn,
-    isRemoteVaultEnabled,
-    remoteAccessToken,
-    requireRemoteAuth,
-    vaultSecret,
-  ]);
+  }, [isLoggedIn, vaultSecret]);
 
   useEffect(() => {
     if (!hasLoadedData) return;
 
     const persistPasswords = async () => {
-      if (isRemoteVaultEnabled && remoteAccessToken) {
-        try {
-          await saveRemoteVaultItems({
-            accessToken: remoteAccessToken,
-            items,
-            vaultSecret,
-          });
-          return;
-        } catch {
-          if (requireRemoteAuth) {
-            Alert.alert(
-              "Falha de sincronizacao",
-              "Nao foi possivel salvar seu cofre remoto no momento.",
-            );
-            return;
-          }
-        }
-      }
-
       try {
         await savePasswords(items, { vaultSecret });
       } catch {
@@ -505,32 +277,7 @@ export default function HomeScreen() {
     };
 
     persistPasswords();
-  }, [
-    hasLoadedData,
-    isRemoteVaultEnabled,
-    items,
-    remoteAccessToken,
-    requireRemoteAuth,
-    vaultSecret,
-  ]);
-
-  useEffect(() => {
-    if (!isAppUnlocked) {
-      clearInactivityTimer();
-      return;
-    }
-
-    scheduleInactivityTimer();
-
-    return () => {
-      clearInactivityTimer();
-    };
-  }, [
-    autoLockSeconds,
-    clearInactivityTimer,
-    isAppUnlocked,
-    scheduleInactivityTimer,
-  ]);
+  }, [hasLoadedData, items, vaultSecret]);
 
   const addPassword = () => {
     registerUserActivity();
@@ -593,8 +340,10 @@ export default function HomeScreen() {
       return null;
     }
 
-    if (accessPassword.length < 4) {
-      setLoginMessage("Senha deve ter pelo menos 4 caracteres.");
+    if (accessPassword.length < MIN_ACCESS_PASSWORD_LENGTH) {
+      setLoginMessage(
+        `Senha deve ter no minimo ${MIN_ACCESS_PASSWORD_LENGTH} caracteres.`,
+      );
       return null;
     }
 
@@ -605,80 +354,6 @@ export default function HomeScreen() {
     setEmail("");
     setAccessPassword("");
     setConfirmAccessPassword("");
-    setResetTokenInput("");
-    setNewAccessPassword("");
-    setConfirmNewAccessPassword("");
-  };
-
-  const handleResetPassword = async () => {
-    if (!shouldTryRemoteAuth) {
-      setLoginMessage("Recuperacao por token exige backend de autenticacao.");
-      return;
-    }
-
-    const normalizedEmail = email.trim().toLowerCase();
-    if (!normalizedEmail || !normalizedEmail.includes("@")) {
-      setLoginMessage("Informe um email valido para redefinir a senha.");
-      return;
-    }
-
-    if (!resetTokenInput.trim()) {
-      setLoginMessage("Informe o token de recuperacao.");
-      return;
-    }
-
-    if (!newAccessPassword || !confirmNewAccessPassword) {
-      setLoginMessage("Preencha a nova senha e a confirmacao.");
-      return;
-    }
-
-    if (newAccessPassword !== confirmNewAccessPassword) {
-      setLoginMessage("As senhas nao conferem.");
-      return;
-    }
-
-    const passwordPolicyError = validateAccessPasswordPolicy(newAccessPassword);
-    if (passwordPolicyError) {
-      setLoginMessage(passwordPolicyError);
-      return;
-    }
-
-    try {
-      await resetPasswordRemote({
-        token: resetTokenInput.trim(),
-        password: newAccessPassword,
-      });
-
-      try {
-        await saveLocalAccount({
-          email: normalizedEmail,
-          password: newAccessPassword,
-        });
-      } catch {
-        // Fluxo remoto segue valido mesmo sem atualizar fallback local.
-      }
-
-      setIsResetMode(false);
-      setIsRegisterMode(false);
-      setResetTokenInput("");
-      setNewAccessPassword("");
-      setConfirmNewAccessPassword("");
-      setAccessPassword("");
-      setConfirmAccessPassword("");
-      setLoginMessage(
-        "Senha redefinida com sucesso. Faca login para continuar.",
-      );
-      logSecurityEvent({
-        type: "password_reset_success_remote",
-        status: "info",
-      }).catch(() => {});
-    } catch {
-      setLoginMessage("Token invalido/expirado ou falha ao redefinir a senha.");
-      logSecurityEvent({
-        type: "password_reset_failed_remote",
-        status: "warning",
-      }).catch(() => {});
-    }
   };
 
   const handleLogin = async () => {
@@ -755,74 +430,6 @@ export default function HomeScreen() {
       );
     };
 
-    if (shouldTryRemoteAuth) {
-      try {
-        const remoteAuth = await loginRemoteAccount({
-          email: credentials.normalizedEmail,
-          password: credentials.accessPassword,
-        });
-
-        setFailedLoginAttempts(0);
-        setLoginLockLevel(0);
-        setLoginLockUntil(0);
-
-        if (rememberMe) {
-          try {
-            await saveSessionToken(remoteAuth?.accessToken);
-            await saveRefreshToken(remoteAuth?.refreshToken);
-          } catch {
-            setLoginMessage(
-              "Nao foi possivel manter sua sessao com seguranca neste dispositivo.",
-            );
-            logSecurityEvent({
-              type: "session_persist_failed",
-              status: "error",
-            }).catch(() => {});
-            return;
-          }
-        } else {
-          await clearSessionToken();
-          await clearRefreshToken();
-        }
-
-        setRemoteRefreshToken(remoteAuth?.refreshToken || "");
-        setRemoteAccessToken(remoteAuth?.accessToken || "");
-        setIsRemoteVaultEnabled(true);
-        setVaultSecret(
-          createVaultSecret({
-            email: credentials.normalizedEmail,
-            password: credentials.accessPassword,
-          }),
-        );
-
-        logSecurityEvent({
-          type: "login_success_remote",
-          status: "info",
-        }).catch(() => {});
-
-        setLoginMessage("");
-        setIsLoggedIn(true);
-        resetAuthFields();
-        return;
-      } catch (error) {
-        if (requireRemoteAuth) {
-          if (error?.status === 401) {
-            registerFailedAttempt();
-            return;
-          }
-
-          setLoginMessage(
-            "Backend de autenticacao indisponivel no momento. Tente novamente.",
-          );
-          logSecurityEvent({
-            type: "login_remote_unavailable",
-            status: "warning",
-          }).catch(() => {});
-          return;
-        }
-      }
-    }
-
     const account = await loadLocalAccount();
     if (!account) {
       setLoginMessage("Nenhuma conta local. Crie sua conta para continuar.");
@@ -851,7 +458,6 @@ export default function HomeScreen() {
     if (rememberMe) {
       try {
         await saveSessionToken();
-        await clearRefreshToken();
       } catch {
         setLoginMessage(
           "Nao foi possivel manter sua sessao com seguranca neste dispositivo.",
@@ -864,12 +470,8 @@ export default function HomeScreen() {
       }
     } else {
       await clearSessionToken();
-      await clearRefreshToken();
     }
 
-    setRemoteRefreshToken("");
-    setRemoteAccessToken("");
-    setIsRemoteVaultEnabled(false);
     setVaultSecret(
       createVaultSecret({
         email: credentials.normalizedEmail,
@@ -884,6 +486,7 @@ export default function HomeScreen() {
 
     setLoginMessage("");
     setIsLoggedIn(true);
+    requestAppUnlock();
     resetAuthFields();
   };
 
@@ -904,38 +507,6 @@ export default function HomeScreen() {
     if (passwordPolicyError) {
       setLoginMessage(passwordPolicyError);
       return;
-    }
-
-    let remoteAccountAlreadyExists = false;
-
-    if (shouldTryRemoteAuth) {
-      try {
-        await registerRemoteAccount({
-          email: credentials.normalizedEmail,
-          password: credentials.accessPassword,
-        });
-      } catch (error) {
-        if (error?.status === 409) {
-          remoteAccountAlreadyExists = true;
-
-          if (requireRemoteAuth) {
-            setIsRegisterMode(false);
-            setLoginMessage("Conta ja existe para este email. Faca login.");
-            return;
-          }
-        }
-
-        if (requireRemoteAuth) {
-          setLoginMessage(
-            "Nao foi possivel criar conta no backend agora. Tente novamente.",
-          );
-          logSecurityEvent({
-            type: "account_create_remote_failed",
-            status: "warning",
-          }).catch(() => {});
-          return;
-        }
-      }
     }
 
     try {
@@ -964,13 +535,7 @@ export default function HomeScreen() {
     setLoginLockLevel(0);
     setLoginLockUntil(0);
     setIsRegisterMode(false);
-    if (remoteAccountAlreadyExists) {
-      setLoginMessage(
-        "Conta local preparada neste dispositivo. Sua conta remota ja existia; faca login para continuar.",
-      );
-    } else {
-      setLoginMessage("Conta criada com sucesso. Faca login para continuar.");
-    }
+    setLoginMessage("Conta criada com sucesso. Faca login para continuar.");
     setAccessPassword("");
     setConfirmAccessPassword("");
   };
@@ -983,46 +548,6 @@ export default function HomeScreen() {
       return;
     }
 
-    if (shouldTryRemoteAuth) {
-      try {
-        const result = await requestPasswordResetRemote({
-          email: normalizedEmail,
-        });
-
-        const hasDevToken = Boolean(result?.devResetToken);
-        const message = hasDevToken
-          ? `Recuperacao solicitada. Token dev: ${result.devResetToken}`
-          : "Recuperacao solicitada. Verifique seu email.";
-
-        setIsResetMode(true);
-        setIsRegisterMode(false);
-        setResetTokenInput(result?.devResetToken || "");
-        setNewAccessPassword("");
-        setConfirmNewAccessPassword("");
-        setLoginMessage(message);
-        logSecurityEvent({
-          type: "password_reset_requested_remote",
-          status: "info",
-        }).catch(() => {});
-
-        Alert.alert(
-          "Recuperacao de conta",
-          hasDevToken
-            ? "No ambiente de desenvolvimento, use o token exibido na mensagem para redefinir via endpoint /auth/reset-password."
-            : "Se o email existir, as instrucoes de recuperacao serao enviadas.",
-        );
-
-        return;
-      } catch {
-        if (requireRemoteAuth) {
-          setLoginMessage(
-            "Nao foi possivel iniciar recuperacao no backend agora. Tente novamente.",
-          );
-          return;
-        }
-      }
-    }
-
     if (!hasLocalAccount) {
       setLoginMessage("Crie sua conta local para definir uma senha.");
       setIsRegisterMode(true);
@@ -1030,34 +555,99 @@ export default function HomeScreen() {
     }
 
     Alert.alert(
-      "Recuperacao local",
-      "Este app roda sem backend. Para recuperar, recrie a conta local agora com a nova senha.",
+      "Isso apaga o acesso ao cofre atual",
+      "Este app roda sem backend: nao ha como recuperar a senha antiga. Se continuar, uma nova conta local sera criada e o cofre salvo com a senha atual ficara inacessivel para sempre, a menos que voce tenha exportado um backup. Deseja continuar mesmo assim?",
+      [
+        { text: "Cancelar", style: "cancel" },
+        {
+          text: "Continuar mesmo assim",
+          style: "destructive",
+          onPress: () => {
+            setIsRegisterMode(true);
+            setAccessPassword("");
+            setConfirmAccessPassword("");
+            setLoginMessage(
+              "Recriando conta local. O cofre anterior sera perdido sem um backup.",
+            );
+          },
+        },
+      ],
     );
-    setIsRegisterMode(true);
-    setAccessPassword("");
-    setConfirmAccessPassword("");
-    setLoginMessage("Recuperacao iniciada. Recrie sua conta local.");
+  };
+
+  const handleExportVault = async () => {
+    registerUserActivity();
+
+    if (!items.length) {
+      Alert.alert("Cofre vazio", "Nao ha credenciais para exportar.");
+      return;
+    }
+
+    try {
+      const envelope = await encryptVaultItems(items, vaultSecret);
+      await Share.share({
+        title: "Backup SecPass",
+        message: JSON.stringify(envelope),
+      });
+      logSecurityEvent({
+        type: "vault_exported",
+        status: "info",
+      }).catch(() => {});
+    } catch {
+      Alert.alert(
+        "Falha ao exportar",
+        "Nao foi possivel gerar o backup criptografado do cofre.",
+      );
+    }
+  };
+
+  const handleImportVault = async () => {
+    registerUserActivity();
+
+    let envelope;
+    try {
+      envelope = JSON.parse(importText.trim());
+    } catch {
+      Alert.alert(
+        "Backup invalido",
+        "O conteudo colado nao e um backup valido.",
+      );
+      return;
+    }
+
+    try {
+      const importedItems = await decryptVaultEnvelope(envelope, vaultSecret);
+
+      Alert.alert(
+        "Importar backup",
+        `Foram encontradas ${importedItems.length} credencial(is) no backup. Substituir o cofre atual (${items.length} credencial(is)) pelo conteudo importado? Essa acao nao pode ser desfeita.`,
+        [
+          { text: "Cancelar", style: "cancel" },
+          {
+            text: "Substituir",
+            style: "destructive",
+            onPress: () => {
+              setItems(importedItems);
+              setIsImportModalVisible(false);
+              setImportText("");
+              logSecurityEvent({
+                type: "vault_imported",
+                status: "info",
+              }).catch(() => {});
+            },
+          },
+        ],
+      );
+    } catch {
+      Alert.alert(
+        "Falha ao importar",
+        "Backup invalido, corrompido ou criado com uma senha de acesso diferente da conta atual.",
+      );
+    }
   };
 
   const handleLogout = async () => {
-    if (remoteRefreshToken) {
-      try {
-        await logoutRemoteSession({
-          refreshToken: remoteRefreshToken,
-        });
-      } catch {
-        logSecurityEvent({
-          type: "logout_remote_failed",
-          status: "warning",
-        }).catch(() => {});
-      }
-    }
-
     await clearSessionToken();
-    await clearRefreshToken();
-    setRemoteRefreshToken("");
-    setRemoteAccessToken("");
-    setIsRemoteVaultEnabled(false);
     setVaultSecret("");
     logSecurityEvent({
       type: "logout",
@@ -1067,7 +657,7 @@ export default function HomeScreen() {
     setItems([]);
     setSearch("");
     setHasLoadedData(false);
-    setIsAppUnlocked(Platform.OS === "web");
+    setIsAppUnlocked(false);
   };
 
   if (isCheckingSession) {
@@ -1101,11 +691,9 @@ export default function HomeScreen() {
             Entrar no SecPass
           </Text>
           <Text style={[styles.loginText, { color: theme.textSoft }]}>
-            {isResetMode
-              ? "Informe token e nova senha para recuperar seu acesso."
-              : isRegisterMode
-                ? "Crie sua conta local para acessar o cofre."
-                : "Acesse sua conta para abrir o cofre."}
+            {isRegisterMode
+              ? "Crie sua conta local para acessar o cofre."
+              : "Acesse sua conta para abrir o cofre."}
           </Text>
 
           <TextInput
@@ -1125,32 +713,48 @@ export default function HomeScreen() {
             ]}
           />
 
-          {!isResetMode && (
-            <TextInput
-              placeholder={
-                isRegisterMode ? "Crie sua senha de acesso" : "Senha de acesso"
-              }
-              placeholderTextColor={theme.textMuted}
-              value={accessPassword}
-              secureTextEntry
-              onChangeText={setAccessPassword}
-              style={[
-                styles.loginInput,
-                {
-                  backgroundColor: theme.cardSoft,
-                  borderColor: theme.borderStrong,
-                  color: theme.text,
-                },
-              ]}
-            />
+          <TextInput
+            placeholder={
+              isRegisterMode ? "Crie sua senha de acesso" : "Senha de acesso"
+            }
+            placeholderTextColor={theme.textMuted}
+            value={accessPassword}
+            secureTextEntry
+            autoCapitalize="none"
+            autoCorrect={false}
+            autoComplete="off"
+            textContentType="password"
+            importantForAutofill="no"
+            maxLength={MAX_ACCESS_PASSWORD_LENGTH}
+            onChangeText={setAccessPassword}
+            style={[
+              styles.loginInput,
+              {
+                backgroundColor: theme.cardSoft,
+                borderColor: theme.borderStrong,
+                color: theme.text,
+              },
+            ]}
+          />
+
+          {isRegisterMode && (
+            <Text style={[styles.passwordRuleText, { color: theme.textMuted }]}>
+              {`Senha: minimo ${MIN_ACCESS_PASSWORD_LENGTH} caracteres com letra, numero e especial.`}
+            </Text>
           )}
 
-          {isRegisterMode && !isResetMode && (
+          {isRegisterMode && (
             <TextInput
               placeholder="Confirme sua senha"
               placeholderTextColor={theme.textMuted}
               value={confirmAccessPassword}
               secureTextEntry
+              autoCapitalize="none"
+              autoCorrect={false}
+              autoComplete="off"
+              textContentType="password"
+              importantForAutofill="no"
+              maxLength={MAX_ACCESS_PASSWORD_LENGTH}
               onChangeText={setConfirmAccessPassword}
               style={[
                 styles.loginInput,
@@ -1163,162 +767,69 @@ export default function HomeScreen() {
             />
           )}
 
-          {isResetMode && (
-            <>
-              <TextInput
-                placeholder="Token de recuperacao"
-                placeholderTextColor={theme.textMuted}
-                value={resetTokenInput}
-                autoCapitalize="none"
-                onChangeText={setResetTokenInput}
-                style={[
-                  styles.loginInput,
-                  {
-                    backgroundColor: theme.cardSoft,
-                    borderColor: theme.borderStrong,
-                    color: theme.text,
-                  },
-                ]}
-              />
-
-              <TextInput
-                placeholder="Nova senha"
-                placeholderTextColor={theme.textMuted}
-                value={newAccessPassword}
-                secureTextEntry
-                onChangeText={setNewAccessPassword}
-                style={[
-                  styles.loginInput,
-                  {
-                    backgroundColor: theme.cardSoft,
-                    borderColor: theme.borderStrong,
-                    color: theme.text,
-                  },
-                ]}
-              />
-
-              <TextInput
-                placeholder="Confirme a nova senha"
-                placeholderTextColor={theme.textMuted}
-                value={confirmNewAccessPassword}
-                secureTextEntry
-                onChangeText={setConfirmNewAccessPassword}
-                style={[
-                  styles.loginInput,
-                  {
-                    backgroundColor: theme.cardSoft,
-                    borderColor: theme.borderStrong,
-                    color: theme.text,
-                  },
-                ]}
-              />
-            </>
-          )}
-
           <Pressable
             style={({ pressed }) => [
               styles.loginButton,
               { backgroundColor: theme.primary },
               pressed && styles.pressed,
             ]}
-            onPress={
-              isResetMode
-                ? handleResetPassword
-                : isRegisterMode
-                  ? handleCreateAccount
-                  : handleLogin
-            }
+            onPress={isRegisterMode ? handleCreateAccount : handleLogin}
           >
             <Text
               style={[styles.loginButtonText, { color: theme.primaryText }]}
             >
-              {isResetMode
-                ? "Redefinir senha"
-                : isRegisterMode
-                  ? "Criar conta"
-                  : "Entrar"}
+              {isRegisterMode ? "Criar conta" : "Entrar"}
             </Text>
           </Pressable>
 
           <Pressable
             onPress={() => {
-              if (isResetMode) {
-                setIsResetMode(false);
-                setIsRegisterMode(false);
-              } else {
-                setIsRegisterMode((prev) => !prev);
-              }
+              setIsRegisterMode((prev) => !prev);
               setLoginMessage("");
               setAccessPassword("");
               setConfirmAccessPassword("");
-              setResetTokenInput("");
-              setNewAccessPassword("");
-              setConfirmNewAccessPassword("");
             }}
           >
             <Text style={[styles.switchAuthText, { color: theme.accent }]}>
-              {isResetMode
-                ? "Voltar para login"
-                : isRegisterMode
-                  ? "Ja tenho conta"
-                  : "Criar conta local"}
+              {isRegisterMode ? "Ja tenho conta" : "Criar conta local"}
             </Text>
           </Pressable>
 
-          {!isResetMode && (
-            <View style={styles.loginMetaRow}>
-              <Pressable
-                style={styles.rememberToggle}
-                onPress={() => setRememberMe((prev) => !prev)}
-              >
-                <View
-                  style={[
-                    styles.checkbox,
-                    {
-                      borderColor: theme.borderStrong,
-                      backgroundColor: rememberMe
-                        ? theme.primary
-                        : theme.cardSoft,
-                    },
-                  ]}
-                >
-                  {rememberMe && (
-                    <Text
-                      style={[
-                        styles.checkboxText,
-                        { color: theme.primaryText },
-                      ]}
-                    >
-                      ✓
-                    </Text>
-                  )}
-                </View>
-                <Text style={[styles.rememberText, { color: theme.textSoft }]}>
-                  Lembrar de mim
-                </Text>
-              </Pressable>
-
-              <Pressable onPress={handleForgotPassword}>
-                <Text style={[styles.forgotText, { color: theme.accent }]}>
-                  Esqueci minha senha
-                </Text>
-              </Pressable>
-            </View>
-          )}
-
-          {!isResetMode && shouldTryRemoteAuth && (
+          <View style={styles.loginMetaRow}>
             <Pressable
-              onPress={() => {
-                setIsResetMode(true);
-                setIsRegisterMode(false);
-                setLoginMessage("");
-              }}
+              style={styles.rememberToggle}
+              onPress={() => setRememberMe((prev) => !prev)}
             >
-              <Text style={[styles.switchAuthText, { color: theme.accent }]}>
-                Ja tenho token de recuperacao
+              <View
+                style={[
+                  styles.checkbox,
+                  {
+                    borderColor: theme.borderStrong,
+                    backgroundColor: rememberMe
+                      ? theme.primary
+                      : theme.cardSoft,
+                  },
+                ]}
+              >
+                {rememberMe && (
+                  <Text
+                    style={[styles.checkboxText, { color: theme.primaryText }]}
+                  >
+                    ✓
+                  </Text>
+                )}
+              </View>
+              <Text style={[styles.rememberText, { color: theme.textSoft }]}>
+                Lembrar de mim
               </Text>
             </Pressable>
-          )}
+
+            <Pressable onPress={handleForgotPassword}>
+              <Text style={[styles.forgotText, { color: theme.accent }]}>
+                Esqueci minha senha
+              </Text>
+            </Pressable>
+          </View>
 
           {!!loginMessage && (
             <Text style={[styles.loginMessage, { color: theme.dangerText }]}>
@@ -1383,10 +894,7 @@ export default function HomeScreen() {
   }
 
   return (
-    <SafeAreaView
-      style={[styles.safeArea, { backgroundColor: theme.bg }]}
-      onTouchStart={registerUserActivity}
-    >
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.bg }]}>
       <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
       <View style={[styles.bgOrbTop, { backgroundColor: theme.orbTop }]} />
       <View
@@ -1400,21 +908,62 @@ export default function HomeScreen() {
         ListHeaderComponent={
           <View>
             <View style={styles.header}>
-              <BrandLogo theme={theme} />
-              <Pressable
-                style={({ pressed }) => [
-                  styles.logoutButton,
-                  { backgroundColor: theme.secondaryButton },
-                  pressed && styles.pressed,
-                ]}
-                onPress={handleLogout}
-              >
-                <Text
-                  style={[styles.logoutText, { color: theme.secondaryText }]}
-                >
-                  Sair
-                </Text>
-              </Pressable>
+              <View style={styles.headerTopRow}>
+                <BrandLogo theme={theme} />
+                <View style={styles.headerActions}>
+                  <Pressable
+                    style={({ pressed }) => [
+                      styles.headerButton,
+                      { backgroundColor: theme.secondaryButton },
+                      pressed && styles.pressed,
+                    ]}
+                    onPress={handleExportVault}
+                  >
+                    <Text
+                      style={[
+                        styles.headerButtonText,
+                        { color: theme.secondaryText },
+                      ]}
+                    >
+                      Exportar
+                    </Text>
+                  </Pressable>
+                  <Pressable
+                    style={({ pressed }) => [
+                      styles.headerButton,
+                      { backgroundColor: theme.secondaryButton },
+                      pressed && styles.pressed,
+                    ]}
+                    onPress={() => setIsImportModalVisible(true)}
+                  >
+                    <Text
+                      style={[
+                        styles.headerButtonText,
+                        { color: theme.secondaryText },
+                      ]}
+                    >
+                      Importar
+                    </Text>
+                  </Pressable>
+                  <Pressable
+                    style={({ pressed }) => [
+                      styles.headerButton,
+                      { backgroundColor: theme.secondaryButton },
+                      pressed && styles.pressed,
+                    ]}
+                    onPress={handleLogout}
+                  >
+                    <Text
+                      style={[
+                        styles.headerButtonText,
+                        { color: theme.secondaryText },
+                      ]}
+                    >
+                      Sair
+                    </Text>
+                  </Pressable>
+                </View>
+              </View>
               <Text style={[styles.title, { color: theme.text }]}>
                 Sua central de credenciais
               </Text>
@@ -1449,59 +998,6 @@ export default function HomeScreen() {
                 <Text style={[styles.kpiValue, { color: theme.text }]}>
                   {filtered.length}
                 </Text>
-              </View>
-            </View>
-
-            <View
-              style={[
-                styles.autoLockCard,
-                { backgroundColor: theme.card, borderColor: theme.border },
-              ]}
-            >
-              <Text style={[styles.autoLockTitle, { color: theme.text }]}>
-                Auto-lock
-              </Text>
-              <Text
-                style={[styles.autoLockSubtitle, { color: theme.textSoft }]}
-              >
-                Bloqueie automaticamente apos inatividade.
-              </Text>
-              <View style={styles.autoLockActions}>
-                {AUTO_LOCK_OPTIONS.map((seconds) => {
-                  const isActive = autoLockSeconds === seconds;
-
-                  return (
-                    <Pressable
-                      key={seconds}
-                      style={({ pressed }) => [
-                        styles.autoLockOption,
-                        {
-                          backgroundColor: isActive
-                            ? theme.primary
-                            : theme.secondaryButton,
-                        },
-                        pressed && styles.pressed,
-                      ]}
-                      onPress={() => {
-                        setAutoLockSeconds(seconds);
-                        registerUserActivity();
-                      }}
-                    >
-                      <Text
-                        style={[
-                          styles.autoLockOptionText,
-                          {
-                            color: isActive
-                              ? theme.primaryText
-                              : theme.secondaryText,
-                          },
-                        ]}
-                      >
-                        {seconds}s
-                      </Text>
-                    </Pressable>
-                  );
-                })}
               </View>
             </View>
 
@@ -1569,6 +1065,78 @@ export default function HomeScreen() {
         )}
         onScrollBeginDrag={registerUserActivity}
       />
+
+      <Modal
+        visible={isImportModalVisible}
+        animationType="slide"
+        transparent
+        onRequestClose={() => setIsImportModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View
+            style={[
+              styles.modalCard,
+              { backgroundColor: theme.card, borderColor: theme.border },
+            ]}
+          >
+            <Text style={[styles.modalTitle, { color: theme.text }]}>
+              Importar backup
+            </Text>
+            <Text style={[styles.modalText, { color: theme.textSoft }]}>
+              Cole abaixo o conteudo do backup exportado. Precisa ter sido
+              gerado com a mesma conta (email e senha) em uso agora.
+            </Text>
+            <TextInput
+              value={importText}
+              onChangeText={setImportText}
+              placeholder="Cole o backup aqui"
+              placeholderTextColor={theme.textMuted}
+              multiline
+              autoCapitalize="none"
+              autoCorrect={false}
+              style={[
+                styles.modalInput,
+                {
+                  backgroundColor: theme.cardSoft,
+                  borderColor: theme.borderStrong,
+                  color: theme.text,
+                },
+              ]}
+            />
+            <View style={styles.modalActions}>
+              <Pressable
+                style={({ pressed }) => [
+                  styles.secondaryButton,
+                  { backgroundColor: theme.secondaryButton },
+                  pressed && styles.pressed,
+                ]}
+                onPress={() => {
+                  setIsImportModalVisible(false);
+                  setImportText("");
+                }}
+              >
+                <Text
+                  style={[styles.secondaryText, { color: theme.secondaryText }]}
+                >
+                  Cancelar
+                </Text>
+              </Pressable>
+              <Pressable
+                style={({ pressed }) => [
+                  styles.secondaryButton,
+                  { backgroundColor: theme.primary },
+                  pressed && styles.pressed,
+                ]}
+                onPress={handleImportVault}
+              >
+                <Text style={[styles.secondaryText, { color: theme.primaryText }]}>
+                  Importar
+                </Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -1680,16 +1248,30 @@ const styles = StyleSheet.create({
     marginTop: 2,
     fontSize: 13,
   },
+  passwordRuleText: {
+    fontSize: 12,
+    marginTop: -2,
+    marginBottom: 2,
+  },
   header: {
     marginBottom: 16,
   },
-  logoutButton: {
-    alignSelf: "flex-end",
+  headerTopRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    gap: 8,
+  },
+  headerActions: {
+    flexDirection: "row",
+    gap: 8,
+  },
+  headerButton: {
     borderRadius: 10,
     paddingVertical: 7,
     paddingHorizontal: 12,
   },
-  logoutText: {
+  headerButtonText: {
     fontWeight: "700",
     fontSize: 12,
   },
@@ -1708,35 +1290,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: 10,
     marginBottom: 14,
-  },
-  autoLockCard: {
-    borderWidth: 1,
-    borderRadius: 14,
-    paddingVertical: 12,
-    paddingHorizontal: 14,
-    marginBottom: 14,
-  },
-  autoLockTitle: {
-    fontSize: 13,
-    fontWeight: "700",
-  },
-  autoLockSubtitle: {
-    marginTop: 3,
-    fontSize: 12,
-  },
-  autoLockActions: {
-    marginTop: 10,
-    flexDirection: "row",
-    gap: 8,
-  },
-  autoLockOption: {
-    borderRadius: 10,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-  },
-  autoLockOptionText: {
-    fontSize: 12,
-    fontWeight: "700",
   },
   kpiCard: {
     flex: 1,
@@ -1814,5 +1367,49 @@ const styles = StyleSheet.create({
   pressed: {
     opacity: 0.92,
     transform: [{ scale: 0.99 }],
+  },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: "flex-end",
+    backgroundColor: "rgba(8, 14, 26, 0.55)",
+  },
+  modalCard: {
+    borderWidth: 1,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 20,
+    gap: 10,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "800",
+  },
+  modalText: {
+    fontSize: 13,
+    lineHeight: 19,
+  },
+  modalInput: {
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    fontSize: 13,
+    minHeight: 120,
+    textAlignVertical: "top",
+  },
+  modalActions: {
+    flexDirection: "row",
+    gap: 10,
+    marginTop: 4,
+  },
+  secondaryButton: {
+    flex: 1,
+    borderRadius: 12,
+    paddingVertical: 12,
+    alignItems: "center",
+  },
+  secondaryText: {
+    fontWeight: "700",
+    fontSize: 14,
   },
 });
