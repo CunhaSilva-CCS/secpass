@@ -136,6 +136,13 @@ src/
 
 - O repositório foi consolidado para mobile-only; infraestrutura web/backend legada foi removida.
 
-## Licença
+## Legal
 
-Consulte `LICENSE`.
+- Licença: proprietária, todos os direitos reservados — ver [`LICENSE`](LICENSE).
+- [Política de Privacidade](PRIVACY_POLICY.md)
+- [Termos de Uso](TERMS_OF_SERVICE.md)
+
+Ambos os documentos precisam de revisão jurídica antes da publicação nas
+lojas (App Store / Play Store exigem uma URL pública para a política de
+privacidade — publique este arquivo, por exemplo, via GitHub Pages ou um
+link direto ao arquivo no repositório).
