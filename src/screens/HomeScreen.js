@@ -1245,7 +1245,7 @@ export default function HomeScreen() {
                   Filtrados
                 </Text>
                 <Text style={[styles.kpiValue, { color: theme.text }]}>
-                  {filtered.length}
+                  {search.trim() ? filtered.length : 0}
                 </Text>
               </View>
             </View>
