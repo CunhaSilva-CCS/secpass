@@ -67,6 +67,10 @@ jobs:
 
       - name: Resolve release parameters
         id: release_params
+        env:
+          INPUT_PROFILE: ${{ github.event.inputs.profile }}
+          INPUT_PLATFORM: ${{ github.event.inputs.platform }}
+          INPUT_RELEASE_VERSION: ${{ github.event.inputs.release_version }}
         run: |
           SEMVER_REGEX='^v[0-9]+\.[0-9]+\.[0-9]+([.-][0-9A-Za-z-]+)?$'
 
@@ -80,16 +84,16 @@ jobs:
             echo "platform=all" >> "$GITHUB_OUTPUT"
             echo "release_version=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
           else
-            echo "profile=${{ github.event.inputs.profile }}" >> "$GITHUB_OUTPUT"
-            echo "platform=${{ github.event.inputs.platform }}" >> "$GITHUB_OUTPUT"
+            echo "profile=${INPUT_PROFILE}" >> "$GITHUB_OUTPUT"
+            echo "platform=${INPUT_PLATFORM}" >> "$GITHUB_OUTPUT"
 
-            if [ -n "${{ github.event.inputs.release_version }}" ]; then
-              if [[ ! "${{ github.event.inputs.release_version }}" =~ ${SEMVER_REGEX} ]]; then
-                echo "release_version invalida: ${{ github.event.inputs.release_version }}. Use vMAJOR.MINOR.PATCH (opcional sufixo)."
+            if [ -n "${INPUT_RELEASE_VERSION}" ]; then
+              if [[ ! "${INPUT_RELEASE_VERSION}" =~ ${SEMVER_REGEX} ]]; then
+                echo "release_version invalida: ${INPUT_RELEASE_VERSION}. Use vMAJOR.MINOR.PATCH (opcional sufixo)."
                 exit 1
               fi
 
-              echo "release_version=${{ github.event.inputs.release_version }}" >> "$GITHUB_OUTPUT"
+              echo "release_version=${INPUT_RELEASE_VERSION}" >> "$GITHUB_OUTPUT"
             else
               echo "release_version=manual-${GITHUB_RUN_NUMBER}" >> "$GITHUB_OUTPUT"
             fi

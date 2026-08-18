@@ -1,5 +1,5 @@
 import * as Clipboard from "expo-clipboard";
-import { useEffect, useState } from "react";
+import { memo, useEffect, useState } from "react";
 import {
   Alert,
   Animated,
@@ -29,7 +29,7 @@ const defaultTheme = {
   successText: "#1E7A3F",
 };
 
-export default function PasswordCard({
+function PasswordCard({
   item,
   onDelete,
   onUpdate,
@@ -49,7 +49,7 @@ export default function PasswordCard({
       toValue: 1,
       duration: 380,
       delay: Math.min(index * 70, 420),
-      useNativeDriver: false,
+      useNativeDriver: true,
     }).start();
   }, [appear, index]);
 
@@ -344,6 +344,8 @@ export default function PasswordCard({
     </Animated.View>
   );
 }
+
+export default memo(PasswordCard);
 
 const styles = StyleSheet.create({
   card: {

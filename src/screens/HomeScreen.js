@@ -1,11 +1,20 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
   ActivityIndicator,
   AppState,
   FlatList,
   Alert,
+  KeyboardAvoidingView,
   Modal,
+  Platform,
   Pressable,
+  ScrollView,
   Share,
   StyleSheet,
   Text,
@@ -43,11 +52,6 @@ import {
 } from "../utils/securityPolicy";
 
 import {
-  clearSessionToken,
-  loadSessionToken,
-  saveSessionToken,
-} from "../services/session";
-import {
   createVaultSecret,
   decryptVaultEnvelope,
   encryptVaultItems,
@@ -77,7 +81,6 @@ const SECURITY_EVENT_LABELS = {
   login_blocked: "Login bloqueado (bloqueio ativo)",
   login_lock_activated: "Bloqueio de login ativado",
   login_without_account: "Tentativa de login sem conta local",
-  session_persist_failed: "Falha ao salvar sessao",
   account_created: "Conta local criada",
   account_create_failed: "Falha ao criar conta local",
   logout: "Logout",
@@ -97,52 +100,54 @@ const formatSecurityEventDate = (isoString) => {
   }
 };
 
+const DARK_THEME = {
+  bg: "#0B1220",
+  orbTop: "#223A5E",
+  orbBottom: "#163D36",
+  text: "#E8EEF7",
+  textSoft: "#B9C4D7",
+  textMuted: "#93A4BF",
+  accent: "#5CA1FF",
+  card: "#121C2E",
+  cardSoft: "#0E1728",
+  border: "#20304A",
+  borderStrong: "#2B3D58",
+  primary: "#3B82F6",
+  primaryText: "#F8FBFF",
+  secondaryButton: "#1C2B45",
+  secondaryText: "#BFD5FF",
+  dangerSoft: "#3A1B20",
+  dangerText: "#FF8A9A",
+  successSoft: "#173425",
+  successText: "#65D6A5",
+};
+
+const LIGHT_THEME = {
+  bg: "#ECF2FB",
+  orbTop: "#CFE1FF",
+  orbBottom: "#D6F4EA",
+  text: "#0D1B2A",
+  textSoft: "#4B5D79",
+  textMuted: "#6B7A90",
+  accent: "#0C66E4",
+  card: "#FFFFFF",
+  cardSoft: "#F5F8FC",
+  border: "#DCE5F3",
+  borderStrong: "#D9E3F2",
+  primary: "#0C66E4",
+  primaryText: "#FFFFFF",
+  secondaryButton: "#E8EFFA",
+  secondaryText: "#123462",
+  dangerSoft: "#FDECEC",
+  dangerText: "#B42318",
+  successSoft: "#E8F7ED",
+  successText: "#1E7A3F",
+};
+
 export default function HomeScreen() {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === "dark";
-  const theme = isDark
-    ? {
-        bg: "#0B1220",
-        orbTop: "#223A5E",
-        orbBottom: "#163D36",
-        text: "#E8EEF7",
-        textSoft: "#B9C4D7",
-        textMuted: "#93A4BF",
-        accent: "#5CA1FF",
-        card: "#121C2E",
-        cardSoft: "#0E1728",
-        border: "#20304A",
-        borderStrong: "#2B3D58",
-        primary: "#3B82F6",
-        primaryText: "#F8FBFF",
-        secondaryButton: "#1C2B45",
-        secondaryText: "#BFD5FF",
-        dangerSoft: "#3A1B20",
-        dangerText: "#FF8A9A",
-        successSoft: "#173425",
-        successText: "#65D6A5",
-      }
-    : {
-        bg: "#ECF2FB",
-        orbTop: "#CFE1FF",
-        orbBottom: "#D6F4EA",
-        text: "#0D1B2A",
-        textSoft: "#4B5D79",
-        textMuted: "#6B7A90",
-        accent: "#0C66E4",
-        card: "#FFFFFF",
-        cardSoft: "#F5F8FC",
-        border: "#DCE5F3",
-        borderStrong: "#D9E3F2",
-        primary: "#0C66E4",
-        primaryText: "#FFFFFF",
-        secondaryButton: "#E8EFFA",
-        secondaryText: "#123462",
-        dangerSoft: "#FDECEC",
-        dangerText: "#B42318",
-        successSoft: "#E8F7ED",
-        successText: "#1E7A3F",
-      };
+  const theme = isDark ? DARK_THEME : LIGHT_THEME;
 
   const [items, setItems] = useState([]);
   const [title, setTitle] = useState("");
@@ -157,7 +162,6 @@ export default function HomeScreen() {
   const [email, setEmail] = useState("");
   const [accessPassword, setAccessPassword] = useState("");
   const [confirmAccessPassword, setConfirmAccessPassword] = useState("");
-  const [rememberMe, setRememberMe] = useState(true);
   const [loginMessage, setLoginMessage] = useState("");
   const [failedLoginAttempts, setFailedLoginAttempts] = useState(0);
   const [loginLockLevel, setLoginLockLevel] = useState(0);
@@ -175,6 +179,7 @@ export default function HomeScreen() {
   const [isLoadingSecurityLog, setIsLoadingSecurityLog] = useState(false);
 
   const idleTimerRef = useRef(null);
+  const skipNextPersistRef = useRef(false);
 
   const lockVault = useCallback((reason = "") => {
     setIsAppUnlocked(false);
@@ -225,12 +230,7 @@ export default function HomeScreen() {
   useEffect(() => {
     async function initializeSession() {
       const account = await loadLocalAccount();
-      const sessionToken = await loadSessionToken();
       const loginGuard = await loadLoginGuard();
-
-      if (sessionToken) {
-        await clearSessionToken();
-      }
 
       if (loginGuard) {
         const decayedGuard = applyLockDecay(loginGuard);
@@ -366,12 +366,16 @@ export default function HomeScreen() {
       } catch {
         Alert.alert(
           "Nao foi possivel abrir o cofre salvo",
-          'Os dados salvos neste aparelho foram cifrados com uma senha diferente da atual (normalmente porque a conta foi recriada). Seu cofre comecou vazio para voce continuar usando; se quiser apagar os dados antigos, use "Excluir conta e todos os dados".',
+          'Os dados salvos neste aparelho foram cifrados com uma senha diferente da atual (normalmente porque a conta foi recriada). Seu cofre comecou vazio para voce continuar usando; os dados antigos nao serao apagados a menos que voce adicione/edite uma credencial ou use "Excluir conta e todos os dados".',
         );
         logSecurityEvent({
           type: "vault_load_failed",
           status: "error",
         }).catch(() => {});
+        // Evita que o proximo efeito de persistencia sobrescreva
+        // automaticamente o cofre antigo (ainda cifrado com outra senha)
+        // com um array vazio antes que o usuario tome uma acao real.
+        skipNextPersistRef.current = true;
         setItems([]);
       } finally {
         setHasLoadedData(true);
@@ -383,6 +387,11 @@ export default function HomeScreen() {
 
   useEffect(() => {
     if (!hasLoadedData) return;
+
+    if (skipNextPersistRef.current) {
+      skipNextPersistRef.current = false;
+      return;
+    }
 
     const persistPasswords = async () => {
       try {
@@ -423,30 +432,39 @@ export default function HomeScreen() {
     setPassword("");
   };
 
-  const removePassword = (id) => {
-    registerUserActivity();
-    setItems((prevItems) => prevItems.filter((item) => item.id !== id));
-  };
-
-  const updatePassword = (id, payload) => {
-    registerUserActivity();
-    setItems((prevItems) =>
-      prevItems.map((item) =>
-        item.id === id
-          ? {
-              ...item,
-              ...payload,
-            }
-          : item,
-      ),
-    );
-  };
-
-  const filtered = items.filter(
-    (item) =>
-      item.title.toLowerCase().includes(search.toLowerCase()) ||
-      item.username.toLowerCase().includes(search.toLowerCase()),
+  const removePassword = useCallback(
+    (id) => {
+      registerUserActivity();
+      setItems((prevItems) => prevItems.filter((item) => item.id !== id));
+    },
+    [registerUserActivity],
   );
+
+  const updatePassword = useCallback(
+    (id, payload) => {
+      registerUserActivity();
+      setItems((prevItems) =>
+        prevItems.map((item) =>
+          item.id === id
+            ? {
+                ...item,
+                ...payload,
+              }
+            : item,
+        ),
+      );
+    },
+    [registerUserActivity],
+  );
+
+  const filtered = useMemo(() => {
+    const normalizedSearch = search.toLowerCase();
+    return items.filter(
+      (item) =>
+        item.title.toLowerCase().includes(normalizedSearch) ||
+        item.username.toLowerCase().includes(normalizedSearch),
+    );
+  }, [items, search]);
 
   const validateCredentials = () => {
     const normalizedEmail = email.trim().toLowerCase();
@@ -575,25 +593,6 @@ export default function HomeScreen() {
     setFailedLoginAttempts(0);
     setLoginLockLevel(0);
     setLoginLockUntil(0);
-
-    if (rememberMe) {
-      try {
-        await saveSessionToken();
-      } catch (err) {
-        setLoginMessage(
-          err?.message === DEVICE_AUTH_NOT_CONFIGURED
-            ? DEVICE_AUTH_NOT_CONFIGURED_MESSAGE
-            : "Nao foi possivel manter sua sessao com seguranca neste dispositivo.",
-        );
-        logSecurityEvent({
-          type: "session_persist_failed",
-          status: "error",
-        }).catch(() => {});
-        return;
-      }
-    } else {
-      await clearSessionToken();
-    }
 
     setVaultSecret(
       createVaultSecret({
@@ -828,7 +827,6 @@ export default function HomeScreen() {
   };
 
   const handleLogout = async () => {
-    await clearSessionToken();
     setVaultSecret("");
     logSecurityEvent({
       type: "logout",
@@ -872,7 +870,6 @@ export default function HomeScreen() {
             try {
               await clearVault();
               await deleteLocalAccount();
-              await clearSessionToken();
               await clearLoginGuard();
               await clearSecurityEvents();
             } catch {
@@ -918,13 +915,21 @@ export default function HomeScreen() {
           style={[styles.bgOrbBottom, { backgroundColor: theme.orbBottom }]}
         />
 
-        <View
-          style={[
-            styles.loginContainer,
-            { backgroundColor: theme.card, borderColor: theme.border },
-          ]}
+        <KeyboardAvoidingView
+          style={styles.loginKeyboardAvoider}
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
         >
-          <BrandLogo theme={theme} size="compact" />
+          <ScrollView
+            contentContainerStyle={styles.loginScrollContent}
+            keyboardShouldPersistTaps="handled"
+          >
+            <View
+              style={[
+                styles.loginContainer,
+                { backgroundColor: theme.card, borderColor: theme.border },
+              ]}
+            >
+              <BrandLogo theme={theme} size="compact" />
           <Text style={[styles.loginTitle, { color: theme.text }]}>
             Entrar no SecPass
           </Text>
@@ -978,6 +983,13 @@ export default function HomeScreen() {
           {isRegisterMode && (
             <Text style={[styles.passwordRuleText, { color: theme.textMuted }]}>
               {`Senha: minimo ${MIN_ACCESS_PASSWORD_LENGTH} caracteres com letra, numero e especial.`}
+            </Text>
+          )}
+
+          {isRegisterMode && (
+            <Text style={[styles.passwordTipText, { color: theme.textSoft }]}>
+              Dica: quanto mais longa, mais segura. Como nao ha recuperacao de
+              senha neste app, evite senhas curtas ou faceis de adivinhar.
             </Text>
           )}
 
@@ -1040,34 +1052,6 @@ export default function HomeScreen() {
           </Pressable>
 
           <View style={styles.loginMetaRow}>
-            <Pressable
-              style={styles.rememberToggle}
-              onPress={() => setRememberMe((prev) => !prev)}
-            >
-              <View
-                style={[
-                  styles.checkbox,
-                  {
-                    borderColor: theme.borderStrong,
-                    backgroundColor: rememberMe
-                      ? theme.primary
-                      : theme.cardSoft,
-                  },
-                ]}
-              >
-                {rememberMe && (
-                  <Text
-                    style={[styles.checkboxText, { color: theme.primaryText }]}
-                  >
-                    ✓
-                  </Text>
-                )}
-              </View>
-              <Text style={[styles.rememberText, { color: theme.textSoft }]}>
-                Lembrar de mim
-              </Text>
-            </Pressable>
-
             <Pressable onPress={handleForgotPassword}>
               <Text style={[styles.forgotText, { color: theme.accent }]}>
                 Esqueci minha senha
@@ -1075,12 +1059,16 @@ export default function HomeScreen() {
             </Pressable>
           </View>
 
-          {!!loginMessage && (
-            <Text style={[styles.loginMessage, { color: theme.dangerText }]}>
-              {loginMessage}
-            </Text>
-          )}
-        </View>
+              {!!loginMessage && (
+                <Text
+                  style={[styles.loginMessage, { color: theme.dangerText }]}
+                >
+                  {loginMessage}
+                </Text>
+              )}
+            </View>
+          </ScrollView>
+        </KeyboardAvoidingView>
       </SafeAreaView>
     );
   }
@@ -1145,6 +1133,10 @@ export default function HomeScreen() {
         style={[styles.bgOrbBottom, { backgroundColor: theme.orbBottom }]}
       />
 
+      <KeyboardAvoidingView
+        style={styles.vaultKeyboardAvoider}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+      >
       <FlatList
         contentContainerStyle={styles.listContent}
         data={filtered}
@@ -1321,6 +1313,7 @@ export default function HomeScreen() {
           />
         )}
         onScrollBeginDrag={registerUserActivity}
+        keyboardShouldPersistTaps="handled"
         ListFooterComponent={
           <View style={styles.dangerZone}>
             <Pressable
@@ -1340,6 +1333,7 @@ export default function HomeScreen() {
           </View>
         }
       />
+      </KeyboardAvoidingView>
 
       <Modal
         visible={isImportModalVisible}
@@ -1347,16 +1341,20 @@ export default function HomeScreen() {
         transparent
         onRequestClose={() => setIsImportModalVisible(false)}
       >
-        <View style={styles.modalOverlay}>
-          <View
-            style={[
-              styles.modalCard,
-              { backgroundColor: theme.card, borderColor: theme.border },
-            ]}
-          >
-            <Text style={[styles.modalTitle, { color: theme.text }]}>
-              Importar backup
-            </Text>
+        <KeyboardAvoidingView
+          style={styles.modalKeyboardAvoider}
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
+        >
+          <View style={styles.modalOverlay}>
+            <View
+              style={[
+                styles.modalCard,
+                { backgroundColor: theme.card, borderColor: theme.border },
+              ]}
+            >
+              <Text style={[styles.modalTitle, { color: theme.text }]}>
+                Importar backup
+              </Text>
             <Text style={[styles.modalText, { color: theme.textSoft }]}>
               Cole abaixo o conteudo do backup exportado. Precisa ter sido
               gerado com a mesma conta (email e senha) em uso agora.
@@ -1410,7 +1408,8 @@ export default function HomeScreen() {
               </Pressable>
             </View>
           </View>
-        </View>
+          </View>
+        </KeyboardAvoidingView>
       </Modal>
 
       <Modal
@@ -1514,6 +1513,9 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 16,
   },
+  vaultKeyboardAvoider: {
+    flex: 1,
+  },
   bgOrbTop: {
     position: "absolute",
     top: -90,
@@ -1540,6 +1542,12 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
+  },
+  loginKeyboardAvoider: {
+    flex: 1,
+  },
+  loginScrollContent: {
+    flexGrow: 1,
   },
   loginContainer: {
     marginTop: 80,
@@ -1581,29 +1589,8 @@ const styles = StyleSheet.create({
     marginTop: 2,
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
+    justifyContent: "flex-end",
     gap: 10,
-  },
-  rememberToggle: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
-  checkbox: {
-    width: 18,
-    height: 18,
-    borderWidth: 1,
-    borderRadius: 4,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  checkboxText: {
-    fontWeight: "800",
-    fontSize: 12,
-  },
-  rememberText: {
-    fontSize: 12,
-    fontWeight: "600",
   },
   forgotText: {
     fontSize: 12,
@@ -1623,6 +1610,11 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginTop: -2,
     marginBottom: 2,
+  },
+  passwordTipText: {
+    fontSize: 12,
+    fontStyle: "italic",
+    marginBottom: 6,
   },
   header: {
     marginBottom: 16,
@@ -1767,6 +1759,9 @@ const styles = StyleSheet.create({
   pressed: {
     opacity: 0.92,
     transform: [{ scale: 0.99 }],
+  },
+  modalKeyboardAvoider: {
+    flex: 1,
   },
   modalOverlay: {
     flex: 1,

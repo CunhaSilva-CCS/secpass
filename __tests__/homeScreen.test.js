@@ -95,12 +95,6 @@ jest.mock("../src/services/storage", () => ({
   clearVault: jest.fn().mockResolvedValue(),
 }));
 
-jest.mock("../src/services/session", () => ({
-  loadSessionToken: jest.fn(),
-  saveSessionToken: jest.fn(),
-  clearSessionToken: jest.fn(),
-}));
-
 jest.mock("../src/services/account", () => ({
   loadLocalAccount: jest.fn(),
   saveLocalAccount: jest.fn(),
@@ -129,7 +123,6 @@ jest.mock("expo-screen-capture", () => ({
 }));
 
 const { loadPasswords, clearVault, savePasswords } = require("../src/services/storage");
-const { loadSessionToken, clearSessionToken } = require("../src/services/session");
 const { loadLoginGuard } = require("../src/services/loginGuard");
 const { logSecurityEvent, clearSecurityEvents, loadSecurityEvents } =
   require("../src/services/securityAudit");
@@ -208,7 +201,6 @@ describe("HomeScreen", () => {
 
     jest.clearAllMocks();
     Platform.OS = "ios";
-    loadSessionToken.mockResolvedValue(null);
     loadLocalAccount.mockImplementation(async () => account);
     saveLocalAccount.mockImplementation(async ({ email, password }) => {
       account = {
@@ -842,17 +834,6 @@ describe("HomeScreen", () => {
 
     await waitFor(() => {
       expect(getByText("Falha ao iniciar autenticacao.")).toBeTruthy();
-    });
-  });
-
-  it("limpa token de sessao orfao ao iniciar o app", async () => {
-    loadSessionToken.mockResolvedValueOnce("session:orphaned");
-    loadPasswords.mockResolvedValueOnce([]);
-
-    render(<HomeScreen />);
-
-    await waitFor(() => {
-      expect(clearSessionToken).toHaveBeenCalled();
     });
   });
 

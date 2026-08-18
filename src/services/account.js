@@ -2,6 +2,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as SecureStore from "expo-secure-store";
 import QuickCrypto from "react-native-quick-crypto";
 
+import { constantTimeCompare } from "../utils/constantTimeCompare";
 import {
   DEVICE_AUTH_NOT_CONFIGURED,
   isDeviceAuthNotConfiguredError,
@@ -220,7 +221,7 @@ export const verifyLocalAccount = async ({ email, password }) => {
   if (parsedSecureAccount.version === 1) {
     if (
       parsedSecureAccount.email === normalizedEmail &&
-      parsedSecureAccount.legacyPassword === password
+      constantTimeCompare(parsedSecureAccount.legacyPassword, password)
     ) {
       await saveLocalAccount({
         email: parsedSecureAccount.email,
@@ -238,7 +239,10 @@ export const verifyLocalAccount = async ({ email, password }) => {
 
   if (parsedSecureAccount.version === 2) {
     const inputHash = hashPasswordV2(password, parsedSecureAccount.salt);
-    const isValid = parsedSecureAccount.passwordHash === inputHash;
+    const isValid = constantTimeCompare(
+      parsedSecureAccount.passwordHash,
+      inputHash,
+    );
 
     if (isValid) {
       try {
@@ -252,7 +256,7 @@ export const verifyLocalAccount = async ({ email, password }) => {
   }
 
   const inputHash = hashPasswordV3(password, parsedSecureAccount.salt);
-  return parsedSecureAccount.passwordHash === inputHash;
+  return constantTimeCompare(parsedSecureAccount.passwordHash, inputHash);
 };
 
 export const deleteLocalAccount = async () => {

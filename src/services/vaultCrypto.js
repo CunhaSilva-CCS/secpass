@@ -1,6 +1,8 @@
 import { Buffer } from "@craftzdog/react-native-buffer";
 import QuickCrypto from "react-native-quick-crypto";
 
+import { constantTimeCompare } from "../utils/constantTimeCompare";
+
 const VAULT_VERSION = 1;
 const PBKDF2_ITERATIONS = 310000;
 const KEY_SIZE_BYTES = 64;
@@ -14,19 +16,6 @@ const hexToBytes = (hex) => {
     bytes[index] = parseInt(hex.substr(index * 2, 2), 16);
   }
   return bytes;
-};
-
-const constantTimeCompare = (left, right) => {
-  if (!left || !right || left.length !== right.length) {
-    return false;
-  }
-
-  let diff = 0;
-  for (let index = 0; index < left.length; index += 1) {
-    diff |= left.charCodeAt(index) ^ right.charCodeAt(index);
-  }
-
-  return diff === 0;
 };
 
 const deriveKeys = ({
