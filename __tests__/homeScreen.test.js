@@ -235,11 +235,12 @@ describe("HomeScreen", () => {
   it("adiciona nova credencial", async () => {
     loadPasswords.mockResolvedValueOnce([]);
 
-    const { findByPlaceholderText, getByPlaceholderText, getByText } = render(
-      <HomeScreen />,
-    );
+    const { findByPlaceholderText, getByPlaceholderText, getByText, getByLabelText } =
+      render(<HomeScreen />);
 
     await loginInApp(findByPlaceholderText, getByText);
+
+    fireEvent.press(getByLabelText("Nova credencial"));
 
     fireEvent.changeText(getByPlaceholderText("Titulo"), "GitHub");
     fireEvent.changeText(getByPlaceholderText("Usuario"), "clemilton");
@@ -954,10 +955,11 @@ describe("HomeScreen", () => {
     savePasswords.mockRejectedValueOnce(new Error("write-failure"));
     const alertSpy = jest.spyOn(Alert, "alert").mockImplementation(() => {});
 
-    const { findByPlaceholderText, getByPlaceholderText, getByText } = render(
-      <HomeScreen />,
-    );
+    const { findByPlaceholderText, getByPlaceholderText, getByText, getByLabelText } =
+      render(<HomeScreen />);
     await loginInApp(findByPlaceholderText, getByText);
+
+    fireEvent.press(getByLabelText("Nova credencial"));
 
     fireEvent.changeText(getByPlaceholderText("Titulo"), "GitHub");
     fireEvent.changeText(getByPlaceholderText("Usuario"), "clemilton");

@@ -41,7 +41,8 @@
           "faceIDPermission": "Use Face ID to access your saved passwords"
         }
       ],
-      "expo-secure-store"
+      "expo-secure-store",
+      "expo-asset"
     ],
     "extra": {
       "router": {},

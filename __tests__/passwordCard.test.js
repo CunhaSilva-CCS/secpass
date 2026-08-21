@@ -44,11 +44,11 @@ describe("PasswordCard", () => {
   });
 
   it("revela a senha apos autenticacao bem-sucedida", async () => {
-    const { getByText, queryByText } = render(
+    const { getByText, getByLabelText, queryByText } = render(
       <PasswordCard item={sampleItem} onDelete={jest.fn()} onUpdate={jest.fn()} />,
     );
 
-    fireEvent.press(getByText("Mostrar senha"));
+    fireEvent.press(getByLabelText("Mostrar senha"));
 
     await waitFor(() => {
       expect(getByText(sampleItem.password)).toBeTruthy();
@@ -62,11 +62,11 @@ describe("PasswordCard", () => {
       error: "not_available",
     });
 
-    const { getByText } = render(
+    const { getByText, getByLabelText } = render(
       <PasswordCard item={sampleItem} onDelete={jest.fn()} onUpdate={jest.fn()} />,
     );
 
-    fireEvent.press(getByText("Mostrar senha"));
+    fireEvent.press(getByLabelText("Mostrar senha"));
 
     await waitFor(() => {
       expect(Alert.alert).toHaveBeenCalledWith(
@@ -83,11 +83,11 @@ describe("PasswordCard", () => {
       error: "user_cancel",
     });
 
-    const { getByText } = render(
+    const { getByText, getByLabelText } = render(
       <PasswordCard item={sampleItem} onDelete={jest.fn()} onUpdate={jest.fn()} />,
     );
 
-    fireEvent.press(getByText("Mostrar senha"));
+    fireEvent.press(getByLabelText("Mostrar senha"));
 
     await waitFor(() => {
       expect(authenticateVaultAccess).toHaveBeenCalled();
@@ -100,12 +100,12 @@ describe("PasswordCard", () => {
     jest.useFakeTimers();
     Clipboard.getStringAsync.mockResolvedValue(sampleItem.password);
 
-    const { getByText } = render(
+    const { getByLabelText } = render(
       <PasswordCard item={sampleItem} onDelete={jest.fn()} onUpdate={jest.fn()} />,
     );
 
     await act(async () => {
-      fireEvent.press(getByText("Copiar senha"));
+      fireEvent.press(getByLabelText("Copiar senha"));
     });
 
     expect(Clipboard.setStringAsync).toHaveBeenCalledWith(sampleItem.password);
@@ -121,12 +121,12 @@ describe("PasswordCard", () => {
     jest.useFakeTimers();
     Clipboard.getStringAsync.mockResolvedValue("outro-valor-copiado-depois");
 
-    const { getByText } = render(
+    const { getByLabelText } = render(
       <PasswordCard item={sampleItem} onDelete={jest.fn()} onUpdate={jest.fn()} />,
     );
 
     await act(async () => {
-      fireEvent.press(getByText("Copiar senha"));
+      fireEvent.press(getByLabelText("Copiar senha"));
     });
 
     await act(async () => {
@@ -143,11 +143,11 @@ describe("PasswordCard", () => {
       error: "not_available",
     });
 
-    const { getByText } = render(
+    const { getByLabelText } = render(
       <PasswordCard item={sampleItem} onDelete={jest.fn()} onUpdate={jest.fn()} />,
     );
 
-    fireEvent.press(getByText("Copiar senha"));
+    fireEvent.press(getByLabelText("Copiar senha"));
 
     await waitFor(() => {
       expect(authenticateVaultAccess).toHaveBeenCalled();
@@ -157,11 +157,11 @@ describe("PasswordCard", () => {
 
   it("exclui o item ao pressionar Excluir", () => {
     const onDelete = jest.fn();
-    const { getByText } = render(
+    const { getByLabelText } = render(
       <PasswordCard item={sampleItem} onDelete={onDelete} onUpdate={jest.fn()} />,
     );
 
-    fireEvent.press(getByText("Excluir"));
+    fireEvent.press(getByLabelText("Excluir credencial"));
 
     expect(onDelete).toHaveBeenCalledWith(sampleItem.id);
   });
@@ -169,11 +169,11 @@ describe("PasswordCard", () => {
   it("edita e salva um item apos autenticacao", async () => {
     const onUpdate = jest.fn();
 
-    const { getByText, getByDisplayValue } = render(
+    const { getByText, getByLabelText, getByDisplayValue } = render(
       <PasswordCard item={sampleItem} onDelete={jest.fn()} onUpdate={onUpdate} />,
     );
 
-    fireEvent.press(getByText("Editar"));
+    fireEvent.press(getByLabelText("Editar credencial"));
 
     await waitFor(() => {
       expect(getByDisplayValue(sampleItem.title)).toBeTruthy();
@@ -192,11 +192,11 @@ describe("PasswordCard", () => {
   it("bloqueia salvar edicao com campos vazios", async () => {
     const onUpdate = jest.fn();
 
-    const { getByText, getByDisplayValue } = render(
+    const { getByText, getByLabelText, getByDisplayValue } = render(
       <PasswordCard item={sampleItem} onDelete={jest.fn()} onUpdate={onUpdate} />,
     );
 
-    fireEvent.press(getByText("Editar"));
+    fireEvent.press(getByLabelText("Editar credencial"));
 
     await waitFor(() => {
       expect(getByDisplayValue(sampleItem.title)).toBeTruthy();
@@ -213,11 +213,12 @@ describe("PasswordCard", () => {
   });
 
   it("cancela edicao restaurando valores originais", async () => {
-    const { getByText, getByDisplayValue, queryByDisplayValue } = render(
-      <PasswordCard item={sampleItem} onDelete={jest.fn()} onUpdate={jest.fn()} />,
-    );
+    const { getByText, getByLabelText, getByDisplayValue, queryByDisplayValue } =
+      render(
+        <PasswordCard item={sampleItem} onDelete={jest.fn()} onUpdate={jest.fn()} />,
+      );
 
-    fireEvent.press(getByText("Editar"));
+    fireEvent.press(getByLabelText("Editar credencial"));
 
     await waitFor(() => {
       expect(getByDisplayValue(sampleItem.title)).toBeTruthy();

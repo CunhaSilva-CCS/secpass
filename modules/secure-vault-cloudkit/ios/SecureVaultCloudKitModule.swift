@@ -56,7 +56,33 @@ public class SecureVaultCloudKitModule: Module {
     }
   }
 
+  // CKContainer(identifier:) nao lanca um erro Swift capturavel quando o
+  // processo nao tem o entitlement de iCloud/CloudKit assinado - ele trava o
+  // processo direto (EXC_BREAKPOINT), sem chance de recuperar via do/catch.
+  // iOS nao expoe uma API publica confiavel para inspecionar o proprio
+  // entitlement assinado em runtime (as APIs de SecTask que fariam isso sao
+  // exclusivas do macOS), entao a flag abaixo e a fonte da verdade manual:
+  // mantenha-a em sincronia com SecPass.entitlements (ios/SecPass/).
+  //
+  // - true  => o .entitlements declara com.apple.developer.icloud-services/
+  //            icloud-container-identifiers E a build foi assinada com um
+  //            time que tem a capability iCloud (Apple Developer Program
+  //            pago - times pessoais/gratuitos nunca tem essa capability).
+  // - false => qualquer outro caso (inclui build de time pessoal/gratuito).
+  //            getAccountStatusAsync() retorna "unsupported" sem tocar em
+  //            CKContainer, e o app funciona 100% local (mesmo path usado
+  //            no Android, que nunca teve CloudKit).
+  private static let cloudKitEntitlementConfigured = false
+
+  private static func hasCloudKitEntitlement() -> Bool {
+    cloudKitEntitlementConfigured
+  }
+
   private static func accountStatus() async throws -> String {
+    guard hasCloudKitEntitlement() else {
+      return "unsupported"
+    }
+
     let status: CKAccountStatus
 
     do {
@@ -194,7 +220,7 @@ public class SecureVaultCloudKitModule: Module {
 
     repeat {
       let page: (
-        matchResults: [CKRecord.ID: Result<CKRecord, Error>],
+        matchResults: [(CKRecord.ID, Result<CKRecord, Error>)],
         queryCursor: CKQueryOperation.Cursor?
       )
 

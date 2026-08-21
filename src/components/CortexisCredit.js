@@ -1,0 +1,63 @@
+import { Image, StyleSheet, Text, View } from "react-native";
+
+const defaultTheme = {
+  textMuted: "#7A6C52",
+  cardSoft: "#F6EFDF",
+  border: "#E3D6B8",
+};
+
+export default function CortexisCredit({ theme = defaultTheme }) {
+  return (
+    <View style={styles.wrap}>
+      <Text style={[styles.label, { color: theme.textMuted }]}>
+        Desenvolvido por
+      </Text>
+      <View
+        style={[
+          styles.badge,
+          { backgroundColor: theme.cardSoft, borderColor: theme.border },
+        ]}
+      >
+        <Image
+          source={require("../../assets/images/cortexis-logo.jpg")}
+          style={styles.logo}
+          resizeMode="contain"
+          accessibilityLabel="Cortexis Tech"
+        />
+      </View>
+      <Text style={[styles.domain, { color: theme.textMuted }]}>
+        cortexis.com
+      </Text>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  wrap: {
+    marginTop: 28,
+    marginBottom: 8,
+    alignItems: "center",
+    gap: 8,
+  },
+  label: {
+    fontSize: 11,
+    fontWeight: "600",
+    letterSpacing: 0.6,
+    textTransform: "uppercase",
+  },
+  badge: {
+    borderWidth: 1,
+    borderRadius: 12,
+    overflow: "hidden",
+    padding: 8,
+  },
+  logo: {
+    width: 96,
+    height: 69,
+  },
+  domain: {
+    fontSize: 11,
+    fontWeight: "600",
+    letterSpacing: 0.4,
+  },
+});

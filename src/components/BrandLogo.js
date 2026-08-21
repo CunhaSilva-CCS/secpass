@@ -1,14 +1,18 @@
 import { StyleSheet, Text, View } from "react-native";
 
 const defaultTheme = {
-  accent: "#0C66E4",
-  primaryText: "#FFFFFF",
-  text: "#0D1B2A",
-  textSoft: "#4B5D79",
-  card: "#FFFFFF",
-  border: "#DCE5F3",
+  accent: "#8A6A1F",
+  primaryText: "#FFFBF2",
+  text: "#211A10",
+  textSoft: "#584A34",
+  card: "#FFFCF5",
+  border: "#E3D6B8",
 };
 
+// A marca e um cadeado com um furo de fechadura de verdade (circulo + cunha)
+// vazado no corpo, em vez de iniciais - o mesmo motivo que da nome ao app
+//("SecPass") ja aparece ao lado, no wordmark, entao repetir "SP" dentro do
+// icone era redundante.
 export default function BrandLogo({
   theme = defaultTheme,
   size = "regular",
@@ -18,7 +22,8 @@ export default function BrandLogo({
   const markSize = compact ? 38 : 50;
   const shackleSize = compact ? 18 : 24;
   const bodyHeight = compact ? 24 : 30;
-  const initialsSize = compact ? 11 : 13;
+  const keyholeDot = compact ? 4 : 5;
+  const keyholeWedge = compact ? 4 : 5;
 
   return (
     <View style={styles.container}>
@@ -51,14 +56,28 @@ export default function BrandLogo({
             },
           ]}
         >
-          <Text
+          <View
             style={[
-              styles.initials,
-              { color: theme.primaryText, fontSize: initialsSize },
+              styles.keyholeDot,
+              {
+                width: keyholeDot,
+                height: keyholeDot,
+                borderRadius: keyholeDot / 2,
+                backgroundColor: theme.card,
+              },
             ]}
-          >
-            SP
-          </Text>
+          />
+          <View
+            style={[
+              styles.keyholeWedge,
+              {
+                borderLeftWidth: keyholeWedge / 2,
+                borderRightWidth: keyholeWedge / 2,
+                borderTopWidth: keyholeWedge,
+                borderTopColor: theme.card,
+              },
+            ]}
+          />
         </View>
       </View>
 
@@ -66,7 +85,7 @@ export default function BrandLogo({
         <View style={styles.wordmarkWrap}>
           <Text style={[styles.wordmark, { color: theme.text }]}>SecPass</Text>
           <Text style={[styles.tagline, { color: theme.textSoft }]}>
-            Security Vault
+            Cofre de Senhas
           </Text>
         </View>
       )}
@@ -101,9 +120,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  initials: {
-    fontWeight: "800",
-    letterSpacing: 0.3,
+  keyholeDot: {},
+  keyholeWedge: {
+    width: 0,
+    height: 0,
+    borderLeftColor: "transparent",
+    borderRightColor: "transparent",
+    marginTop: -1,
   },
   wordmarkWrap: {
     justifyContent: "center",

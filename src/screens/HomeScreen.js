@@ -5,6 +5,7 @@ import React, {
   useRef,
   useState,
 } from "react";
+import { Feather } from "@expo/vector-icons";
 import {
   ActivityIndicator,
   AppState,
@@ -29,6 +30,7 @@ import PasswordForm from "../components/PasswordForm";
 import PasswordCard from "../components/PasswordCard";
 import SearchBar from "../components/SearchBar";
 import BrandLogo from "../components/BrandLogo";
+import CortexisCredit from "../components/CortexisCredit";
 import { useColorScheme } from "../hooks/use-color-scheme";
 import { authenticateVaultAccess } from "../utils/biometricAuth";
 
@@ -113,49 +115,61 @@ const formatSecurityEventDate = (isoString) => {
   }
 };
 
+// Identidade "cofre": grafite/couro no lugar do azul de SaaS generico, latao
+// (bronze) como cor de destaque no lugar de azul eletrico. Mono para dados
+// sensiveis (senha revelada, timestamps do historico) reforça a leitura de
+// "cifra"/"registro de cofre" em vez de decoracao.
 const DARK_THEME = {
-  bg: "#0B1220",
-  orbTop: "#223A5E",
-  orbBottom: "#163D36",
-  text: "#E8EEF7",
-  textSoft: "#B9C4D7",
-  textMuted: "#93A4BF",
-  accent: "#5CA1FF",
-  card: "#121C2E",
-  cardSoft: "#0E1728",
-  border: "#20304A",
-  borderStrong: "#2B3D58",
-  primary: "#3B82F6",
-  primaryText: "#F8FBFF",
-  secondaryButton: "#1C2B45",
-  secondaryText: "#BFD5FF",
-  dangerSoft: "#3A1B20",
-  dangerText: "#FF8A9A",
-  successSoft: "#173425",
-  successText: "#65D6A5",
+  bg: "#15110B",
+  orbTop: "#2E2314",
+  orbBottom: "#120D08",
+  text: "#F4EEDF",
+  textSoft: "#CBBFA0",
+  textMuted: "#8F826A",
+  accent: "#D4AF52",
+  accentSoft: "#3A2C15",
+  card: "#1E1810",
+  cardSoft: "#181209",
+  border: "#382C1B",
+  borderStrong: "#4B3A22",
+  primary: "#CDA43D",
+  primaryText: "#1A1408",
+  secondaryButton: "#2A2214",
+  secondaryText: "#E4D6AE",
+  dangerSoft: "#341B16",
+  dangerText: "#E08165",
+  successSoft: "#1B2E22",
+  successText: "#7FC49B",
 };
 
 const LIGHT_THEME = {
-  bg: "#ECF2FB",
-  orbTop: "#CFE1FF",
-  orbBottom: "#D6F4EA",
-  text: "#0D1B2A",
-  textSoft: "#4B5D79",
-  textMuted: "#6B7A90",
-  accent: "#0C66E4",
-  card: "#FFFFFF",
-  cardSoft: "#F5F8FC",
-  border: "#DCE5F3",
-  borderStrong: "#D9E3F2",
-  primary: "#0C66E4",
-  primaryText: "#FFFFFF",
-  secondaryButton: "#E8EFFA",
-  secondaryText: "#123462",
-  dangerSoft: "#FDECEC",
-  dangerText: "#B42318",
-  successSoft: "#E8F7ED",
-  successText: "#1E7A3F",
+  bg: "#F4EFE2",
+  orbTop: "#ECE1C4",
+  orbBottom: "#F0EADA",
+  text: "#211A10",
+  textSoft: "#584A34",
+  textMuted: "#7A6C52",
+  accent: "#8A6A1F",
+  accentSoft: "#F1E6C6",
+  card: "#FFFCF5",
+  cardSoft: "#F6EFDF",
+  border: "#E3D6B8",
+  borderStrong: "#D8C89E",
+  primary: "#8A6A1F",
+  primaryText: "#FFFBF2",
+  secondaryButton: "#EFE4C8",
+  secondaryText: "#4A3C22",
+  dangerSoft: "#FBEAE3",
+  dangerText: "#B14226",
+  successSoft: "#E8F3EA",
+  successText: "#2F7A4C",
 };
+
+const MONO_FONT = Platform.select({
+  ios: "Menlo",
+  android: "monospace",
+  default: "monospace",
+});
 
 export default function HomeScreen() {
   const colorScheme = useColorScheme();
@@ -185,6 +199,7 @@ export default function HomeScreen() {
   const [isAppUnlocked, setIsAppUnlocked] = useState(false);
   const [isAuthenticating, setIsAuthenticating] = useState(false);
   const [authMessage, setAuthMessage] = useState("");
+  const [isAddModalVisible, setIsAddModalVisible] = useState(false);
   const [isImportModalVisible, setIsImportModalVisible] = useState(false);
   const [importText, setImportText] = useState("");
   const [isAuthSubmitting, setIsAuthSubmitting] = useState(false);
@@ -517,6 +532,7 @@ export default function HomeScreen() {
     setTitle("");
     setUsername("");
     setPassword("");
+    setIsAddModalVisible(false);
   };
 
   const removePassword = useCallback(
@@ -1209,6 +1225,8 @@ export default function HomeScreen() {
                 </Text>
               )}
             </View>
+
+            <CortexisCredit theme={theme} />
           </ScrollView>
         </KeyboardAvoidingView>
       </SafeAreaView>
@@ -1377,19 +1395,21 @@ export default function HomeScreen() {
                   {visibleItems.length}
                 </Text>
               </View>
-              <View
-                style={[
-                  styles.kpiCard,
-                  { backgroundColor: theme.card, borderColor: theme.border },
-                ]}
-              >
-                <Text style={[styles.kpiLabel, { color: theme.textMuted }]}>
-                  Filtrados
-                </Text>
-                <Text style={[styles.kpiValue, { color: theme.text }]}>
-                  {search.trim() ? filtered.length : 0}
-                </Text>
-              </View>
+              {!!search.trim() && (
+                <View
+                  style={[
+                    styles.kpiCard,
+                    { backgroundColor: theme.card, borderColor: theme.border },
+                  ]}
+                >
+                  <Text style={[styles.kpiLabel, { color: theme.textMuted }]}>
+                    Filtrados
+                  </Text>
+                  <Text style={[styles.kpiValue, { color: theme.text }]}>
+                    {filtered.length}
+                  </Text>
+                </View>
+              )}
             </View>
 
             <SearchBar
@@ -1399,30 +1419,6 @@ export default function HomeScreen() {
                 setSearch(value);
               }}
               theme={theme}
-            />
-
-            <PasswordForm
-              title={title}
-              username={username}
-              password={password}
-              theme={theme}
-              onTitleChange={(value) => {
-                registerUserActivity();
-                setTitle(value);
-              }}
-              onUsernameChange={(value) => {
-                registerUserActivity();
-                setUsername(value);
-              }}
-              onPasswordChange={(value) => {
-                registerUserActivity();
-                setPassword(value);
-              }}
-              onGenerate={() => {
-                registerUserActivity();
-                setPassword(generatePassword());
-              }}
-              onSave={addPassword}
             />
 
             <Text style={[styles.listTitle, { color: theme.text }]}>
@@ -1441,7 +1437,7 @@ export default function HomeScreen() {
               Nenhuma credencial ainda
             </Text>
             <Text style={[styles.emptyText, { color: theme.textSoft }]}>
-              Preencha o formulario acima para criar seu primeiro registro.
+              Toque no botao + para criar seu primeiro registro.
             </Text>
           </View>
         }
@@ -1476,6 +1472,71 @@ export default function HomeScreen() {
         }
       />
       </KeyboardAvoidingView>
+
+      <Pressable
+        style={({ pressed }) => [
+          styles.fab,
+          { backgroundColor: theme.primary },
+          pressed && styles.pressed,
+        ]}
+        onPress={() => {
+          registerUserActivity();
+          setIsAddModalVisible(true);
+        }}
+        accessibilityRole="button"
+        accessibilityLabel="Nova credencial"
+      >
+        <Feather name="plus" size={26} color={theme.primaryText} />
+      </Pressable>
+
+      <Modal
+        visible={isAddModalVisible}
+        animationType="slide"
+        transparent
+        onRequestClose={() => setIsAddModalVisible(false)}
+      >
+        <KeyboardAvoidingView
+          style={styles.modalKeyboardAvoider}
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
+        >
+          <Pressable
+            style={styles.modalOverlay}
+            onPress={() => setIsAddModalVisible(false)}
+          >
+            <Pressable
+              style={[
+                styles.modalCard,
+                { backgroundColor: theme.card, borderColor: theme.border },
+              ]}
+              onPress={(event) => event.stopPropagation()}
+            >
+              <PasswordForm
+                title={title}
+                username={username}
+                password={password}
+                theme={theme}
+                onTitleChange={(value) => {
+                  registerUserActivity();
+                  setTitle(value);
+                }}
+                onUsernameChange={(value) => {
+                  registerUserActivity();
+                  setUsername(value);
+                }}
+                onPasswordChange={(value) => {
+                  registerUserActivity();
+                  setPassword(value);
+                }}
+                onGenerate={() => {
+                  registerUserActivity();
+                  setPassword(generatePassword());
+                }}
+                onSave={addPassword}
+              />
+            </Pressable>
+          </Pressable>
+        </KeyboardAvoidingView>
+      </Modal>
 
       <Modal
         visible={isImportModalVisible}
@@ -1660,21 +1721,21 @@ const styles = StyleSheet.create({
   },
   bgOrbTop: {
     position: "absolute",
-    top: -90,
-    right: -40,
-    width: 220,
-    height: 220,
+    top: -140,
+    right: -90,
+    width: 340,
+    height: 340,
     borderRadius: 999,
-    opacity: 0.8,
+    opacity: 0.55,
   },
   bgOrbBottom: {
     position: "absolute",
-    bottom: -120,
-    left: -70,
-    width: 250,
-    height: 250,
+    bottom: -160,
+    left: -110,
+    width: 300,
+    height: 300,
     borderRadius: 999,
-    opacity: 0.7,
+    opacity: 0.35,
   },
   listContent: {
     paddingTop: 16,
@@ -1708,6 +1769,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
     fontSize: 22,
     fontWeight: "800",
+    letterSpacing: 0.3,
   },
   loginText: {
     fontSize: 14,
@@ -1820,6 +1882,7 @@ const styles = StyleSheet.create({
     fontSize: 28,
     lineHeight: 34,
     fontWeight: "800",
+    letterSpacing: 0.2,
   },
   subtitle: {
     marginTop: 6,
@@ -1839,16 +1902,22 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
   },
   kpiLabel: {
-    fontSize: 12,
+    fontSize: 11,
     marginBottom: 4,
+    fontWeight: "700",
+    letterSpacing: 0.8,
+    textTransform: "uppercase",
   },
   kpiValue: {
     fontWeight: "800",
     fontSize: 22,
+    fontFamily: MONO_FONT,
   },
   listTitle: {
-    fontSize: 15,
+    fontSize: 12,
     fontWeight: "700",
+    letterSpacing: 0.8,
+    textTransform: "uppercase",
     marginBottom: 10,
   },
   emptyState: {
@@ -1879,6 +1948,7 @@ const styles = StyleSheet.create({
   lockTitle: {
     fontSize: 22,
     fontWeight: "800",
+    letterSpacing: 0.3,
   },
   lockBrandWrap: {
     marginBottom: 4,
@@ -1910,6 +1980,21 @@ const styles = StyleSheet.create({
   pressed: {
     opacity: 0.92,
     transform: [{ scale: 0.99 }],
+  },
+  fab: {
+    position: "absolute",
+    right: 8,
+    bottom: 24,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    alignItems: "center",
+    justifyContent: "center",
+    elevation: 6,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
   },
   modalKeyboardAvoider: {
     flex: 1,
@@ -1943,6 +2028,7 @@ const styles = StyleSheet.create({
   securityLogItemDate: {
     fontSize: 12,
     marginTop: 2,
+    fontFamily: MONO_FONT,
   },
   modalTitle: {
     fontSize: 18,

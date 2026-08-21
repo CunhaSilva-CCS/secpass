@@ -3,16 +3,16 @@ import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { SENSITIVE_TEXT_INPUT_PROPS } from "../utils/sensitiveInput";
 
 const defaultTheme = {
-  card: "#FFFFFF",
-  cardSoft: "#F5F8FC",
-  border: "#DCE5F3",
-  borderStrong: "#D9E3F2",
-  text: "#0D1B2A",
-  textMuted: "#74849C",
-  primary: "#0C66E4",
-  primaryText: "#FFFFFF",
-  secondaryButton: "#E8EFFA",
-  secondaryText: "#123462",
+  card: "#FFFCF5",
+  cardSoft: "#F6EFDF",
+  border: "#E3D6B8",
+  borderStrong: "#D8C89E",
+  text: "#211A10",
+  textMuted: "#7A6C52",
+  primary: "#8A6A1F",
+  primaryText: "#FFFBF2",
+  secondaryButton: "#EFE4C8",
+  secondaryText: "#4A3C22",
 };
 
 export default function PasswordForm({
@@ -27,12 +27,7 @@ export default function PasswordForm({
   theme = defaultTheme,
 }) {
   return (
-    <View
-      style={[
-        styles.container,
-        { backgroundColor: theme.card, borderColor: theme.border },
-      ]}
-    >
+    <View style={styles.container}>
       <Text style={[styles.sectionTitle, { color: theme.text }]}>
         Nova credencial
       </Text>
@@ -119,11 +114,7 @@ export default function PasswordForm({
 
 const styles = StyleSheet.create({
   container: {
-    borderRadius: 18,
-    padding: 16,
-    borderWidth: 1,
-    elevation: 3,
-    marginBottom: 14,
+    gap: 2,
   },
   sectionTitle: {
     fontSize: 16,

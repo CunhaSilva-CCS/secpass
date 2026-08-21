@@ -64,17 +64,35 @@ Aplicativo mobile de gerenciamento de senhas (iOS/Android) com cofre local cript
 
 ## Sync entre iPhone e Mac (CloudKit)
 
-Em iOS/macOS o cofre sincroniza pela **base privada do CloudKit** da conta
-iCloud do usuario — sem servidor proprio. A Apple ID identifica o dono; a
-senha do SecPass so destrava o ciphertext no aparelho.
+> **Status atual: desativado.** O modulo nativo existe e compila, mas
+> `cloudKitEntitlementConfigured` em
+> [`modules/secure-vault-cloudkit/ios/SecureVaultCloudKitModule.swift`](modules/secure-vault-cloudkit/ios/SecureVaultCloudKitModule.swift)
+> esta fixo em `false` — o app nunca chama `CKContainer`, entao roda 100%
+> local mesmo em iOS (mesmo comportamento do Android). Isso e proposital:
+> `CKContainer(identifier:)` trava o processo (`EXC_BREAKPOINT`) se chamado
+> sem o entitlement de iCloud assinado no binario, e times pessoais/gratuitos
+> da Apple **nao tem permissao para essa capability** — so times inscritos no
+> Apple Developer Program (pago). O `ios/SecPass/SecPass.entitlements` (fora
+> do controle de versao, gerado no prebuild) tambem precisa declarar
+> `com.apple.developer.icloud-services`/`icloud-container-identifiers` para
+> isso funcionar.
+>
+> Para reativar: (1) confirmar que a assinatura do Apple Developer Program da
+> conta `cortexistech@gmail.com` (team `U9U9M3H2AP`) esta ativa — nao so
+> criada; (2) no Xcode, Signing & Capabilities do target SecPass, adicionar a
+> capability iCloud com CloudKit marcado e o container
+> `iCloud.com.cortexistech.secpass`; (3) voltar `cloudKitEntitlementConfigured`
+> para `true`. Sem os tres passos, qualquer tentativa de usar CloudKit volta a
+> travar o app.
+
+Quando reativado, em iOS/macOS o cofre sincroniza pela **base privada do
+CloudKit** da conta iCloud do usuario — sem servidor proprio. A Apple ID
+identifica o dono; a senha do SecPass so destrava o ciphertext no aparelho.
 
 - Um registro `VaultMeta` (salt, iteracoes, verifier) e um `Credential`
   cifrado por item.
 - No segundo aparelho o app detecta o cofre existente e mostra
   "Abrir cofre iCloud" em vez de criar conta do zero.
-- Requer iCloud ligado no aparelho e o container
-  `iCloud.com.cortexistech.secpass` criado no Apple Developer
-  (Capability iCloud → CloudKit) para o App ID.
 - Android continua 100% local: nao ha CloudKit.
 - Exclusao de uma credencial so acontece por tombstone explicito
   (`{id, tombstone: true, deletedAt}`, sincronizado como upsert normal) ou

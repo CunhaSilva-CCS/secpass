@@ -1,8 +1,10 @@
+import { Feather } from "@expo/vector-icons";
 import * as Clipboard from "expo-clipboard";
 import { memo, useEffect, useState } from "react";
 import {
   Alert,
   Animated,
+  Platform,
   Pressable,
   StyleSheet,
   Text,
@@ -13,22 +15,30 @@ import {
 import { authenticateVaultAccess } from "../utils/biometricAuth";
 import { SENSITIVE_TEXT_INPUT_PROPS } from "../utils/sensitiveInput";
 
+const ICON_SIZE = 18;
+
 const CLIPBOARD_CLEAR_MS = 30000;
 
 const defaultTheme = {
-  card: "#FFFFFF",
-  border: "#DCE5F3",
-  text: "#0D1B2A",
-  textMuted: "#6B7A90",
-  accent: "#0C66E4",
-  accentSoft: "#E6F0FF",
-  secondaryButton: "#E8EFFA",
-  secondaryText: "#123462",
-  dangerSoft: "#FDECEC",
-  dangerText: "#B42318",
-  successSoft: "#E8F7ED",
-  successText: "#1E7A3F",
+  card: "#FFFCF5",
+  border: "#E3D6B8",
+  text: "#211A10",
+  textMuted: "#7A6C52",
+  accent: "#8A6A1F",
+  accentSoft: "#F1E6C6",
+  secondaryButton: "#EFE4C8",
+  secondaryText: "#4A3C22",
+  dangerSoft: "#FBEAE3",
+  dangerText: "#B14226",
+  successSoft: "#E8F3EA",
+  successText: "#2F7A4C",
 };
+
+const MONO_FONT = Platform.select({
+  ios: "Menlo",
+  android: "monospace",
+  default: "monospace",
+});
 
 function PasswordCard({
   item,
@@ -166,14 +176,6 @@ function PasswordCard({
     >
       <View style={styles.headerRow}>
         <Text style={[styles.title, { color: theme.text }]}>{item.title}</Text>
-        <Text
-          style={[
-            styles.badge,
-            { color: theme.accent, backgroundColor: theme.accentSoft },
-          ]}
-        >
-          Salvo
-        </Text>
       </View>
 
       {isEditing ? (
@@ -240,7 +242,7 @@ function PasswordCard({
             <Text style={[styles.label, { color: theme.textMuted }]}>
               Senha
             </Text>
-            <Text style={[styles.value, { color: theme.text }]}>
+            <Text style={[styles.value, styles.valueMono, { color: theme.text }]}>
               {showPassword ? item.password : "••••••••••"}
             </Text>
           </View>
@@ -283,65 +285,68 @@ function PasswordCard({
           <>
             <Pressable
               style={({ pressed }) => [
-                styles.secondaryButton,
+                styles.iconButton,
                 { backgroundColor: theme.secondaryButton },
                 pressed && styles.pressed,
               ]}
               onPress={handleTogglePassword}
+              accessibilityRole="button"
+              accessibilityLabel={
+                showPassword ? "Ocultar senha" : "Mostrar senha"
+              }
             >
-              <Text
-                style={[styles.secondaryText, { color: theme.secondaryText }]}
-              >
-                {showPassword ? "Ocultar senha" : "Mostrar senha"}
-              </Text>
+              <Feather
+                name={showPassword ? "eye-off" : "eye"}
+                size={ICON_SIZE}
+                color={theme.secondaryText}
+              />
             </Pressable>
 
             <Pressable
               style={({ pressed }) => [
-                styles.secondaryButton,
+                styles.iconButton,
                 copied
                   ? { backgroundColor: theme.successSoft }
                   : { backgroundColor: theme.secondaryButton },
                 pressed && styles.pressed,
               ]}
               onPress={handleCopy}
+              accessibilityRole="button"
+              accessibilityLabel={
+                copied ? "Senha copiada" : "Copiar senha"
+              }
             >
-              <Text
-                style={[
-                  styles.secondaryText,
-                  copied
-                    ? { color: theme.successText }
-                    : { color: theme.secondaryText },
-                ]}
-              >
-                {copied ? "Copiada" : "Copiar senha"}
-              </Text>
+              <Feather
+                name={copied ? "check" : "copy"}
+                size={ICON_SIZE}
+                color={copied ? theme.successText : theme.secondaryText}
+              />
             </Pressable>
 
             <Pressable
               style={({ pressed }) => [
-                styles.secondaryButton,
+                styles.iconButton,
                 { backgroundColor: theme.accentSoft },
                 pressed && styles.pressed,
               ]}
               onPress={handleStartEdit}
+              accessibilityRole="button"
+              accessibilityLabel="Editar credencial"
             >
-              <Text style={[styles.secondaryText, { color: theme.accent }]}>
-                Editar
-              </Text>
+              <Feather name="edit-2" size={ICON_SIZE} color={theme.accent} />
             </Pressable>
 
             <Pressable
               style={({ pressed }) => [
-                styles.deleteButton,
+                styles.iconButton,
                 { backgroundColor: theme.dangerSoft },
                 pressed && styles.pressed,
               ]}
               onPress={() => onDelete(item.id)}
+              accessibilityRole="button"
+              accessibilityLabel="Excluir credencial"
             >
-              <Text style={[styles.deleteText, { color: theme.dangerText }]}>
-                Excluir
-              </Text>
+              <Feather name="trash-2" size={ICON_SIZE} color={theme.dangerText} />
             </Pressable>
           </>
         )}
@@ -370,13 +375,6 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     fontSize: 18,
   },
-  badge: {
-    fontSize: 12,
-    fontWeight: "700",
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 999,
-  },
   infoBlock: {
     marginBottom: 10,
   },
@@ -399,6 +397,10 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: "600",
   },
+  valueMono: {
+    fontFamily: MONO_FONT,
+    letterSpacing: 0.5,
+  },
   actions: {
     marginTop: 6,
     flexDirection: "row",
@@ -414,16 +416,12 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     fontSize: 13,
   },
-  deleteButton: {
-    minWidth: 86,
-    paddingVertical: 10,
-    paddingHorizontal: 12,
+  iconButton: {
+    flex: 1,
+    paddingVertical: 12,
     borderRadius: 10,
     alignItems: "center",
-  },
-  deleteText: {
-    fontWeight: "700",
-    fontSize: 13,
+    justifyContent: "center",
   },
   pressed: {
     opacity: 0.9,
