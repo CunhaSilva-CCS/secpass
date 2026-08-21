@@ -8,7 +8,7 @@ Aplicativo mobile de gerenciamento de senhas (iOS/Android) com cofre local cript
 
 - Plataforma: iOS e Android (Expo/React Native).
 - Armazenamento: local no celular, com `expo-secure-store` e autenticação do aparelho.
-- Cofre: payload criptografado (`encrypted_vault`) com PBKDF2 + AES-CBC + HMAC.
+- Cofre: payload criptografado (`encrypted_vault`) com PBKDF2 + AES-256-GCM (AEAD).
 - Bloqueio: sem seletor de segundos; o bloqueio ocorre pelo ciclo nativo do app (background/foreground) e desbloqueio biométrico.
 - Sem dependência de backend para login/cofre no fluxo principal.
 
@@ -21,14 +21,23 @@ Aplicativo mobile de gerenciamento de senhas (iOS/Android) com cofre local cript
   explícito no app (Face ID, Touch ID ou senha do aparelho), em vez de pedir
   autenticação do sistema a cada leitura/escrita interna do Keychain.
 - Criptografia consolidada em uma única lib nativa (`react-native-quick-crypto`):
-  PBKDF2, AES-256-CBC, HMAC-SHA256, SHA-256 e geração de bytes aleatórios
-  (CSPRNG) usam todos o mesmo módulo, substituindo `crypto-js` (JS puro,
-  descontinuado) e `expo-crypto`. Menos dependências, uma única superfície de
-  código criptográfico para auditar.
-- Credenciais locais com hash PBKDF2-SHA256 (310000 iterações), calculado em
-  código nativo via `react-native-quick-crypto` (a mesma quantidade de
-  iterações em JavaScript puro levava ~30s por operação em dispositivos
-  reais; nativo leva ~40ms).
+  PBKDF2, AES-256-GCM, SHA-256 e geração de bytes aleatórios (CSPRNG) usam
+  todos o mesmo módulo, substituindo `crypto-js` (JS puro, descontinuado) e
+  `expo-crypto`. Menos dependências, uma única superfície de código
+  criptográfico para auditar.
+- Cofre cifrado com AES-256-GCM (AEAD): o authTag do GCM autentica
+  ciphertext + IV + dados associados (versão, salt, iterações) em uma única
+  primitiva, em vez de uma construção manual encrypt-then-MAC. Cofres e
+  backups no formato antigo (AES-CBC + HMAC-SHA256) continuam abrindo
+  normalmente — a leitura é retrocompatível por versão de envelope.
+- Credenciais locais com hash PBKDF2-SHA256 (600000 iterações, baseline
+  OWASP atual), calculado em código nativo via `react-native-quick-crypto`
+  (a mesma quantidade de iterações em JavaScript puro levava dezenas de
+  segundos por operação em dispositivos reais; nativo leva ~80ms). Contas
+  criadas com uma contagem de iterações mais antiga continuam válidas — a
+  verificação lê o valor gravado no próprio registro — e são promovidas
+  para o valor atual de forma transparente no primeiro login bem-sucedido
+  após a atualização.
 - Bloqueio automático do cofre: ao sair do app (ida para background) e após
   2 minutos de inatividade com o app aberto.
 - Proteção contra captura de tela: bloqueia screenshot/gravação (Android e
@@ -53,10 +62,37 @@ Aplicativo mobile de gerenciamento de senhas (iOS/Android) com cofre local cript
   criação de conta, exportação/importação de backup, captura de tela
   detectada, etc.), com opção de limpar o histórico.
 
+## Sync entre iPhone e Mac (CloudKit)
+
+Em iOS/macOS o cofre sincroniza pela **base privada do CloudKit** da conta
+iCloud do usuario — sem servidor proprio. A Apple ID identifica o dono; a
+senha do SecPass so destrava o ciphertext no aparelho.
+
+- Um registro `VaultMeta` (salt, iteracoes, verifier) e um `Credential`
+  cifrado por item.
+- No segundo aparelho o app detecta o cofre existente e mostra
+  "Abrir cofre iCloud" em vez de criar conta do zero.
+- Requer iCloud ligado no aparelho e o container
+  `iCloud.com.cortexistech.secpass` criado no Apple Developer
+  (Capability iCloud → CloudKit) para o App ID.
+- Android continua 100% local: nao ha CloudKit.
+- Exclusao de uma credencial so acontece por tombstone explicito
+  (`{id, tombstone: true, deletedAt}`, sincronizado como upsert normal) ou
+  pelo wipe total de "Excluir conta e todos os dados" (gated por
+  biometria). O sync nunca infere exclusao pela ausencia de um id no
+  payload local — um fetch remoto que falhe por rede nao pode apagar
+  credenciais que so existem no outro aparelho.
+
+O item legado no iCloud Keychain ainda e lido uma vez para migrar para o
+CloudKit; gravacoes novas vao so para o CloudKit + cache local no Keychain
+deste aparelho.
+
 ## Backup
 
-O cofre existe apenas no dispositivo — não há sincronização com servidor.
-Para reduzir o risco de perda total de dados:
+O cofre em si não depende de nenhum servidor — a sincronização entre
+aparelhos Apple (quando disponível) é feita pelo CloudKit da conta iCloud,
+não por uma infraestrutura própria do SecPass. Para reduzir o risco de perda
+total de dados:
 
 - **Exportar**: no topo da tela principal, toque em "Exportar". O app gera um
   backup cifrado (mesmo envelope `encrypted_vault` usado no armazenamento
@@ -90,6 +126,28 @@ npm run ios
 npm run android
 ```
 
+### Rodar no Mac (Apple Silicon)
+
+O app roda nativamente em Macs com Apple Silicon via o destino "My Mac
+(Designed for iPad)" do Xcode — o mesmo binário iOS, sem target nem
+configuração de build separados. Validado: todos os módulos nativos
+(`react-native-quick-crypto`, `react-native-nitro-modules`,
+`react-native-quick-base64`, `react-native-worklets`,
+`react-native-reanimated`, `expo-secure-store`) compilam sem erro nesse modo.
+
+```bash
+npm run mac
+```
+
+Na primeira execução, abra `ios/SecPass.xcworkspace` no Xcode e use a conta
+Apple `cortexistech@gmail.com` (team `U9U9M3H2AP`) em Signing & Capabilities.
+
+Limitações desse modo: só funciona em Mac com Apple Silicon (não Intel) e não
+é o mesmo que um app "Mac Catalyst" completo — não há hoje um segundo target
+otimizado para desktop nem distribuição fora do seu próprio Mac. Suficiente
+para uso pessoal; uma versão Catalyst completa (multi-arquitetura, App Store)
+ficaria para uma iteração futura, se necessário.
+
 ## Testes e Qualidade
 
 ```bash
@@ -121,7 +179,8 @@ npm run build:prod
 
 Observacao sobre iOS:
 
-- Build iOS para dispositivo interno/App Store exige conta ativa no Apple Developer Program.
+- Build iOS para dispositivo interno/App Store exige a conta Apple
+  `cortexistech@gmail.com` (team `U9U9M3H2AP`) ativa no Apple Developer Program.
 - Sem enrollment Apple, use `build:preview:ios-simulator` para validar o app no simulador iOS sem credenciais de distribuicao.
 
 Checklist de release:

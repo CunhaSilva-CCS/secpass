@@ -45,6 +45,11 @@ module.exports = {
     return {
       update: (data) => Buffer.from(cipher.update(data)),
       final: () => Buffer.from(cipher.final()),
+      setAAD: (data) => {
+        cipher.setAAD(data);
+        return this;
+      },
+      getAuthTag: () => Buffer.from(cipher.getAuthTag()),
     };
   },
 
@@ -53,6 +58,14 @@ module.exports = {
     return {
       update: (data) => Buffer.from(decipher.update(data)),
       final: () => Buffer.from(decipher.final()),
+      setAAD: (data) => {
+        decipher.setAAD(data);
+        return this;
+      },
+      setAuthTag: (tag) => {
+        decipher.setAuthTag(tag);
+        return this;
+      },
     };
   },
 };

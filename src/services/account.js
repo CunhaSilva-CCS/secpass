@@ -10,7 +10,11 @@ import {
 
 const ACCOUNT_KEY = "secpass_account";
 const ACCOUNT_VERSION = 3;
-const PBKDF2_ITERATIONS = 310000;
+// OWASP recomenda >=600k para PBKDF2-HMAC-SHA256 (2023+). So afeta contas
+// NOVAS: contas v3 existentes continuam validando com o "iterations" salvo
+// no proprio registro (ver hashPasswordV3/verifyLocalAccount) e sao
+// promovidas para este valor de forma transparente no proximo login valido.
+const PBKDF2_ITERATIONS = 600000;
 const PBKDF2_KEY_SIZE_WORDS = 256 / 32;
 const SECURE_STORE_ERROR = "Falha ao salvar conta no armazenamento seguro.";
 const SECURE_STORE_OPTIONS = {
@@ -82,11 +86,11 @@ const hashPasswordV2 = (password, salt) => {
     .digest("hex");
 };
 
-const hashPasswordV3 = (password, salt) => {
+const hashPasswordV3 = (password, salt, iterations = PBKDF2_ITERATIONS) => {
   return QuickCrypto.pbkdf2Sync(
     password,
     salt,
-    PBKDF2_ITERATIONS,
+    iterations,
     PBKDF2_KEY_SIZE_WORDS * 4,
     "sha256",
   ).toString("hex");
@@ -255,8 +259,27 @@ export const verifyLocalAccount = async ({ email, password }) => {
     return isValid;
   }
 
-  const inputHash = hashPasswordV3(password, parsedSecureAccount.salt);
-  return constantTimeCompare(parsedSecureAccount.passwordHash, inputHash);
+  const storedIterations =
+    Number(parsedSecureAccount.iterations) || PBKDF2_ITERATIONS;
+  const inputHash = hashPasswordV3(
+    password,
+    parsedSecureAccount.salt,
+    storedIterations,
+  );
+  const isValid = constantTimeCompare(
+    parsedSecureAccount.passwordHash,
+    inputHash,
+  );
+
+  if (isValid && storedIterations < PBKDF2_ITERATIONS) {
+    try {
+      await saveLocalAccount({ email: normalizedEmail, password });
+    } catch {
+      // Login continua valido com as iteracoes antigas; promocao tenta de novo depois.
+    }
+  }
+
+  return isValid;
 };
 
 export const deleteLocalAccount = async () => {

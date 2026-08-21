@@ -114,4 +114,4 @@ reside.
 ## 13. Contato
 
 Dúvidas sobre estes Termos podem ser enviadas para:
-**clemilton.cunha.silva@gmail.com**
+**cortexistech@gmail.com**

@@ -171,4 +171,4 @@ relevantes serão comunicadas nas notas de versão do Aplicativo.
 ## 12. Contato
 
 Dúvidas sobre esta política podem ser enviadas para:
-**clemilton.cunha.silva@gmail.com**
+**cortexistech@gmail.com**

@@ -1,13 +1,69 @@
+import crypto from "crypto";
+
 import {
   createVaultSecret,
   decryptVaultEnvelope,
+  decryptVaultItem,
   encryptVaultItems,
+  createVaultMeta,
+  encryptVaultItem,
+  unlockVaultKeys,
 } from "../src/services/vaultCrypto";
 
 const sampleItems = [
   { id: "1", title: "GitHub", username: "dev", password: "Secr3t!" },
   { id: "2", title: "Email", username: "user@mail.com", password: "Ou7r@Pass" },
 ];
+
+// Reproduz o formato v1 (AES-256-CBC + HMAC-SHA256, encrypt-then-MAC manual)
+// usado pelo app antes da migracao para AES-256-GCM, para provar que cofres
+// e backups antigos ainda abrem com o codigo atual.
+const buildLegacyV1Envelope = (items, vaultSecret, iterations = 310000) => {
+  const saltBytes = crypto.randomBytes(16);
+  const ivBytes = crypto.randomBytes(16);
+  const saltHex = saltBytes.toString("hex");
+  const ivHex = ivBytes.toString("hex");
+
+  const derived = crypto.pbkdf2Sync(vaultSecret, saltBytes, iterations, 64, "sha256");
+  const encKey = derived.subarray(0, 32);
+  const macKey = derived.subarray(32, 64);
+
+  const plaintext = JSON.stringify({ items });
+  const cipher = crypto.createCipheriv("aes-256-cbc", encKey, ivBytes);
+  const ciphertext = Buffer.concat([
+    cipher.update(plaintext, "utf8"),
+    cipher.final(),
+  ]).toString("base64");
+
+  const macPayload = `1:${saltHex}:${ivHex}:${ciphertext}`;
+  const mac = crypto.createHmac("sha256", macKey).update(macPayload).digest("hex");
+
+  return {
+    type: "encrypted_vault",
+    version: 1,
+    alg: "aes-256-cbc+hmac-sha256",
+    kdf: { name: "pbkdf2-sha256", iterations, salt: saltHex },
+    iv: ivHex,
+    ciphertext,
+    mac,
+  };
+};
+
+const buildLegacyV1Item = (item, keys) => {
+  const ivBytes = crypto.randomBytes(16);
+  const ivHex = ivBytes.toString("hex");
+  const plaintext = JSON.stringify(item ?? {});
+  const cipher = crypto.createCipheriv("aes-256-cbc", keys.encKey, ivBytes);
+  const ciphertext = Buffer.concat([
+    cipher.update(plaintext, "utf8"),
+    cipher.final(),
+  ]).toString("base64");
+  const id = item?.id || "";
+  const macPayload = `1:${id}:${ivHex}:${ciphertext}`;
+  const mac = crypto.createHmac("sha256", keys.macKey).update(macPayload).digest("hex");
+
+  return { type: "encrypted_item", version: 1, id, iv: ivHex, ciphertext, mac };
+};
 
 describe("vaultCrypto", () => {
 
@@ -19,16 +75,24 @@ describe("vaultCrypto", () => {
     const envelope = await encryptVaultItems(sampleItems, vaultSecret);
 
     expect(envelope.type).toBe("encrypted_vault");
-    expect(envelope.version).toBe(1);
-    expect(envelope.alg).toBe("aes-256-cbc+hmac-sha256");
+    expect(envelope.version).toBe(2);
+    expect(envelope.alg).toBe("aes-256-gcm");
     expect(envelope.kdf.name).toBe("pbkdf2-sha256");
-    expect(envelope.kdf.iterations).toBe(310000);
+    expect(envelope.kdf.iterations).toBe(600000);
     expect(envelope.kdf.salt).toEqual(expect.any(String));
     expect(envelope.iv).toEqual(expect.any(String));
     expect(envelope.ciphertext).toEqual(expect.any(String));
-    expect(envelope.mac).toEqual(expect.any(String));
+    expect(envelope.authTag).toEqual(expect.any(String));
 
     const decrypted = await decryptVaultEnvelope(envelope, vaultSecret);
+    expect(decrypted).toEqual(sampleItems);
+  });
+
+  it("le um cofre legado v1 (AES-CBC+HMAC) gerado antes da migracao para GCM", async () => {
+    const vaultSecret = "secret";
+    const legacyEnvelope = buildLegacyV1Envelope(sampleItems, vaultSecret);
+
+    const decrypted = await decryptVaultEnvelope(legacyEnvelope, vaultSecret);
     expect(decrypted).toEqual(sampleItems);
   });
 
@@ -57,7 +121,7 @@ describe("vaultCrypto", () => {
     expect(first.kdf.salt).not.toBe(second.kdf.salt);
     expect(first.iv).not.toBe(second.iv);
     expect(first.ciphertext).not.toBe(second.ciphertext);
-    expect(first.mac).not.toBe(second.mac);
+    expect(first.authTag).not.toBe(second.authTag);
   });
 
   it("rejeita criptografar sem vaultSecret", async () => {
@@ -93,6 +157,15 @@ describe("vaultCrypto", () => {
     ).rejects.toThrow("Payload criptografado incompleto.");
   });
 
+  it("rejeita envelope v2 sem authTag", async () => {
+    const envelope = await encryptVaultItems(sampleItems, "secret");
+    const { authTag: _authTag, ...withoutAuthTag } = envelope;
+
+    await expect(
+      decryptVaultEnvelope(withoutAuthTag, "secret"),
+    ).rejects.toThrow("Payload criptografado incompleto.");
+  });
+
   it("descriptografa quando iterations nao esta presente (usa padrao)", async () => {
     const vaultSecret = "secret";
     const envelope = await encryptVaultItems(sampleItems, vaultSecret);
@@ -124,7 +197,7 @@ describe("vaultCrypto", () => {
 
   it("detecta iv adulterado", async () => {
     const envelope = await encryptVaultItems(sampleItems, "secret");
-    const tampered = { ...envelope, iv: "00".repeat(16) };
+    const tampered = { ...envelope, iv: "00".repeat(12) };
 
     await expect(decryptVaultEnvelope(tampered, "secret")).rejects.toThrow(
       "Falha de integridade do cofre.",
@@ -143,18 +216,18 @@ describe("vaultCrypto", () => {
     );
   });
 
-  it("detecta mac adulterado", async () => {
+  it("detecta authTag adulterado", async () => {
     const envelope = await encryptVaultItems(sampleItems, "secret");
-    const tampered = { ...envelope, mac: "0".repeat(64) };
+    const tampered = { ...envelope, authTag: "0".repeat(32) };
 
     await expect(decryptVaultEnvelope(tampered, "secret")).rejects.toThrow(
       "Falha de integridade do cofre.",
     );
   });
 
-  it("detecta mac truncado (tamanho diferente do esperado)", async () => {
+  it("detecta authTag truncado (tamanho diferente do esperado)", async () => {
     const envelope = await encryptVaultItems(sampleItems, "secret");
-    const tampered = { ...envelope, mac: envelope.mac.slice(0, 10) };
+    const tampered = { ...envelope, authTag: envelope.authTag.slice(0, 10) };
 
     await expect(decryptVaultEnvelope(tampered, "secret")).rejects.toThrow(
       "Falha de integridade do cofre.",
@@ -176,5 +249,54 @@ describe("vaultCrypto", () => {
     const decrypted = await decryptVaultEnvelope(envelope, vaultSecret);
 
     expect(decrypted).toEqual(unicodeItems);
+  });
+
+  it("cria meta com verifier e rejeita senha errada no unlock", () => {
+    const vaultSecret = "user@email.com:Senha!123";
+    const meta = createVaultMeta({ vaultSecret, email: "user@email.com" });
+
+    expect(meta.type).toBe("vault_meta");
+    expect(unlockVaultKeys(meta, vaultSecret)).toEqual(
+      expect.objectContaining({
+        encKey: expect.anything(),
+        macKey: expect.anything(),
+      }),
+    );
+    expect(() => unlockVaultKeys(meta, "user@email.com:errada")).toThrow(
+      "Falha de integridade do cofre.",
+    );
+  });
+
+  it("cifra e decifra um item com as chaves do cofre", () => {
+    const vaultSecret = "secret";
+    const meta = createVaultMeta({ vaultSecret, email: "a@b.c" });
+    const keys = unlockVaultKeys(meta, vaultSecret);
+    const envelope = encryptVaultItem(sampleItems[0], keys);
+
+    expect(envelope.type).toBe("encrypted_item");
+    expect(envelope.version).toBe(2);
+    expect(envelope.authTag).toEqual(expect.any(String));
+    expect(decryptVaultItem(envelope, keys)).toEqual(sampleItems[0]);
+  });
+
+  it("detecta item com id trocado (impede substituicao entre registros)", () => {
+    const vaultSecret = "secret";
+    const meta = createVaultMeta({ vaultSecret, email: "a@b.c" });
+    const keys = unlockVaultKeys(meta, vaultSecret);
+    const envelope = encryptVaultItem(sampleItems[0], keys);
+    const swapped = { ...envelope, id: sampleItems[1].id };
+
+    expect(() => decryptVaultItem(swapped, keys)).toThrow(
+      "Falha de integridade do cofre.",
+    );
+  });
+
+  it("le um item legado v1 (usado no sync CloudKit) gerado antes da migracao para GCM", () => {
+    const vaultSecret = "secret";
+    const meta = createVaultMeta({ vaultSecret, email: "a@b.c" });
+    const keys = unlockVaultKeys(meta, vaultSecret);
+    const legacyItemEnvelope = buildLegacyV1Item(sampleItems[0], keys);
+
+    expect(decryptVaultItem(legacyItemEnvelope, keys)).toEqual(sampleItems[0]);
   });
 });

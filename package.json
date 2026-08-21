@@ -40,6 +40,7 @@
     "dev": "expo start",
     "android": "expo run:android",
     "ios": "expo run:ios",
+    "mac": "expo run:ios --device \"My Mac\"",
     "lint": "expo lint",
     "test": "jest",
     "build:preview": "npx eas-cli build --profile preview --platform all",

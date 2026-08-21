@@ -1,5 +1,7 @@
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
+import { SENSITIVE_TEXT_INPUT_PROPS } from "../utils/sensitiveInput";
+
 const defaultTheme = {
   card: "#FFFFFF",
   cardSoft: "#F5F8FC",
@@ -39,6 +41,7 @@ export default function PasswordForm({
         placeholder="Titulo"
         placeholderTextColor={theme.textMuted}
         value={title}
+        {...SENSITIVE_TEXT_INPUT_PROPS}
         onChangeText={onTitleChange}
         style={[
           styles.input,
@@ -54,6 +57,7 @@ export default function PasswordForm({
         placeholder="Usuario"
         placeholderTextColor={theme.textMuted}
         value={username}
+        {...SENSITIVE_TEXT_INPUT_PROPS}
         onChangeText={onUsernameChange}
         style={[
           styles.input,
@@ -69,6 +73,7 @@ export default function PasswordForm({
         placeholder="Senha"
         placeholderTextColor={theme.textMuted}
         value={password}
+        {...SENSITIVE_TEXT_INPUT_PROPS}
         secureTextEntry
         onChangeText={onPasswordChange}
         style={[

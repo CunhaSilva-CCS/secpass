@@ -12,7 +12,7 @@
     "scheme": "secpass",
     "userInterfaceStyle": "automatic",
     "android": {
-      "package": "com.clemilton.cunha.silva.secpass",
+      "package": "com.cortexistech.secpass",
       "adaptiveIcon": {
         "backgroundColor": "#0B1B34",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -50,7 +50,8 @@
       }
     },
     "ios": {
-      "bundleIdentifier": "com.clemilton.cunha.silva.secpass",
+      "bundleIdentifier": "com.cortexistech.secpass",
+      "supportsTablet": true,
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }

@@ -32,7 +32,20 @@ import BrandLogo from "../components/BrandLogo";
 import { useColorScheme } from "../hooks/use-color-scheme";
 import { authenticateVaultAccess } from "../utils/biometricAuth";
 
-import { clearVault, loadPasswords, savePasswords } from "../services/storage";
+import {
+  clearVault,
+  loadPasswords,
+  peekRemoteVault,
+  savePasswords,
+  VAULT_DELETE_ERROR,
+} from "../services/storage";
+import {
+  createVaultTombstone,
+  getVisibleVaultItems,
+  mergeVaultItems,
+} from "../services/vaultMerge";
+import { createItemId } from "../utils/createItemId";
+import { SENSITIVE_TEXT_INPUT_PROPS } from "../utils/sensitiveInput";
 import {
   deleteLocalAccount,
   loadLocalAccount,
@@ -158,6 +171,7 @@ export default function HomeScreen() {
   const [isCheckingSession, setIsCheckingSession] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [hasLocalAccount, setHasLocalAccount] = useState(false);
+  const [hasRemoteVault, setHasRemoteVault] = useState(false);
   const [isRegisterMode, setIsRegisterMode] = useState(false);
   const [email, setEmail] = useState("");
   const [accessPassword, setAccessPassword] = useState("");
@@ -180,11 +194,26 @@ export default function HomeScreen() {
 
   const idleTimerRef = useRef(null);
   const skipNextPersistRef = useRef(false);
+  const wasBackgroundedRef = useRef(false);
+  const needsVaultReloadRef = useRef(false);
 
-  const lockVault = useCallback((reason = "") => {
-    setIsAppUnlocked(false);
-    setAuthMessage(reason);
-  }, []);
+  const lockVault = useCallback(
+    (reason = "") => {
+      skipNextPersistRef.current = true;
+      needsVaultReloadRef.current = true;
+      setItems([]);
+      setHasLoadedData(false);
+      setIsAppUnlocked(false);
+      setAuthMessage(reason);
+
+      if (vaultSecret && hasLoadedData) {
+        Promise.resolve(
+          savePasswords(items, { vaultSecret }),
+        ).catch(() => {});
+      }
+    },
+    [hasLoadedData, items, vaultSecret],
+  );
 
   const registerUserActivity = useCallback(() => {
     if (idleTimerRef.current) {
@@ -198,6 +227,39 @@ export default function HomeScreen() {
       }, IDLE_LOCK_MS);
     }
   }, [isLoggedIn, isAppUnlocked, lockVault]);
+
+  // iCloud Keychain nao tem callback de "o cofre mudou agora" - o gatilho
+  // pratico disponivel e reconsultar ao desbloquear o cofre (background ->
+  // active, idle lock, etc.), com merge por item para nao sobrescrever
+  // edicoes locais feitas offline. Ver src/services/vaultMerge.js.
+  const reloadVaultFromStorage = useCallback(async () => {
+    if (!vaultSecret) {
+      return;
+    }
+
+    try {
+      const loadedItems = await loadPasswords({ vaultSecret });
+      setItems(loadedItems);
+      setHasLoadedData(true);
+    } catch {
+      skipNextPersistRef.current = true;
+      setItems([]);
+      setHasLoadedData(true);
+    }
+  }, [vaultSecret]);
+
+  const pullRemoteVaultUpdates = useCallback(async () => {
+    if (!vaultSecret) {
+      return;
+    }
+
+    try {
+      const remoteItems = await loadPasswords({ vaultSecret });
+      setItems((prevItems) => mergeVaultItems(prevItems, remoteItems));
+    } catch {
+      // Mantem os dados locais atuais; nova tentativa no proximo desbloqueio.
+    }
+  }, [vaultSecret]);
 
   const requestAppUnlock = useCallback(async () => {
     setIsAuthenticating(true);
@@ -219,18 +281,27 @@ export default function HomeScreen() {
 
       setIsAppUnlocked(true);
       setAuthMessage("");
+
+      if (needsVaultReloadRef.current) {
+        needsVaultReloadRef.current = false;
+        await reloadVaultFromStorage();
+      } else if (hasLoadedData) {
+        pullRemoteVaultUpdates();
+      }
     } catch {
       setAuthMessage("Falha ao iniciar autenticacao.");
       setIsAppUnlocked(false);
     } finally {
       setIsAuthenticating(false);
     }
-  }, []);
+  }, [hasLoadedData, pullRemoteVaultUpdates, reloadVaultFromStorage]);
 
   useEffect(() => {
     async function initializeSession() {
       const account = await loadLocalAccount();
       const loginGuard = await loadLoginGuard();
+      const remoteVault = await peekRemoteVault();
+      const remoteMeta = remoteVault?.meta;
 
       if (loginGuard) {
         const decayedGuard = applyLockDecay(loginGuard);
@@ -241,7 +312,11 @@ export default function HomeScreen() {
       }
 
       setHasLocalAccount(Boolean(account));
-      setIsRegisterMode(!account);
+      setHasRemoteVault(Boolean(remoteMeta?.verifier));
+      if (!account && remoteMeta?.email) {
+        setEmail(remoteMeta.email);
+      }
+      setIsRegisterMode(!account && !remoteMeta?.verifier);
       setIsLoggedIn(false);
       setVaultSecret("");
       setHasLoadedLoginGuard(true);
@@ -257,16 +332,23 @@ export default function HomeScreen() {
       // Face ID, share sheet, etc.) e nao significa que o app saiu de fato.
       // So tratamos "background" como saida real do app.
       if (nextState === "background") {
+        wasBackgroundedRef.current = true;
         lockVault("Cofre bloqueado ao sair do app.");
         return;
       }
 
+      // So reautentica automaticamente ao *voltar* de background real.
+      // O proprio prompt de Face ID dispara "inactive" -> "active" no iOS;
+      // sem essa guarda, uma tentativa cancelada/negada reabriria o prompt
+      // em loop assim que o app voltasse a ficar ativo.
       if (
         nextState === "active" &&
+        wasBackgroundedRef.current &&
         isLoggedIn &&
         !isAppUnlocked &&
         !isAuthenticating
       ) {
+        wasBackgroundedRef.current = false;
         requestAppUnlock();
       }
     });
@@ -394,6 +476,10 @@ export default function HomeScreen() {
     }
 
     const persistPasswords = async () => {
+      if (!vaultSecret) {
+        return;
+      }
+
       try {
         await savePasswords(items, { vaultSecret });
       } catch (err) {
@@ -419,10 +505,11 @@ export default function HomeScreen() {
 
     setItems((prevItems) => [
       {
-        id: Date.now().toString(),
+        id: createItemId(),
         title,
         username,
         password,
+        updatedAt: Date.now(),
       },
       ...prevItems,
     ]);
@@ -435,7 +522,11 @@ export default function HomeScreen() {
   const removePassword = useCallback(
     (id) => {
       registerUserActivity();
-      setItems((prevItems) => prevItems.filter((item) => item.id !== id));
+      setItems((prevItems) =>
+        prevItems.map((item) =>
+          item.id === id ? createVaultTombstone(id) : item,
+        ),
+      );
     },
     [registerUserActivity],
   );
@@ -449,6 +540,7 @@ export default function HomeScreen() {
             ? {
                 ...item,
                 ...payload,
+                updatedAt: Date.now(),
               }
             : item,
         ),
@@ -457,14 +549,16 @@ export default function HomeScreen() {
     [registerUserActivity],
   );
 
+  const visibleItems = useMemo(() => getVisibleVaultItems(items), [items]);
+
   const filtered = useMemo(() => {
     const normalizedSearch = search.toLowerCase();
-    return items.filter(
+    return visibleItems.filter(
       (item) =>
         item.title.toLowerCase().includes(normalizedSearch) ||
         item.username.toLowerCase().includes(normalizedSearch),
     );
-  }, [items, search]);
+  }, [visibleItems, search]);
 
   const validateCredentials = () => {
     const normalizedEmail = email.trim().toLowerCase();
@@ -571,12 +665,45 @@ export default function HomeScreen() {
 
     const account = await loadLocalAccount();
     if (!account) {
-      setLoginMessage("Nenhuma conta local. Crie sua conta para continuar.");
-      setIsRegisterMode(true);
+      if (!hasRemoteVault) {
+        setLoginMessage("Nenhuma conta local. Crie sua conta para continuar.");
+        setIsRegisterMode(true);
+        logSecurityEvent({
+          type: "login_without_account",
+          status: "warning",
+        }).catch(() => {});
+        return;
+      }
+
+      const nextSecret = createVaultSecret({
+        email: credentials.normalizedEmail,
+        password: credentials.accessPassword,
+      });
+
+      try {
+        await loadPasswords({ vaultSecret: nextSecret });
+        await saveLocalAccount({
+          email: credentials.normalizedEmail,
+          password: credentials.accessPassword,
+        });
+      } catch {
+        registerFailedAttempt();
+        return;
+      }
+
+      setHasLocalAccount(true);
+      setFailedLoginAttempts(0);
+      setLoginLockLevel(0);
+      setLoginLockUntil(0);
+      setVaultSecret(nextSecret);
       logSecurityEvent({
-        type: "login_without_account",
-        status: "warning",
+        type: "login_success",
+        status: "info",
       }).catch(() => {});
+      setLoginMessage("");
+      setIsLoggedIn(true);
+      requestAppUnlock();
+      resetAuthFields();
       return;
     }
 
@@ -594,12 +721,11 @@ export default function HomeScreen() {
     setLoginLockLevel(0);
     setLoginLockUntil(0);
 
-    setVaultSecret(
-      createVaultSecret({
-        email: credentials.normalizedEmail,
-        password: credentials.accessPassword,
-      }),
-    );
+    const nextSecret = createVaultSecret({
+      email: credentials.normalizedEmail,
+      password: credentials.accessPassword,
+    });
+    setVaultSecret(nextSecret);
 
     logSecurityEvent({
       type: "login_success",
@@ -625,6 +751,14 @@ export default function HomeScreen() {
   const performCreateAccount = async () => {
     const credentials = validateCredentials();
     if (!credentials) {
+      return;
+    }
+
+    if (hasRemoteVault && !hasLocalAccount) {
+      setLoginMessage(
+        "Ja existe um cofre nesta conta iCloud. Entre com o email e a senha de acesso do outro aparelho.",
+      );
+      setIsRegisterMode(false);
       return;
     }
 
@@ -722,7 +856,7 @@ export default function HomeScreen() {
   const handleExportVault = async () => {
     registerUserActivity();
 
-    if (!items.length) {
+    if (!visibleItems.length) {
       Alert.alert("Cofre vazio", "Nao ha credenciais para exportar.");
       return;
     }
@@ -764,7 +898,7 @@ export default function HomeScreen() {
 
       Alert.alert(
         "Importar backup",
-        `Foram encontradas ${importedItems.length} credencial(is) no backup. Substituir o cofre atual (${items.length} credencial(is)) pelo conteudo importado? Essa acao nao pode ser desfeita.`,
+        `Foram encontradas ${getVisibleVaultItems(importedItems).length} credencial(is) no backup. Substituir o cofre atual (${visibleItems.length} credencial(is)) pelo conteudo importado? Essa acao nao pode ser desfeita.`,
         [
           { text: "Cancelar", style: "cancel" },
           {
@@ -827,6 +961,7 @@ export default function HomeScreen() {
   };
 
   const handleLogout = async () => {
+    needsVaultReloadRef.current = false;
     setVaultSecret("");
     logSecurityEvent({
       type: "logout",
@@ -872,10 +1007,17 @@ export default function HomeScreen() {
               await deleteLocalAccount();
               await clearLoginGuard();
               await clearSecurityEvents();
-            } catch {
-              // Segue para reiniciar o estado local mesmo se alguma limpeza falhar.
+            } catch (err) {
+              Alert.alert(
+                "Falha ao excluir",
+                err?.message === VAULT_DELETE_ERROR
+                  ? VAULT_DELETE_ERROR
+                  : "Nao foi possivel apagar a conta e o cofre. Tente novamente.",
+              );
+              return;
             }
 
+            needsVaultReloadRef.current = false;
             setItems([]);
             setSearch("");
             setHasLoadedData(false);
@@ -931,19 +1073,23 @@ export default function HomeScreen() {
             >
               <BrandLogo theme={theme} size="compact" />
           <Text style={[styles.loginTitle, { color: theme.text }]}>
-            Entrar no SecPass
+            {hasRemoteVault && !hasLocalAccount
+              ? "Abrir cofre iCloud"
+              : "Entrar no SecPass"}
           </Text>
           <Text style={[styles.loginText, { color: theme.textSoft }]}>
-            {isRegisterMode
-              ? "Crie sua conta local para acessar o cofre."
-              : "Acesse sua conta para abrir o cofre."}
+            {hasRemoteVault && !hasLocalAccount
+              ? "Encontramos um cofre nesta conta Apple. Use o mesmo email e senha do outro aparelho."
+              : isRegisterMode
+                ? "Crie sua conta local para acessar o cofre."
+                : "Acesse sua conta para abrir o cofre."}
           </Text>
 
           <TextInput
             placeholder="Email"
             placeholderTextColor={theme.textMuted}
             value={email}
-            autoCapitalize="none"
+            {...SENSITIVE_TEXT_INPUT_PROPS}
             keyboardType="email-address"
             onChangeText={setEmail}
             style={[
@@ -962,12 +1108,8 @@ export default function HomeScreen() {
             }
             placeholderTextColor={theme.textMuted}
             value={accessPassword}
+            {...SENSITIVE_TEXT_INPUT_PROPS}
             secureTextEntry
-            autoCapitalize="none"
-            autoCorrect={false}
-            autoComplete="off"
-            textContentType="password"
-            importantForAutofill="no"
             maxLength={MAX_ACCESS_PASSWORD_LENGTH}
             onChangeText={setAccessPassword}
             style={[
@@ -998,12 +1140,8 @@ export default function HomeScreen() {
               placeholder="Confirme sua senha"
               placeholderTextColor={theme.textMuted}
               value={confirmAccessPassword}
+              {...SENSITIVE_TEXT_INPUT_PROPS}
               secureTextEntry
-              autoCapitalize="none"
-              autoCorrect={false}
-              autoComplete="off"
-              textContentType="password"
-              importantForAutofill="no"
               maxLength={MAX_ACCESS_PASSWORD_LENGTH}
               onChangeText={setConfirmAccessPassword}
               style={[
@@ -1033,7 +1171,7 @@ export default function HomeScreen() {
               <Text
                 style={[styles.loginButtonText, { color: theme.primaryText }]}
               >
-                {isRegisterMode ? "Criar conta" : "Entrar"}
+                {isRegisterMode ? "Criar conta" : hasRemoteVault && !hasLocalAccount ? "Abrir cofre" : "Entrar"}
               </Text>
             )}
           </Pressable>
@@ -1047,7 +1185,11 @@ export default function HomeScreen() {
             }}
           >
             <Text style={[styles.switchAuthText, { color: theme.accent }]}>
-              {isRegisterMode ? "Ja tenho conta" : "Criar conta local"}
+              {isRegisterMode
+                ? "Ja tenho conta"
+                : hasRemoteVault && !hasLocalAccount
+                  ? "Este e o primeiro aparelho"
+                  : "Criar conta local"}
             </Text>
           </Pressable>
 
@@ -1232,7 +1374,7 @@ export default function HomeScreen() {
                   Total
                 </Text>
                 <Text style={[styles.kpiValue, { color: theme.text }]}>
-                  {items.length}
+                  {visibleItems.length}
                 </Text>
               </View>
               <View
@@ -1537,6 +1679,9 @@ const styles = StyleSheet.create({
   listContent: {
     paddingTop: 16,
     paddingBottom: 32,
+    width: "100%",
+    maxWidth: 720,
+    alignSelf: "center",
   },
   centeredState: {
     flex: 1,
@@ -1555,6 +1700,9 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 22,
     gap: 10,
+    width: "100%",
+    maxWidth: 480,
+    alignSelf: "center",
   },
   loginTitle: {
     marginTop: 4,
@@ -1724,6 +1872,9 @@ const styles = StyleSheet.create({
     padding: 22,
     alignItems: "center",
     gap: 12,
+    width: "100%",
+    maxWidth: 480,
+    alignSelf: "center",
   },
   lockTitle: {
     fontSize: 22,

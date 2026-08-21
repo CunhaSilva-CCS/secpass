@@ -11,6 +11,7 @@ import {
 } from "react-native";
 
 import { authenticateVaultAccess } from "../utils/biometricAuth";
+import { SENSITIVE_TEXT_INPUT_PROPS } from "../utils/sensitiveInput";
 
 const CLIPBOARD_CLEAR_MS = 30000;
 
@@ -182,6 +183,7 @@ function PasswordCard({
             onChangeText={setEditTitle}
             placeholder="Titulo"
             placeholderTextColor={theme.textMuted}
+            {...SENSITIVE_TEXT_INPUT_PROPS}
             style={[
               styles.editInput,
               {
@@ -196,6 +198,7 @@ function PasswordCard({
             onChangeText={setEditUsername}
             placeholder="Usuario"
             placeholderTextColor={theme.textMuted}
+            {...SENSITIVE_TEXT_INPUT_PROPS}
             style={[
               styles.editInput,
               {
@@ -210,6 +213,8 @@ function PasswordCard({
             onChangeText={setEditPassword}
             placeholder="Senha"
             placeholderTextColor={theme.textMuted}
+            {...SENSITIVE_TEXT_INPUT_PROPS}
+            secureTextEntry
             style={[
               styles.editInput,
               {

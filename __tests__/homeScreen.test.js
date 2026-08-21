@@ -91,8 +91,15 @@ jest.mock("../src/utils/biometricAuth", () => ({
 
 jest.mock("../src/services/storage", () => ({
   loadPasswords: jest.fn(),
-  savePasswords: jest.fn(),
+  savePasswords: jest.fn().mockResolvedValue(),
   clearVault: jest.fn().mockResolvedValue(),
+  peekRemoteVault: jest.fn().mockResolvedValue({
+    available: false,
+    status: "unsupported",
+    meta: null,
+  }),
+  VAULT_DELETE_ERROR:
+    "Nao foi possivel apagar o cofre sincronizado. Tente novamente.",
 }));
 
 jest.mock("../src/services/account", () => ({
@@ -122,7 +129,7 @@ jest.mock("expo-screen-capture", () => ({
   addScreenshotListener: jest.fn().mockReturnValue({ remove: jest.fn() }),
 }));
 
-const { loadPasswords, clearVault, savePasswords } = require("../src/services/storage");
+const { loadPasswords, clearVault, savePasswords, peekRemoteVault } = require("../src/services/storage");
 const { loadLoginGuard } = require("../src/services/loginGuard");
 const { logSecurityEvent, clearSecurityEvents, loadSecurityEvents } =
   require("../src/services/securityAudit");
@@ -201,6 +208,11 @@ describe("HomeScreen", () => {
 
     jest.clearAllMocks();
     Platform.OS = "ios";
+    peekRemoteVault.mockResolvedValue({
+      available: false,
+      status: "unsupported",
+      meta: null,
+    });
     loadLocalAccount.mockImplementation(async () => account);
     saveLocalAccount.mockImplementation(async ({ email, password }) => {
       account = {
@@ -434,6 +446,40 @@ describe("HomeScreen", () => {
     expect(getByText("Cofre bloqueado por inatividade.")).toBeTruthy();
   });
 
+  it("remove credenciais da arvore ao bloquear por inatividade", async () => {
+    loadPasswords.mockResolvedValueOnce([
+      {
+        id: "1",
+        title: "GitHub",
+        username: "dev-user",
+        password: "A!23456789",
+      },
+    ]);
+
+    const { findByPlaceholderText, getByText, getByPlaceholderText, queryByText } =
+      render(<HomeScreen />);
+    await loginInApp(findByPlaceholderText, getByText);
+
+    await waitFor(() => {
+      expect(getByText("GitHub")).toBeTruthy();
+    });
+
+    jest.useFakeTimers();
+
+    fireEvent.changeText(
+      getByPlaceholderText("Pesquisar por titulo ou usuario"),
+      "a",
+    );
+
+    await act(async () => {
+      await jest.advanceTimersByTimeAsync(2 * 60 * 1000);
+    });
+
+    expect(getByText("Cofre bloqueado")).toBeTruthy();
+    expect(queryByText("GitHub")).toBeNull();
+    expect(queryByText("dev-user")).toBeNull();
+  });
+
   it("rejeita cadastro quando a confirmacao de senha nao confere", async () => {
     const { findByPlaceholderText, getByText } = render(<HomeScreen />);
 
@@ -600,6 +646,41 @@ describe("HomeScreen", () => {
       ).toBeTruthy();
       expect(getByText("Criar conta")).toBeTruthy();
     });
+
+    alertSpy.mockRestore();
+  });
+
+  it("nao conclui exclusao se o cofre sincronizado nao puder ser apagado", async () => {
+    loadPasswords.mockResolvedValueOnce([]);
+    clearVault.mockRejectedValueOnce(
+      new Error(
+        "Nao foi possivel apagar o cofre sincronizado. Tente novamente.",
+      ),
+    );
+    const alertSpy = jest
+      .spyOn(Alert, "alert")
+      .mockImplementation((title, message, buttons) => {
+        if (Array.isArray(buttons)) {
+          const confirmButton = buttons.find(
+            (button) => button.text === "Excluir tudo",
+          );
+          confirmButton?.onPress();
+        }
+      });
+
+    const { findByPlaceholderText, getByText } = render(<HomeScreen />);
+    await loginInApp(findByPlaceholderText, getByText);
+
+    fireEvent.press(getByText("Excluir conta e todos os dados"));
+
+    await waitFor(() => {
+      expect(alertSpy).toHaveBeenCalledWith(
+        "Falha ao excluir",
+        "Nao foi possivel apagar o cofre sincronizado. Tente novamente.",
+      );
+    });
+    expect(deleteLocalAccount).not.toHaveBeenCalled();
+    expect(getByText("Sua central de credenciais")).toBeTruthy();
 
     alertSpy.mockRestore();
   });
@@ -916,5 +997,36 @@ describe("HomeScreen", () => {
       expect(getByText(/^Muitas tentativas\. Tente novamente em \d+s\.$/)).toBeTruthy();
     });
     expect(verifyLocalAccount).not.toHaveBeenCalled();
+  });
+
+  it("abre um cofre ja existente na iCloud no segundo aparelho", async () => {
+    peekRemoteVault.mockResolvedValue({
+      available: true,
+      status: "available",
+      meta: {
+        email: "user@email.com",
+        verifier: "abc",
+        kdf: { salt: "00", iterations: 310000 },
+      },
+    });
+    loadPasswords.mockResolvedValue([]);
+
+    const { findByPlaceholderText, getByText } = render(<HomeScreen />);
+
+    await waitFor(() => {
+      expect(getByText("Abrir cofre iCloud")).toBeTruthy();
+    });
+
+    const passwordInput = await findByPlaceholderText("Senha de acesso");
+    fireEvent.changeText(passwordInput, ACCESS_PASSWORD);
+    fireEvent.press(getByText("Abrir cofre"));
+
+    await waitFor(() => {
+      expect(saveLocalAccount).toHaveBeenCalledWith({
+        email: "user@email.com",
+        password: ACCESS_PASSWORD,
+      });
+      expect(getByText("Sua central de credenciais")).toBeTruthy();
+    });
   });
 });

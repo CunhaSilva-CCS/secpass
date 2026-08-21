@@ -6,19 +6,53 @@
   "build": {
     "development": {
       "distribution": "internal",
+      "env": {
+        "EXPO_APPLE_ID": "cortexistech@gmail.com"
+      },
       "ios": {
         "simulator": false
       }
     },
     "preview-simulator": {
       "distribution": "internal",
+      "env": {
+        "EXPO_APPLE_ID": "cortexistech@gmail.com"
+      },
       "ios": {
         "simulator": true
       }
     },
     "preview": {
-      "distribution": "internal"
+      "distribution": "internal",
+      "env": {
+        "EXPO_APPLE_ID": "cortexistech@gmail.com"
+      }
     },
-    "production": {}
+    "production": {
+      "env": {
+        "EXPO_APPLE_ID": "cortexistech@gmail.com"
+      }
+    },
+    "production-device": {
+      "extends": "production",
+      "distribution": "internal",
+      "ios": {
+        "simulator": false
+      }
+    }
+  },
+  "submit": {
+    "production": {
+      "ios": {
+        "appleId": "cortexistech@gmail.com",
+        "appleTeamId": "U9U9M3H2AP"
+      }
+    },
+    "preview": {
+      "ios": {
+        "appleId": "cortexistech@gmail.com",
+        "appleTeamId": "U9U9M3H2AP"
+      }
+    }
   }
 }

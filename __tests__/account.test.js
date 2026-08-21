@@ -23,8 +23,8 @@ jest.mock("expo-secure-store", () => ({
 
 const ACCOUNT_KEY = "secpass_account";
 
-const pbkdf2Hash = (password, salt) =>
-  crypto.pbkdf2Sync(password, salt, 310000, 32, "sha256").toString("hex");
+const pbkdf2Hash = (password, salt, iterations = 600000) =>
+  crypto.pbkdf2Sync(password, salt, iterations, 32, "sha256").toString("hex");
 
 const sha256Hex = (value) =>
   crypto.createHash("sha256").update(value).digest("hex");
@@ -54,7 +54,7 @@ describe("account service", () => {
     expect(parsedAccount.email).toBe("user@email.com");
     expect(parsedAccount.version).toBe(3);
     expect(parsedAccount.kdf).toBe("pbkdf2");
-    expect(parsedAccount.iterations).toBe(310000);
+    expect(parsedAccount.iterations).toBe(600000);
     expect(parsedAccount.keySize).toBe(256);
     expect(parsedAccount.passwordHash).toBe(
       pbkdf2Hash("1234", parsedAccount.salt),
@@ -84,7 +84,7 @@ describe("account service", () => {
       JSON.stringify({
         email: "user@email.com",
         salt,
-        passwordHash: pbkdf2Hash(password, salt),
+        passwordHash: pbkdf2Hash(password, salt, 310000),
         version: 3,
         kdf: "pbkdf2",
         iterations: 310000,
@@ -98,6 +98,56 @@ describe("account service", () => {
     });
 
     expect(isValid).toBe(true);
+  });
+
+  it("valida conta v3 com iteracoes atuais (600k) sem promover de novo", async () => {
+    const salt = "salt-v3-current";
+    const password = "Abc!2345";
+
+    SecureStore.getItemAsync.mockResolvedValueOnce(
+      JSON.stringify({
+        email: "user@email.com",
+        salt,
+        passwordHash: pbkdf2Hash(password, salt, 600000),
+        version: 3,
+        kdf: "pbkdf2",
+        iterations: 600000,
+        keySize: 256,
+      }),
+    );
+
+    const isValid = await verifyLocalAccount({ email: "user@email.com", password });
+
+    expect(isValid).toBe(true);
+    expect(SecureStore.setItemAsync).not.toHaveBeenCalled();
+  });
+
+  it("promove conta v3 com iteracoes antigas (310k) para o valor atual (600k) no login", async () => {
+    const salt = "salt-v3-old-iterations";
+    const password = "Abc!2345";
+
+    SecureStore.getItemAsync.mockResolvedValueOnce(
+      JSON.stringify({
+        email: "user@email.com",
+        salt,
+        passwordHash: pbkdf2Hash(password, salt, 310000),
+        version: 3,
+        kdf: "pbkdf2",
+        iterations: 310000,
+        keySize: 256,
+      }),
+    );
+    SecureStore.setItemAsync.mockResolvedValueOnce();
+
+    const isValid = await verifyLocalAccount({ email: "user@email.com", password });
+
+    expect(isValid).toBe(true);
+    const [, serializedAccount] = SecureStore.setItemAsync.mock.calls[0];
+    const parsedAccount = JSON.parse(serializedAccount);
+    expect(parsedAccount.iterations).toBe(600000);
+    expect(parsedAccount.passwordHash).toBe(
+      pbkdf2Hash(password, parsedAccount.salt, 600000),
+    );
   });
 
   it("migra conta v2 para v3 no login bem-sucedido", async () => {
@@ -251,7 +301,7 @@ describe("account service", () => {
       JSON.stringify({
         email: "user@email.com",
         salt,
-        passwordHash: pbkdf2Hash(password, salt),
+        passwordHash: pbkdf2Hash(password, salt, 310000),
         version: 3,
         kdf: "pbkdf2",
         iterations: 310000,
@@ -280,7 +330,7 @@ describe("account service", () => {
       JSON.stringify({
         email: "user@email.com",
         salt,
-        passwordHash: pbkdf2Hash(password, salt),
+        passwordHash: pbkdf2Hash(password, salt, 310000),
         version: 3,
         kdf: "pbkdf2",
         iterations: 310000,
@@ -342,7 +392,7 @@ describe("account service", () => {
       JSON.stringify({
         email: "dono@email.com",
         salt,
-        passwordHash: pbkdf2Hash(password, salt),
+        passwordHash: pbkdf2Hash(password, salt, 310000),
         version: 3,
         kdf: "pbkdf2",
         iterations: 310000,
