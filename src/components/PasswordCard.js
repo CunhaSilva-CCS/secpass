@@ -20,14 +20,14 @@ const ICON_SIZE = 18;
 const CLIPBOARD_CLEAR_MS = 30000;
 
 const defaultTheme = {
-  card: "#FFFCF5",
-  border: "#E3D6B8",
-  text: "#211A10",
-  textMuted: "#7A6C52",
-  accent: "#8A6A1F",
-  accentSoft: "#F1E6C6",
-  secondaryButton: "#EFE4C8",
-  secondaryText: "#4A3C22",
+  card: "#FFFFFF",
+  border: "#D7E2F3",
+  text: "#0E1B2E",
+  textMuted: "#66798F",
+  accent: "#215FCC",
+  accentSoft: "#DCE8FB",
+  secondaryButton: "#E6EEFC",
+  secondaryText: "#183C7A",
   dangerSoft: "#FBEAE3",
   dangerText: "#B14226",
   successSoft: "#E8F3EA",

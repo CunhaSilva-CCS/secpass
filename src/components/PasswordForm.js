@@ -3,16 +3,16 @@ import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { SENSITIVE_TEXT_INPUT_PROPS } from "../utils/sensitiveInput";
 
 const defaultTheme = {
-  card: "#FFFCF5",
-  cardSoft: "#F6EFDF",
-  border: "#E3D6B8",
-  borderStrong: "#D8C89E",
-  text: "#211A10",
-  textMuted: "#7A6C52",
-  primary: "#8A6A1F",
-  primaryText: "#FFFBF2",
-  secondaryButton: "#EFE4C8",
-  secondaryText: "#4A3C22",
+  card: "#FFFFFF",
+  cardSoft: "#F3F7FD",
+  border: "#D7E2F3",
+  borderStrong: "#C7D7EE",
+  text: "#0E1B2E",
+  textMuted: "#66798F",
+  primary: "#215FCC",
+  primaryText: "#FFFFFF",
+  secondaryButton: "#E6EEFC",
+  secondaryText: "#183C7A",
 };
 
 export default function PasswordForm({

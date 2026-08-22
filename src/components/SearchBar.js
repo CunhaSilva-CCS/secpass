@@ -1,10 +1,10 @@
 import { StyleSheet, TextInput, View } from "react-native";
 
 const defaultTheme = {
-  cardSoft: "#F6EFDF",
-  border: "#D8C89E",
-  text: "#211A10",
-  textMuted: "#7A6C52",
+  cardSoft: "#F3F7FD",
+  border: "#C7D7EE",
+  text: "#0E1B2E",
+  textMuted: "#66798F",
 };
 
 export default function SearchBar({

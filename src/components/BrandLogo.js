@@ -1,12 +1,12 @@
 import { StyleSheet, Text, View } from "react-native";
 
 const defaultTheme = {
-  accent: "#8A6A1F",
-  primaryText: "#FFFBF2",
-  text: "#211A10",
-  textSoft: "#584A34",
-  card: "#FFFCF5",
-  border: "#E3D6B8",
+  accent: "#215FCC",
+  primaryText: "#FFFFFF",
+  text: "#0E1B2E",
+  textSoft: "#3E526F",
+  card: "#FFFFFF",
+  border: "#D7E2F3",
 };
 
 // A marca e um cadeado com um furo de fechadura de verdade (circulo + cunha)

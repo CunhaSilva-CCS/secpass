@@ -1,9 +1,9 @@
 import { Image, StyleSheet, Text, View } from "react-native";
 
 const defaultTheme = {
-  textMuted: "#7A6C52",
-  cardSoft: "#F6EFDF",
-  border: "#E3D6B8",
+  textMuted: "#66798F",
+  cardSoft: "#F3F7FD",
+  border: "#D7E2F3",
 };
 
 export default function CortexisCredit({ theme = defaultTheme }) {
