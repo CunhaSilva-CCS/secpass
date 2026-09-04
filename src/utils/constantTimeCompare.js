@@ -3,13 +3,13 @@ export const constantTimeCompare = (left, right) => {
     return false;
   }
 
-  if (left.length !== right.length) {
-    return false;
-  }
+  const maxLength = Math.max(left.length, right.length);
+  let diff = left.length ^ right.length;
 
-  let diff = 0;
-  for (let index = 0; index < left.length; index += 1) {
-    diff |= left.charCodeAt(index) ^ right.charCodeAt(index);
+  for (let index = 0; index < maxLength; index += 1) {
+    const leftChar = index < left.length ? left.charCodeAt(index) : 0;
+    const rightChar = index < right.length ? right.charCodeAt(index) : 0;
+    diff |= leftChar ^ rightChar;
   }
 
   return diff === 0;

@@ -1,4 +1,7 @@
-import React from "react";
+import React, { act as reactAct } from "react";
+if (!React.act) {
+  React.act = reactAct;
+}
 import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
 import { Alert } from "react-native";
 import * as Clipboard from "expo-clipboard";
@@ -37,7 +40,11 @@ describe("PasswordCard", () => {
 
   it("mostra a senha mascarada por padrao", () => {
     const { getByText } = render(
-      <PasswordCard item={sampleItem} onDelete={jest.fn()} onUpdate={jest.fn()} />,
+      <PasswordCard
+        item={sampleItem}
+        onDelete={jest.fn()}
+        onUpdate={jest.fn()}
+      />,
     );
 
     expect(getByText("••••••••••")).toBeTruthy();
@@ -45,7 +52,11 @@ describe("PasswordCard", () => {
 
   it("revela a senha apos autenticacao bem-sucedida", async () => {
     const { getByText, getByLabelText, queryByText } = render(
-      <PasswordCard item={sampleItem} onDelete={jest.fn()} onUpdate={jest.fn()} />,
+      <PasswordCard
+        item={sampleItem}
+        onDelete={jest.fn()}
+        onUpdate={jest.fn()}
+      />,
     );
 
     fireEvent.press(getByLabelText("Mostrar senha"));
@@ -63,7 +74,11 @@ describe("PasswordCard", () => {
     });
 
     const { getByText, getByLabelText } = render(
-      <PasswordCard item={sampleItem} onDelete={jest.fn()} onUpdate={jest.fn()} />,
+      <PasswordCard
+        item={sampleItem}
+        onDelete={jest.fn()}
+        onUpdate={jest.fn()}
+      />,
     );
 
     fireEvent.press(getByLabelText("Mostrar senha"));
@@ -84,7 +99,11 @@ describe("PasswordCard", () => {
     });
 
     const { getByText, getByLabelText } = render(
-      <PasswordCard item={sampleItem} onDelete={jest.fn()} onUpdate={jest.fn()} />,
+      <PasswordCard
+        item={sampleItem}
+        onDelete={jest.fn()}
+        onUpdate={jest.fn()}
+      />,
     );
 
     fireEvent.press(getByLabelText("Mostrar senha"));
@@ -101,7 +120,11 @@ describe("PasswordCard", () => {
     Clipboard.getStringAsync.mockResolvedValue(sampleItem.password);
 
     const { getByLabelText } = render(
-      <PasswordCard item={sampleItem} onDelete={jest.fn()} onUpdate={jest.fn()} />,
+      <PasswordCard
+        item={sampleItem}
+        onDelete={jest.fn()}
+        onUpdate={jest.fn()}
+      />,
     );
 
     await act(async () => {
@@ -122,7 +145,11 @@ describe("PasswordCard", () => {
     Clipboard.getStringAsync.mockResolvedValue("outro-valor-copiado-depois");
 
     const { getByLabelText } = render(
-      <PasswordCard item={sampleItem} onDelete={jest.fn()} onUpdate={jest.fn()} />,
+      <PasswordCard
+        item={sampleItem}
+        onDelete={jest.fn()}
+        onUpdate={jest.fn()}
+      />,
     );
 
     await act(async () => {
@@ -144,7 +171,11 @@ describe("PasswordCard", () => {
     });
 
     const { getByLabelText } = render(
-      <PasswordCard item={sampleItem} onDelete={jest.fn()} onUpdate={jest.fn()} />,
+      <PasswordCard
+        item={sampleItem}
+        onDelete={jest.fn()}
+        onUpdate={jest.fn()}
+      />,
     );
 
     fireEvent.press(getByLabelText("Copiar senha"));
@@ -155,22 +186,55 @@ describe("PasswordCard", () => {
     expect(Clipboard.setStringAsync).not.toHaveBeenCalled();
   });
 
-  it("exclui o item ao pressionar Excluir", () => {
+  it("exclui o item ao pressionar Excluir apos autenticacao", async () => {
     const onDelete = jest.fn();
     const { getByLabelText } = render(
-      <PasswordCard item={sampleItem} onDelete={onDelete} onUpdate={jest.fn()} />,
+      <PasswordCard
+        item={sampleItem}
+        onDelete={onDelete}
+        onUpdate={jest.fn()}
+      />,
     );
 
     fireEvent.press(getByLabelText("Excluir credencial"));
 
-    expect(onDelete).toHaveBeenCalledWith(sampleItem.id);
+    await waitFor(() => {
+      expect(onDelete).toHaveBeenCalledWith(sampleItem.id);
+    });
+  });
+
+  it("nao exclui o item quando a autenticacao falha", async () => {
+    const onDelete = jest.fn();
+    authenticateVaultAccess.mockResolvedValue({
+      success: false,
+      error: "not_available",
+    });
+
+    const { getByLabelText } = render(
+      <PasswordCard
+        item={sampleItem}
+        onDelete={onDelete}
+        onUpdate={jest.fn()}
+      />,
+    );
+
+    fireEvent.press(getByLabelText("Excluir credencial"));
+
+    await waitFor(() => {
+      expect(authenticateVaultAccess).toHaveBeenCalled();
+    });
+    expect(onDelete).not.toHaveBeenCalled();
   });
 
   it("edita e salva um item apos autenticacao", async () => {
     const onUpdate = jest.fn();
 
     const { getByText, getByLabelText, getByDisplayValue } = render(
-      <PasswordCard item={sampleItem} onDelete={jest.fn()} onUpdate={onUpdate} />,
+      <PasswordCard
+        item={sampleItem}
+        onDelete={jest.fn()}
+        onUpdate={onUpdate}
+      />,
     );
 
     fireEvent.press(getByLabelText("Editar credencial"));
@@ -193,7 +257,11 @@ describe("PasswordCard", () => {
     const onUpdate = jest.fn();
 
     const { getByText, getByLabelText, getByDisplayValue } = render(
-      <PasswordCard item={sampleItem} onDelete={jest.fn()} onUpdate={onUpdate} />,
+      <PasswordCard
+        item={sampleItem}
+        onDelete={jest.fn()}
+        onUpdate={onUpdate}
+      />,
     );
 
     fireEvent.press(getByLabelText("Editar credencial"));
@@ -213,10 +281,18 @@ describe("PasswordCard", () => {
   });
 
   it("cancela edicao restaurando valores originais", async () => {
-    const { getByText, getByLabelText, getByDisplayValue, queryByDisplayValue } =
-      render(
-        <PasswordCard item={sampleItem} onDelete={jest.fn()} onUpdate={jest.fn()} />,
-      );
+    const {
+      getByText,
+      getByLabelText,
+      getByDisplayValue,
+      queryByDisplayValue,
+    } = render(
+      <PasswordCard
+        item={sampleItem}
+        onDelete={jest.fn()}
+        onUpdate={jest.fn()}
+      />,
+    );
 
     fireEvent.press(getByLabelText("Editar credencial"));
 

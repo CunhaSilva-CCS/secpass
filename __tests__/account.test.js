@@ -116,7 +116,10 @@ describe("account service", () => {
       }),
     );
 
-    const isValid = await verifyLocalAccount({ email: "user@email.com", password });
+    const isValid = await verifyLocalAccount({
+      email: "user@email.com",
+      password,
+    });
 
     expect(isValid).toBe(true);
     expect(SecureStore.setItemAsync).not.toHaveBeenCalled();
@@ -139,7 +142,10 @@ describe("account service", () => {
     );
     SecureStore.setItemAsync.mockResolvedValueOnce();
 
-    const isValid = await verifyLocalAccount({ email: "user@email.com", password });
+    const isValid = await verifyLocalAccount({
+      email: "user@email.com",
+      password,
+    });
 
     expect(isValid).toBe(true);
     const [, serializedAccount] = SecureStore.setItemAsync.mock.calls[0];
@@ -234,40 +240,26 @@ describe("account service", () => {
     expect(isValid).toBe(false);
   });
 
-  it("usa fallback legado quando leitura do SecureStore falha", async () => {
+  it("falha fechado quando leitura do SecureStore falha", async () => {
     SecureStore.getItemAsync.mockRejectedValueOnce(new Error("secure-down"));
-    AsyncStorage.getItem.mockResolvedValueOnce(
-      JSON.stringify({
-        email: "legacy@email.com",
-        password: "1234",
-      }),
-    );
 
     const loaded = await loadLocalAccount();
 
-    expect(loaded).toEqual({ email: "legacy@email.com" });
+    expect(loaded).toBeNull();
   });
 
-  it("valida login via fallback legado quando SecureStore falha", async () => {
+  it("nao valida login quando SecureStore falha", async () => {
     const salt = "legacy-salt";
     const password = "1234";
 
     SecureStore.getItemAsync.mockRejectedValueOnce(new Error("secure-down"));
-    AsyncStorage.getItem.mockResolvedValueOnce(
-      JSON.stringify({
-        email: "legacy@email.com",
-        salt,
-        passwordHash: sha256Hex(`${salt}:${password}`),
-        version: 2,
-      }),
-    );
 
     const isValid = await verifyLocalAccount({
       email: "legacy@email.com",
       password,
     });
 
-    expect(isValid).toBe(true);
+    expect(isValid).toBe(false);
   });
 
   it("lanca erro ao salvar quando SecureStore nao esta disponivel", async () => {
@@ -421,9 +413,7 @@ describe("account service", () => {
   });
 
   it("deleteLocalAccount remove o fallback mesmo se o SecureStore falhar", async () => {
-    SecureStore.deleteItemAsync.mockRejectedValueOnce(
-      new Error("secure-down"),
-    );
+    SecureStore.deleteItemAsync.mockRejectedValueOnce(new Error("secure-down"));
 
     await deleteLocalAccount();
 

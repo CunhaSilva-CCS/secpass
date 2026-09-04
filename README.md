@@ -2,11 +2,11 @@
 
 ![CI](https://github.com/CunhaSilva-CCS/secpass/actions/workflows/ci.yml/badge.svg)
 
-Aplicativo mobile de gerenciamento de senhas (iOS/Android) com cofre local criptografado no dispositivo.
+Aplicativo Android de gerenciamento de senhas com cofre local criptografado no dispositivo.
 
 ## Escopo Atual (Mobile-Only)
 
-- Plataforma: iOS e Android (Expo/React Native).
+- Plataforma atual: Android (Expo/React Native). O código iOS permanece no repositório, mas não faz parte desta entrega.
 - Armazenamento: local no celular, com `expo-secure-store` e autenticação do aparelho.
 - Cofre: payload criptografado (`encrypted_vault`) com PBKDF2 + AES-256-GCM (AEAD).
 - Bloqueio: sem seletor de segundos; o bloqueio ocorre pelo ciclo nativo do app (background/foreground) e desbloqueio biométrico.
@@ -62,9 +62,13 @@ Aplicativo mobile de gerenciamento de senhas (iOS/Android) com cofre local cript
   criação de conta, exportação/importação de backup, captura de tela
   detectada, etc.), com opção de limpar o histórico.
 
-## Sync entre iPhone e Mac (CloudKit)
+## Sincronização entre dispositivos
 
-> **Status atual: desativado.** O modulo nativo existe e compila, mas
+> **Status atual: não disponível no Android.** O módulo iOS existe no
+> repositório, mas não faz parte do build atual e o app Android funciona
+> exclusivamente com armazenamento local.
+
+O módulo iOS de CloudKit está desativado:
 > `cloudKitEntitlementConfigured` em
 > [`modules/secure-vault-cloudkit/ios/SecureVaultCloudKitModule.swift`](modules/secure-vault-cloudkit/ios/SecureVaultCloudKitModule.swift)
 > esta fixo em `false` — o app nunca chama `CKContainer`, entao roda 100%
@@ -123,7 +127,7 @@ total de dados:
   acesso ao cofre salvo com a senha anterior. Sem um backup exportado, esses
   dados são perdidos permanentemente — o app avisa isso antes de prosseguir.
 
-## Execução
+## Execução Android
 
 Instalar dependências:
 
@@ -131,40 +135,18 @@ Instalar dependências:
 npm install
 ```
 
-Rodar app:
+Rodar app Android:
 
 ```bash
 npm run dev
 ```
 
-Atalhos:
+Atalhos Android:
 
 ```bash
-npm run ios
 npm run android
+npm run android:device
 ```
-
-### Rodar no Mac (Apple Silicon)
-
-O app roda nativamente em Macs com Apple Silicon via o destino "My Mac
-(Designed for iPad)" do Xcode — o mesmo binário iOS, sem target nem
-configuração de build separados. Validado: todos os módulos nativos
-(`react-native-quick-crypto`, `react-native-nitro-modules`,
-`react-native-quick-base64`, `react-native-worklets`,
-`react-native-reanimated`, `expo-secure-store`) compilam sem erro nesse modo.
-
-```bash
-npm run mac
-```
-
-Na primeira execução, abra `ios/SecPass.xcworkspace` no Xcode e use a conta
-Apple `cortexistech@gmail.com` (team `U9U9M3H2AP`) em Signing & Capabilities.
-
-Limitações desse modo: só funciona em Mac com Apple Silicon (não Intel) e não
-é o mesmo que um app "Mac Catalyst" completo — não há hoje um segundo target
-otimizado para desktop nem distribuição fora do seu próprio Mac. Suficiente
-para uso pessoal; uma versão Catalyst completa (multi-arquitetura, App Store)
-ficaria para uma iteração futura, se necessário.
 
 ## Testes e Qualidade
 
@@ -179,11 +161,11 @@ roda no app final, e só têm correção disponível via downgrade major do Expo
 (`--force`). Rode `npm audit` periodicamente e avalie upgrades do Expo SDK
 como uma decisão deliberada, não uma correção automática.
 
-## Release Mobile
+## Release Android
 
 - Workflow: [.github/workflows/deploy-app-eas.yml](.github/workflows/deploy-app-eas.yml)
-- Disparo manual (`workflow_dispatch`): escolher `profile` e `platform`.
-- Disparo por tag: ao criar tag `v*`, o workflow executa build com `production` e `all` automaticamente.
+- Disparo manual (`workflow_dispatch`): escolher `profile`; a plataforma é Android.
+- Disparo por tag: ao criar tag `v*`, o workflow executa build Android com `production` automaticamente.
 - Formato de versao aceito: `vMAJOR.MINOR.PATCH` (ex: `v1.2.0`, `v1.2.0-rc1`).
 
 Comandos locais equivalentes:
@@ -191,15 +173,11 @@ Comandos locais equivalentes:
 ```bash
 npm run build:preview
 npm run build:preview:android
-npm run build:preview:ios-simulator
 npm run build:prod
 ```
 
-Observacao sobre iOS:
-
-- Build iOS para dispositivo interno/App Store exige a conta Apple
-  `cortexistech@gmail.com` (team `U9U9M3H2AP`) ativa no Apple Developer Program.
-- Sem enrollment Apple, use `build:preview:ios-simulator` para validar o app no simulador iOS sem credenciais de distribuicao.
+`preview` gera um APK para testes internos. `production` gera um AAB para
+publicação no Google Play.
 
 Checklist de release:
 

@@ -10,10 +10,7 @@ import {
 
 const ACCOUNT_KEY = "secpass_account";
 const ACCOUNT_VERSION = 3;
-// OWASP recomenda >=600k para PBKDF2-HMAC-SHA256 (2023+). So afeta contas
-// NOVAS: contas v3 existentes continuam validando com o "iterations" salvo
-// no proprio registro (ver hashPasswordV3/verifyLocalAccount) e sao
-// promovidas para este valor de forma transparente no proximo login valido.
+
 const PBKDF2_ITERATIONS = 600000;
 const PBKDF2_KEY_SIZE_WORDS = 256 / 32;
 const SECURE_STORE_ERROR = "Falha ao salvar conta no armazenamento seguro.";
@@ -21,6 +18,10 @@ const SECURE_STORE_OPTIONS = {
   keychainService: "secpass.account",
   keychainAccessible: SecureStore.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
 };
+
+const DUMMY_SALT = "0123456789abcdef0123456789abcdef";
+const DUMMY_HASH =
+  "0000000000000000000000000000000000000000000000000000000000000000";
 
 const parseAccount = (rawValue) => {
   if (!rawValue) {
@@ -129,21 +130,25 @@ const writeSecureAccount = async ({
 };
 
 const getStoredAccount = async () => {
+  let secureAccount;
+
   try {
-    const secureAccount = await SecureStore.getItemAsync(
+    secureAccount = await SecureStore.getItemAsync(
       ACCOUNT_KEY,
       SECURE_STORE_OPTIONS,
     );
-    const parsedSecureAccount = parseAccount(secureAccount);
-
-    if (parsedSecureAccount) {
-      return {
-        account: parsedSecureAccount,
-        source: "secure",
-      };
-    }
   } catch {
-    // Continua com fallback legado quando SecureStore nao estiver disponivel.
+    // Nao autentica contra armazenamento nao seguro quando o backend seguro falha.
+    return null;
+  }
+
+  const parsedSecureAccount = parseAccount(secureAccount);
+
+  if (parsedSecureAccount) {
+    return {
+      account: parsedSecureAccount,
+      source: "secure",
+    };
   }
 
   const fallbackAccount = await AsyncStorage.getItem(ACCOUNT_KEY);
@@ -213,63 +218,63 @@ export const loadLocalAccount = async () => {
 };
 
 export const verifyLocalAccount = async ({ email, password }) => {
-  const normalizedEmail = email.trim().toLowerCase();
+  const normalizedEmail = (email || "").trim().toLowerCase();
 
   const storedAccount = await getStoredAccount();
-  if (!storedAccount) {
-    return false;
-  }
+  const account = storedAccount?.account || null;
 
-  const { account: parsedSecureAccount } = storedAccount;
+  const isEmailValid = account
+    ? constantTimeCompare(account.email, normalizedEmail)
+    : false;
 
-  if (parsedSecureAccount.version === 1) {
-    if (
-      parsedSecureAccount.email === normalizedEmail &&
-      constantTimeCompare(parsedSecureAccount.legacyPassword, password)
-    ) {
+  if (account?.version === 1) {
+    const isLegacyPasswordValid = constantTimeCompare(
+      account.legacyPassword || "",
+      password || "",
+    );
+    const isValid = isEmailValid && isLegacyPasswordValid;
+    if (isValid) {
       await saveLocalAccount({
-        email: parsedSecureAccount.email,
-        password: parsedSecureAccount.legacyPassword,
+        email: account.email,
+        password: account.legacyPassword,
       });
       return true;
     }
-
+    hashPasswordV3(password || "", DUMMY_SALT, PBKDF2_ITERATIONS);
     return false;
   }
 
-  if (parsedSecureAccount.email !== normalizedEmail) {
-    return false;
-  }
-
-  if (parsedSecureAccount.version === 2) {
-    const inputHash = hashPasswordV2(password, parsedSecureAccount.salt);
-    const isValid = constantTimeCompare(
-      parsedSecureAccount.passwordHash,
-      inputHash,
+  if (account?.version === 2) {
+    const inputHashV2 = hashPasswordV2(password || "", account.salt);
+    const isHashValidV2 = constantTimeCompare(
+      account.passwordHash,
+      inputHashV2,
     );
-
+    const isValid = isEmailValid && isHashValidV2;
     if (isValid) {
       try {
         await saveLocalAccount({ email: normalizedEmail, password });
       } catch {
         // Login continua valido mesmo sem concluir promocao para v3.
       }
+      return true;
     }
-
-    return isValid;
+    hashPasswordV3(
+      password || "",
+      account.salt || DUMMY_SALT,
+      PBKDF2_ITERATIONS,
+    );
+    return false;
   }
 
-  const storedIterations =
-    Number(parsedSecureAccount.iterations) || PBKDF2_ITERATIONS;
-  const inputHash = hashPasswordV3(
-    password,
-    parsedSecureAccount.salt,
-    storedIterations,
-  );
-  const isValid = constantTimeCompare(
-    parsedSecureAccount.passwordHash,
-    inputHash,
-  );
+  const salt = account?.salt || DUMMY_SALT;
+  const storedIterations = Number(account?.iterations) || PBKDF2_ITERATIONS;
+  const expectedHash = account?.passwordHash || DUMMY_HASH;
+
+  const inputHash = hashPasswordV3(password || "", salt, storedIterations);
+
+  const isHashValid = constantTimeCompare(expectedHash, inputHash);
+  const isValid = isEmailValid && isHashValid;
 
   if (isValid && storedIterations < PBKDF2_ITERATIONS) {
     try {

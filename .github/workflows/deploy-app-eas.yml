@@ -21,12 +21,10 @@ on:
       platform:
         description: Plataforma de build
         required: true
-        default: all
+        default: android
         type: choice
         options:
-          - all
           - android
-          - ios
 
 env:
   NODE_VERSION: 20
@@ -81,7 +79,7 @@ jobs:
             fi
 
             echo "profile=production" >> "$GITHUB_OUTPUT"
-            echo "platform=all" >> "$GITHUB_OUTPUT"
+            echo "platform=android" >> "$GITHUB_OUTPUT"
             echo "release_version=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
           else
             echo "profile=${INPUT_PROFILE}" >> "$GITHUB_OUTPUT"
@@ -106,7 +104,7 @@ jobs:
           echo "Target platform: ${{ steps.release_params.outputs.platform }}"
 
       - name: Build Android with EAS
-        if: ${{ steps.release_params.outputs.platform == 'all' || steps.release_params.outputs.platform == 'android' }}
+        if: ${{ steps.release_params.outputs.platform == 'android' }}
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
         run: |
@@ -114,30 +112,3 @@ jobs:
             --profile ${{ steps.release_params.outputs.profile }} \
             --platform android \
             --non-interactive
-
-      - name: Build iOS with EAS
-        if: ${{ steps.release_params.outputs.platform == 'all' || steps.release_params.outputs.platform == 'ios' }}
-        env:
-          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
-        run: |
-          set +e
-
-          OUTPUT_FILE="$(mktemp)"
-
-          npx eas-cli build \
-            --profile ${{ steps.release_params.outputs.profile }} \
-            --platform ios \
-            --non-interactive 2>&1 | tee "$OUTPUT_FILE"
-
-          exit_code=${PIPESTATUS[0]}
-          if [ "$exit_code" -eq 0 ]; then
-            exit 0
-          fi
-
-          if [ "${{ steps.release_params.outputs.platform }}" = "all" ] && grep -qi "couldn't find any credentials suitable for internal distribution" "$OUTPUT_FILE"; then
-            echo "iOS sem credenciais non-interactive para internal distribution. Android foi publicado e o job segue com sucesso."
-            echo "Para habilitar iOS em CI: rode uma vez em modo interativo para provisionar credenciais." 
-            exit 0
-          fi
-
-          exit "$exit_code"

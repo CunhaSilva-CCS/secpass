@@ -6,52 +6,26 @@
   "build": {
     "development": {
       "distribution": "internal",
-      "env": {
-        "EXPO_APPLE_ID": "cortexistech@gmail.com"
-      },
-      "ios": {
-        "simulator": false
-      }
-    },
-    "preview-simulator": {
-      "distribution": "internal",
-      "env": {
-        "EXPO_APPLE_ID": "cortexistech@gmail.com"
-      },
-      "ios": {
-        "simulator": true
+      "android": {
+        "buildType": "apk"
       }
     },
     "preview": {
       "distribution": "internal",
-      "env": {
-        "EXPO_APPLE_ID": "cortexistech@gmail.com"
+      "android": {
+        "buildType": "apk"
       }
     },
     "production": {
-      "env": {
-        "EXPO_APPLE_ID": "cortexistech@gmail.com"
+      "android": {
+        "buildType": "app-bundle"
       }
     },
     "production-device": {
       "extends": "production",
       "distribution": "internal",
-      "ios": {
-        "simulator": false
-      }
-    }
-  },
-  "submit": {
-    "production": {
-      "ios": {
-        "appleId": "cortexistech@gmail.com",
-        "appleTeamId": "U9U9M3H2AP"
-      }
-    },
-    "preview": {
-      "ios": {
-        "appleId": "cortexistech@gmail.com",
-        "appleTeamId": "U9U9M3H2AP"
+      "android": {
+        "buildType": "apk"
       }
     }
   }

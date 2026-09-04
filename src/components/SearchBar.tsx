@@ -1,6 +1,19 @@
 import { StyleSheet, TextInput, View } from "react-native";
 
-const defaultTheme = {
+type SearchTheme = {
+  cardSoft: string;
+  border: string;
+  text: string;
+  textMuted: string;
+};
+
+type SearchBarProps = {
+  value: string;
+  onChangeText: (value: string) => void;
+  theme?: SearchTheme;
+};
+
+const defaultTheme: SearchTheme = {
   cardSoft: "#F3F7FD",
   border: "#C7D7EE",
   text: "#0E1B2E",
@@ -11,7 +24,7 @@ export default function SearchBar({
   value,
   onChangeText,
   theme = defaultTheme,
-}) {
+}: SearchBarProps) {
   return (
     <View style={styles.wrapper}>
       <TextInput

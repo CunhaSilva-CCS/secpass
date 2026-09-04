@@ -5,23 +5,24 @@ import React, {
   useRef,
   useState,
 } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Feather } from "@expo/vector-icons";
 import {
   ActivityIndicator,
+  Alert,
   AppState,
   FlatList,
-  Alert,
   KeyboardAvoidingView,
   Modal,
   Platform,
   Pressable,
   ScrollView,
   Share,
+  StatusBar,
   StyleSheet,
   Text,
   TextInput,
   View,
-  StatusBar,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import * as ScreenCapture from "expo-screen-capture";
@@ -33,7 +34,6 @@ import BrandLogo from "../components/BrandLogo";
 import CortexisCredit from "../components/CortexisCredit";
 import { useColorScheme } from "../hooks/use-color-scheme";
 import { authenticateVaultAccess } from "../utils/biometricAuth";
-
 import {
   clearVault,
   loadPasswords,
@@ -65,7 +65,6 @@ import {
   MIN_ACCESS_PASSWORD_LENGTH,
   validateAccessPasswordPolicy,
 } from "../utils/securityPolicy";
-
 import {
   createVaultSecret,
   decryptVaultEnvelope,
@@ -81,15 +80,13 @@ import {
   loadSecurityEvents,
   logSecurityEvent,
 } from "../services/securityAudit";
-
 import { generatePassword } from "../utils/passwordGenerator";
 import { DEVICE_AUTH_NOT_CONFIGURED } from "../utils/secureStoreErrors";
 
 const DEVICE_AUTH_NOT_CONFIGURED_MESSAGE =
   "Este aparelho nao tem senha, Face ID ou Touch ID configurado. Ative um metodo de bloqueio de tela nos Ajustes do sistema para usar o SecPass.";
-
 const IDLE_LOCK_MS = 2 * 60 * 1000;
-
+const THEME_PREFERENCE_KEY = "secpass_theme_preference";
 const SECURITY_EVENT_LABELS = {
   login_success: "Login bem-sucedido",
   login_failed: "Tentativa de login com senha incorreta",
@@ -104,9 +101,7 @@ const SECURITY_EVENT_LABELS = {
   vault_load_failed: "Falha ao descriptografar o cofre salvo",
   screenshot_detected: "Captura de tela detectada",
 };
-
 const formatSecurityEventType = (type) => SECURITY_EVENT_LABELS[type] || type;
-
 const formatSecurityEventDate = (isoString) => {
   try {
     return new Date(isoString).toLocaleString("pt-BR");
@@ -114,35 +109,28 @@ const formatSecurityEventDate = (isoString) => {
     return isoString;
   }
 };
-
-// Identidade "cofre de aco": grafite azulado em vez de preto neutro, azul
-// cobalto como cor de destaque (mais autoral que o azul generico de SaaS
-// usado antes da v1 deste redesign). Mono para dados sensiveis (senha
-// revelada, timestamps do historico) reforça a leitura de "cifra"/"registro
-// de cofre" em vez de decoracao.
 const DARK_THEME = {
   bg: "#0B1420",
   orbTop: "#152A44",
   orbBottom: "#0A1420",
-  text: "#E8EFFA",
-  textSoft: "#B4C4DC",
-  textMuted: "#7C8FAE",
-  accent: "#4C8DFF",
-  accentSoft: "#16283F",
+  text: "#F4F7FC",
+  textSoft: "#D2DDED",
+  textMuted: "#A5B7D0",
+  accent: "#78AAFF",
+  accentSoft: "#1D3554",
   card: "#101C2E",
   cardSoft: "#0B1626",
-  border: "#22344C",
-  borderStrong: "#2E4363",
-  primary: "#3D7BFF",
+  border: "#2B405C",
+  borderStrong: "#466487",
+  primary: "#4C8DFF",
   primaryText: "#F5F9FF",
   secondaryButton: "#182A42",
-  secondaryText: "#BFD6FF",
-  dangerSoft: "#2E1A1E",
-  dangerText: "#FF8FA3",
+  secondaryText: "#D7E5FF",
+  dangerSoft: "#3A2229",
+  dangerText: "#FFB1BE",
   successSoft: "#122C24",
-  successText: "#6FE0B0",
+  successText: "#86E6BB",
 };
-
 const LIGHT_THEME = {
   bg: "#EEF3FB",
   orbTop: "#D9E6FB",
@@ -165,7 +153,6 @@ const LIGHT_THEME = {
   successSoft: "#E8F3EA",
   successText: "#2F7A4C",
 };
-
 const MONO_FONT = Platform.select({
   ios: "Menlo",
   android: "monospace",
@@ -174,7 +161,10 @@ const MONO_FONT = Platform.select({
 
 export default function HomeScreen() {
   const colorScheme = useColorScheme();
-  const isDark = colorScheme === "dark";
+  const [themePreference, setThemePreference] = useState("system");
+  const isDark =
+    themePreference === "dark" ||
+    (themePreference === "system" && colorScheme === "dark");
   const theme = isDark ? DARK_THEME : LIGHT_THEME;
 
   const [items, setItems] = useState([]);
@@ -191,6 +181,9 @@ export default function HomeScreen() {
   const [email, setEmail] = useState("");
   const [accessPassword, setAccessPassword] = useState("");
   const [confirmAccessPassword, setConfirmAccessPassword] = useState("");
+  const [showAccessPassword, setShowAccessPassword] = useState(false);
+  const [showConfirmAccessPassword, setShowConfirmAccessPassword] =
+    useState(false);
   const [loginMessage, setLoginMessage] = useState("");
   const [failedLoginAttempts, setFailedLoginAttempts] = useState(0);
   const [loginLockLevel, setLoginLockLevel] = useState(0);
@@ -213,6 +206,21 @@ export default function HomeScreen() {
   const wasBackgroundedRef = useRef(false);
   const needsVaultReloadRef = useRef(false);
 
+  useEffect(() => {
+    AsyncStorage.getItem(THEME_PREFERENCE_KEY)
+      .then((preference) => {
+        if (["light", "dark", "system"].includes(preference)) {
+          setThemePreference(preference);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const chooseTheme = (preference) => {
+    setThemePreference(preference);
+    AsyncStorage.setItem(THEME_PREFERENCE_KEY, preference).catch(() => {});
+  };
+
   const lockVault = useCallback(
     (reason = "") => {
       skipNextPersistRef.current = true;
@@ -221,22 +229,15 @@ export default function HomeScreen() {
       setHasLoadedData(false);
       setIsAppUnlocked(false);
       setAuthMessage(reason);
-
       if (vaultSecret && hasLoadedData) {
-        Promise.resolve(
-          savePasswords(items, { vaultSecret }),
-        ).catch(() => {});
+        Promise.resolve(savePasswords(items, { vaultSecret })).catch(() => {});
       }
     },
     [hasLoadedData, items, vaultSecret],
   );
 
   const registerUserActivity = useCallback(() => {
-    if (idleTimerRef.current) {
-      clearTimeout(idleTimerRef.current);
-      idleTimerRef.current = null;
-    }
-
+    if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
     if (isLoggedIn && isAppUnlocked) {
       idleTimerRef.current = setTimeout(() => {
         lockVault("Cofre bloqueado por inatividade.");
@@ -244,31 +245,18 @@ export default function HomeScreen() {
     }
   }, [isLoggedIn, isAppUnlocked, lockVault]);
 
-  // iCloud Keychain nao tem callback de "o cofre mudou agora" - o gatilho
-  // pratico disponivel e reconsultar ao desbloquear o cofre (background ->
-  // active, idle lock, etc.), com merge por item para nao sobrescrever
-  // edicoes locais feitas offline. Ver src/services/vaultMerge.js.
-  const reloadVaultFromStorage = useCallback(async () => {
-    if (!vaultSecret) {
-      return;
-    }
-
-    try {
-      const loadedItems = await loadPasswords({ vaultSecret });
+  const reloadVaultFromStorage = useCallback(
+    async (secret = vaultSecret) => {
+      if (!secret) return;
+      const loadedItems = await loadPasswords({ vaultSecret: secret });
       setItems(loadedItems);
       setHasLoadedData(true);
-    } catch {
-      skipNextPersistRef.current = true;
-      setItems([]);
-      setHasLoadedData(true);
-    }
-  }, [vaultSecret]);
+    },
+    [vaultSecret],
+  );
 
   const pullRemoteVaultUpdates = useCallback(async () => {
-    if (!vaultSecret) {
-      return;
-    }
-
+    if (!vaultSecret) return;
     try {
       const remoteItems = await loadPasswords({ vaultSecret });
       setItems((prevItems) => mergeVaultItems(prevItems, remoteItems));
@@ -277,40 +265,35 @@ export default function HomeScreen() {
     }
   }, [vaultSecret]);
 
-  const requestAppUnlock = useCallback(async () => {
-    setIsAuthenticating(true);
-    setAuthMessage("");
-
-    try {
-      const authResult = await authenticateVaultAccess();
-
-      if (!authResult.success) {
-        if (authResult.error === "user_cancel") {
-          setAuthMessage("");
+  const requestAppUnlock = useCallback(
+    async (secretOverride = "") => {
+      setIsAuthenticating(true);
+      setAuthMessage("");
+      try {
+        const authResult = await authenticateVaultAccess();
+        if (!authResult.success) {
+          if (authResult.error === "user_cancel") setAuthMessage("");
+          else setAuthMessage("Biometria/senha do aparelho indisponivel.");
+          setIsAppUnlocked(false);
           return;
         }
-
-        setAuthMessage("Biometria/senha do aparelho indisponivel.");
+        if (needsVaultReloadRef.current || !hasLoadedData) {
+          await reloadVaultFromStorage(secretOverride);
+          needsVaultReloadRef.current = false;
+        } else {
+          pullRemoteVaultUpdates();
+        }
+        setIsAppUnlocked(true);
+        setAuthMessage("");
+      } catch {
+        setAuthMessage("Falha ao iniciar autenticacao.");
         setIsAppUnlocked(false);
-        return;
+      } finally {
+        setIsAuthenticating(false);
       }
-
-      setIsAppUnlocked(true);
-      setAuthMessage("");
-
-      if (needsVaultReloadRef.current) {
-        needsVaultReloadRef.current = false;
-        await reloadVaultFromStorage();
-      } else if (hasLoadedData) {
-        pullRemoteVaultUpdates();
-      }
-    } catch {
-      setAuthMessage("Falha ao iniciar autenticacao.");
-      setIsAppUnlocked(false);
-    } finally {
-      setIsAuthenticating(false);
-    }
-  }, [hasLoadedData, pullRemoteVaultUpdates, reloadVaultFromStorage]);
+    },
+    [hasLoadedData, pullRemoteVaultUpdates, reloadVaultFromStorage],
+  );
 
   useEffect(() => {
     async function initializeSession() {
@@ -372,7 +355,13 @@ export default function HomeScreen() {
     return () => {
       subscription.remove();
     };
-  }, [isLoggedIn, isAppUnlocked, isAuthenticating, lockVault, requestAppUnlock]);
+  }, [
+    isLoggedIn,
+    isAppUnlocked,
+    isAuthenticating,
+    lockVault,
+    requestAppUnlock,
+  ]);
 
   useEffect(() => {
     if (isLoggedIn && isAppUnlocked) {
@@ -451,37 +440,6 @@ export default function HomeScreen() {
     loginLockLevel,
     loginLockUntil,
   ]);
-
-  useEffect(() => {
-    if (!isLoggedIn) {
-      return;
-    }
-
-    async function init() {
-      try {
-        const localItems = await loadPasswords({ vaultSecret });
-        setItems(localItems);
-      } catch {
-        Alert.alert(
-          "Nao foi possivel abrir o cofre salvo",
-          'Os dados salvos neste aparelho foram cifrados com uma senha diferente da atual (normalmente porque a conta foi recriada). Seu cofre comecou vazio para voce continuar usando; os dados antigos nao serao apagados a menos que voce adicione/edite uma credencial ou use "Excluir conta e todos os dados".',
-        );
-        logSecurityEvent({
-          type: "vault_load_failed",
-          status: "error",
-        }).catch(() => {});
-        // Evita que o proximo efeito de persistencia sobrescreva
-        // automaticamente o cofre antigo (ainda cifrado com outra senha)
-        // com um array vazio antes que o usuario tome uma acao real.
-        skipNextPersistRef.current = true;
-        setItems([]);
-      } finally {
-        setHasLoadedData(true);
-      }
-    }
-
-    init();
-  }, [isLoggedIn, vaultSecret]);
 
   useEffect(() => {
     if (!hasLoadedData) return;
@@ -751,7 +709,7 @@ export default function HomeScreen() {
 
     setLoginMessage("");
     setIsLoggedIn(true);
-    requestAppUnlock();
+    requestAppUnlock(nextSecret);
     resetAuthFields();
   };
 
@@ -849,9 +807,26 @@ export default function HomeScreen() {
       return;
     }
 
+    let authResult;
+    try {
+      authResult = await authenticateVaultAccess();
+    } catch {
+      setLoginMessage("Nao foi possivel confirmar sua identidade no aparelho.");
+      return;
+    }
+
+    if (!authResult.success) {
+      setLoginMessage(
+        authResult.error === "user_cancel"
+          ? ""
+          : "Confirme sua identidade no aparelho para redefinir o acesso.",
+      );
+      return;
+    }
+
     Alert.alert(
-      "Isso apaga o acesso ao cofre atual",
-      "Este app roda sem backend: nao ha como recuperar a senha antiga. Se continuar, uma nova conta local sera criada e o cofre salvo com a senha atual ficara inacessivel para sempre, a menos que voce tenha exportado um backup. Deseja continuar mesmo assim?",
+      "Redefinir acesso com segurança",
+      "A senha original não pode ser recuperada. A redefinição apaga o acesso ao cofre atual. Só continue se você tiver um backup ou aceitar perder os dados antigos.",
       [
         { text: "Cancelar", style: "cancel" },
         {
@@ -862,7 +837,7 @@ export default function HomeScreen() {
             setAccessPassword("");
             setConfirmAccessPassword("");
             setLoginMessage(
-              "Recriando conta local. O cofre anterior sera perdido sem um backup.",
+              "Identidade confirmada. Crie uma nova senha; o cofre anterior será perdido sem um backup.",
             );
           },
         },
@@ -1076,11 +1051,14 @@ export default function HomeScreen() {
 
         <KeyboardAvoidingView
           style={styles.loginKeyboardAvoider}
-          behavior={Platform.OS === "ios" ? "padding" : undefined}
+          behavior="padding"
+          keyboardVerticalOffset={Platform.OS === "android" ? 24 : 0}
         >
           <ScrollView
             contentContainerStyle={styles.loginScrollContent}
             keyboardShouldPersistTaps="handled"
+            keyboardDismissMode="on-drag"
+            showsVerticalScrollIndicator={false}
           >
             <View
               style={[
@@ -1089,134 +1067,244 @@ export default function HomeScreen() {
               ]}
             >
               <BrandLogo theme={theme} size="compact" />
-          <Text style={[styles.loginTitle, { color: theme.text }]}>
-            {hasRemoteVault && !hasLocalAccount
-              ? "Abrir cofre iCloud"
-              : "Entrar no SecPass"}
-          </Text>
-          <Text style={[styles.loginText, { color: theme.textSoft }]}>
-            {hasRemoteVault && !hasLocalAccount
-              ? "Encontramos um cofre nesta conta Apple. Use o mesmo email e senha do outro aparelho."
-              : isRegisterMode
-                ? "Crie sua conta local para acessar o cofre."
-                : "Acesse sua conta para abrir o cofre."}
-          </Text>
+              <Text style={[styles.loginTitle, { color: theme.text }]}>
+                {hasRemoteVault && !hasLocalAccount
+                  ? "Abrir cofre iCloud"
+                  : "Entrar no SecPass"}
+              </Text>
+              <Text style={[styles.loginText, { color: theme.textSoft }]}>
+                {hasRemoteVault && !hasLocalAccount
+                  ? "Encontramos um cofre nesta conta Apple. Use o mesmo email e senha do outro aparelho."
+                  : isRegisterMode
+                    ? "Crie sua conta local para acessar o cofre."
+                    : "Acesse sua conta para abrir o cofre."}
+              </Text>
 
-          <TextInput
-            placeholder="Email"
-            placeholderTextColor={theme.textMuted}
-            value={email}
-            {...SENSITIVE_TEXT_INPUT_PROPS}
-            keyboardType="email-address"
-            onChangeText={setEmail}
-            style={[
-              styles.loginInput,
-              {
-                backgroundColor: theme.cardSoft,
-                borderColor: theme.borderStrong,
-                color: theme.text,
-              },
-            ]}
-          />
+              <View style={styles.themeSelector}>
+                <Text style={[styles.themeLabel, { color: theme.textMuted }]}>
+                  Tema
+                </Text>
+                <View style={styles.themeOptions}>
+                  {[
+                    ["light", "Claro", "sun"],
+                    ["dark", "Escuro", "moon"],
+                    ["system", "Sistema", "smartphone"],
+                  ].map(([value, label, icon]) => (
+                    <Pressable
+                      key={value}
+                      onPress={() => chooseTheme(value)}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Tema ${label}`}
+                      style={[
+                        styles.themeOption,
+                        {
+                          backgroundColor:
+                            themePreference === value
+                              ? theme.accentSoft
+                              : theme.cardSoft,
+                          borderColor:
+                            themePreference === value
+                              ? theme.accent
+                              : theme.border,
+                        },
+                      ]}
+                    >
+                      <Feather
+                        name={icon}
+                        size={14}
+                        color={
+                          themePreference === value
+                            ? theme.accent
+                            : theme.textMuted
+                        }
+                      />
+                      <Text
+                        style={{
+                          color:
+                            themePreference === value
+                              ? theme.accent
+                              : theme.textSoft,
+                          fontSize: 12,
+                          fontWeight: "700",
+                        }}
+                      >
+                        {label}
+                      </Text>
+                    </Pressable>
+                  ))}
+                </View>
+              </View>
 
-          <TextInput
-            placeholder={
-              isRegisterMode ? "Crie sua senha de acesso" : "Senha de acesso"
-            }
-            placeholderTextColor={theme.textMuted}
-            value={accessPassword}
-            {...SENSITIVE_TEXT_INPUT_PROPS}
-            secureTextEntry
-            maxLength={MAX_ACCESS_PASSWORD_LENGTH}
-            onChangeText={setAccessPassword}
-            style={[
-              styles.loginInput,
-              {
-                backgroundColor: theme.cardSoft,
-                borderColor: theme.borderStrong,
-                color: theme.text,
-              },
-            ]}
-          />
+              <TextInput
+                placeholder="Email"
+                placeholderTextColor={theme.textMuted}
+                value={email}
+                {...SENSITIVE_TEXT_INPUT_PROPS}
+                keyboardType="email-address"
+                onChangeText={setEmail}
+                style={[
+                  styles.loginInput,
+                  {
+                    backgroundColor: theme.cardSoft,
+                    borderColor: theme.borderStrong,
+                    color: theme.text,
+                  },
+                ]}
+              />
 
-          {isRegisterMode && (
-            <Text style={[styles.passwordRuleText, { color: theme.textMuted }]}>
-              {`Senha: minimo ${MIN_ACCESS_PASSWORD_LENGTH} caracteres com letra, numero e especial.`}
-            </Text>
-          )}
-
-          {isRegisterMode && (
-            <Text style={[styles.passwordTipText, { color: theme.textSoft }]}>
-              Dica: quanto mais longa, mais segura. Como nao ha recuperacao de
-              senha neste app, evite senhas curtas ou faceis de adivinhar.
-            </Text>
-          )}
-
-          {isRegisterMode && (
-            <TextInput
-              placeholder="Confirme sua senha"
-              placeholderTextColor={theme.textMuted}
-              value={confirmAccessPassword}
-              {...SENSITIVE_TEXT_INPUT_PROPS}
-              secureTextEntry
-              maxLength={MAX_ACCESS_PASSWORD_LENGTH}
-              onChangeText={setConfirmAccessPassword}
-              style={[
-                styles.loginInput,
-                {
-                  backgroundColor: theme.cardSoft,
-                  borderColor: theme.borderStrong,
-                  color: theme.text,
-                },
-              ]}
-            />
-          )}
-
-          <Pressable
-            style={({ pressed }) => [
-              styles.loginButton,
-              { backgroundColor: theme.primary },
-              isAuthSubmitting && styles.loginButtonDisabled,
-              pressed && styles.pressed,
-            ]}
-            disabled={isAuthSubmitting}
-            onPress={isRegisterMode ? handleCreateAccount : handleLogin}
-          >
-            {isAuthSubmitting ? (
-              <ActivityIndicator color={theme.primaryText} />
-            ) : (
-              <Text
-                style={[styles.loginButtonText, { color: theme.primaryText }]}
+              <View
+                style={[
+                  styles.passwordInputWrap,
+                  {
+                    backgroundColor: theme.cardSoft,
+                    borderColor: theme.borderStrong,
+                  },
+                ]}
               >
-                {isRegisterMode ? "Criar conta" : hasRemoteVault && !hasLocalAccount ? "Abrir cofre" : "Entrar"}
-              </Text>
-            )}
-          </Pressable>
+                <TextInput
+                  placeholder={
+                    isRegisterMode
+                      ? "Crie sua senha de acesso"
+                      : "Senha de acesso"
+                  }
+                  placeholderTextColor={theme.textMuted}
+                  value={accessPassword}
+                  {...SENSITIVE_TEXT_INPUT_PROPS}
+                  secureTextEntry={!showAccessPassword}
+                  maxLength={MAX_ACCESS_PASSWORD_LENGTH}
+                  onChangeText={setAccessPassword}
+                  style={[styles.passwordInput, { color: theme.text }]}
+                />
+                <Pressable
+                  onPress={() => setShowAccessPassword((value) => !value)}
+                  accessibilityRole="button"
+                  accessibilityLabel={
+                    showAccessPassword
+                      ? "Ocultar senha de acesso"
+                      : "Mostrar senha de acesso"
+                  }
+                  style={styles.passwordVisibilityButton}
+                >
+                  <Feather
+                    name={showAccessPassword ? "eye-off" : "eye"}
+                    size={18}
+                    color={theme.textMuted}
+                  />
+                </Pressable>
+              </View>
+              {isRegisterMode && (
+                <Text
+                  style={[styles.passwordRuleText, { color: theme.textMuted }]}
+                >
+                  {`Senha: minimo ${MIN_ACCESS_PASSWORD_LENGTH} caracteres com letra, numero e especial.`}
+                </Text>
+              )}
 
-          <Pressable
-            onPress={() => {
-              setIsRegisterMode((prev) => !prev);
-              setLoginMessage("");
-              setAccessPassword("");
-              setConfirmAccessPassword("");
-            }}
-          >
-            <Text style={[styles.switchAuthText, { color: theme.accent }]}>
-              {isRegisterMode
-                ? "Ja tenho conta"
-                : hasRemoteVault && !hasLocalAccount
-                  ? "Este e o primeiro aparelho"
-                  : "Criar conta local"}
-            </Text>
-          </Pressable>
+              {isRegisterMode && (
+                <Text
+                  style={[styles.passwordTipText, { color: theme.textSoft }]}
+                >
+                  Dica: quanto mais longa, mais segura. Como nao ha recuperacao
+                  de senha neste app, evite senhas curtas ou faceis de
+                  adivinhar.
+                </Text>
+              )}
 
-          <View style={styles.loginMetaRow}>
-            <Pressable onPress={handleForgotPassword}>
-              <Text style={[styles.forgotText, { color: theme.accent }]}>
-                Esqueci minha senha
-              </Text>
-            </Pressable>
-          </View>
+              {isRegisterMode && (
+                <View
+                  style={[
+                    styles.passwordInputWrap,
+                    {
+                      backgroundColor: theme.cardSoft,
+                      borderColor: theme.borderStrong,
+                    },
+                  ]}
+                >
+                  <TextInput
+                    placeholder="Confirme sua senha"
+                    placeholderTextColor={theme.textMuted}
+                    value={confirmAccessPassword}
+                    {...SENSITIVE_TEXT_INPUT_PROPS}
+                    secureTextEntry={!showConfirmAccessPassword}
+                    maxLength={MAX_ACCESS_PASSWORD_LENGTH}
+                    onChangeText={setConfirmAccessPassword}
+                    style={[styles.passwordInput, { color: theme.text }]}
+                  />
+                  <Pressable
+                    onPress={() =>
+                      setShowConfirmAccessPassword((value) => !value)
+                    }
+                    accessibilityRole="button"
+                    accessibilityLabel={
+                      showConfirmAccessPassword
+                        ? "Ocultar confirmação de senha"
+                        : "Mostrar confirmação de senha"
+                    }
+                    style={styles.passwordVisibilityButton}
+                  >
+                    <Feather
+                      name={showConfirmAccessPassword ? "eye-off" : "eye"}
+                      size={18}
+                      color={theme.textMuted}
+                    />
+                  </Pressable>
+                </View>
+              )}
+
+              <Pressable
+                style={({ pressed }) => [
+                  styles.loginButton,
+                  { backgroundColor: theme.primary },
+                  isAuthSubmitting && styles.loginButtonDisabled,
+                  pressed && styles.pressed,
+                ]}
+                disabled={isAuthSubmitting}
+                onPress={isRegisterMode ? handleCreateAccount : handleLogin}
+              >
+                {isAuthSubmitting ? (
+                  <ActivityIndicator color={theme.primaryText} />
+                ) : (
+                  <Text
+                    style={[
+                      styles.loginButtonText,
+                      { color: theme.primaryText },
+                    ]}
+                  >
+                    {isRegisterMode
+                      ? "Criar conta"
+                      : hasRemoteVault && !hasLocalAccount
+                        ? "Abrir cofre"
+                        : "Entrar"}
+                  </Text>
+                )}
+              </Pressable>
+
+              <Pressable
+                onPress={() => {
+                  setIsRegisterMode((prev) => !prev);
+                  setLoginMessage("");
+                  setAccessPassword("");
+                  setConfirmAccessPassword("");
+                  setShowAccessPassword(false);
+                  setShowConfirmAccessPassword(false);
+                }}
+              >
+                <Text style={[styles.switchAuthText, { color: theme.accent }]}>
+                  {isRegisterMode
+                    ? "Ja tenho conta"
+                    : hasRemoteVault && !hasLocalAccount
+                      ? "Este e o primeiro aparelho"
+                      : "Criar conta local"}
+                </Text>
+              </Pressable>
+
+              <View style={styles.loginMetaRow}>
+                <Pressable onPress={handleForgotPassword}>
+                  <Text style={[styles.forgotText, { color: theme.accent }]}>
+                    Esqueci minha senha
+                  </Text>
+                </Pressable>
+              </View>
 
               {!!loginMessage && (
                 <Text
@@ -1298,52 +1386,54 @@ export default function HomeScreen() {
         style={styles.vaultKeyboardAvoider}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
-      <FlatList
-        contentContainerStyle={styles.listContent}
-        data={filtered}
-        keyExtractor={(item) => item.id}
-        ListHeaderComponent={
-          <View>
-            <View style={styles.header}>
-              <View style={styles.headerTopRow}>
-                <BrandLogo theme={theme} size="compact" />
-                <Pressable
-                  style={({ pressed }) => [
-                    styles.headerButton,
-                    { backgroundColor: theme.secondaryButton },
-                    pressed && styles.pressed,
-                  ]}
-                  onPress={handleLogout}
-                >
-                  <Text
-                    style={[
-                      styles.headerButtonText,
-                      { color: theme.secondaryText },
+        <FlatList
+          contentContainerStyle={styles.listContent}
+          data={filtered}
+          keyExtractor={(item) => item.id}
+          ListHeaderComponent={
+            <View>
+              <View style={styles.header}>
+                <View style={styles.headerTopRow}>
+                  <BrandLogo theme={theme} size="compact" />
+                  <Pressable
+                    style={({ pressed }) => [
+                      styles.headerButton,
+                      { backgroundColor: theme.secondaryButton },
+                      pressed && styles.pressed,
                     ]}
+                    onPress={handleLogout}
                   >
-                    Sair
-                  </Text>
-                </Pressable>
-              </View>
+                    <Text
+                      style={[
+                        styles.headerButtonText,
+                        { color: theme.secondaryText },
+                      ]}
+                    >
+                      Sair
+                    </Text>
+                  </Pressable>
+                </View>
 
-              <View style={styles.backupRow}>
-                <Pressable
-                  style={({ pressed }) => [
-                    styles.backupButton,
-                    { backgroundColor: theme.secondaryButton },
-                    pressed && styles.pressed,
-                  ]}
-                  onPress={handleExportVault}
-                >
-                  <Text
-                    style={[
-                      styles.headerButtonText,
-                      { color: theme.secondaryText },
+                <View style={styles.backupRow}>
+                  <Pressable
+                    style={({ pressed }) => [
+                      styles.backupButton,
+                      { backgroundColor: theme.secondaryButton },
+                      pressed && styles.pressed,
                     ]}
+                    onPress={handleExportVault}
                   >
-                    Exportar backup
-                  </Text>
-                </Pressable>
+                    <Text
+                      style={[
+                        styles.headerButtonText,
+                        { color: theme.secondaryText },
+                      ]}
+                    >
+                      Exportar backup
+                    </Text>
+                  </Pressable>
+                </View>
+
                 <Pressable
                   style={({ pressed }) => [
                     styles.backupButton,
@@ -1361,42 +1451,30 @@ export default function HomeScreen() {
                     Importar backup
                   </Text>
                 </Pressable>
-              </View>
 
-              <Pressable
-                style={styles.securityLogLinkWrap}
-                onPress={handleOpenSecurityLog}
-              >
-                <Text
-                  style={[styles.securityLogLinkText, { color: theme.accent }]}
+                <Pressable
+                  style={styles.securityLogLinkWrap}
+                  onPress={handleOpenSecurityLog}
                 >
-                  Ver historico de seguranca
-                </Text>
-              </Pressable>
+                  <Text
+                    style={[
+                      styles.securityLogLinkText,
+                      { color: theme.accent },
+                    ]}
+                  >
+                    Ver historico de seguranca
+                  </Text>
+                </Pressable>
 
-              <Text style={[styles.title, { color: theme.text }]}>
-                Sua central de credenciais
-              </Text>
-              <Text style={[styles.subtitle, { color: theme.textSoft }]}>
-                Organize logins com um visual limpo e acesso rapido.
-              </Text>
-            </View>
-
-            <View style={styles.kpiRow}>
-              <View
-                style={[
-                  styles.kpiCard,
-                  { backgroundColor: theme.card, borderColor: theme.border },
-                ]}
-              >
-                <Text style={[styles.kpiLabel, { color: theme.textMuted }]}>
-                  Total
+                <Text style={[styles.title, { color: theme.text }]}>
+                  Sua central de credenciais
                 </Text>
-                <Text style={[styles.kpiValue, { color: theme.text }]}>
-                  {visibleItems.length}
+                <Text style={[styles.subtitle, { color: theme.textSoft }]}>
+                  Organize logins com um visual limpo e acesso rapido.
                 </Text>
               </View>
-              {!!search.trim() && (
+
+              <View style={styles.kpiRow}>
                 <View
                   style={[
                     styles.kpiCard,
@@ -1404,74 +1482,91 @@ export default function HomeScreen() {
                   ]}
                 >
                   <Text style={[styles.kpiLabel, { color: theme.textMuted }]}>
-                    Filtrados
+                    Total
                   </Text>
                   <Text style={[styles.kpiValue, { color: theme.text }]}>
-                    {filtered.length}
+                    {visibleItems.length}
                   </Text>
                 </View>
-              )}
-            </View>
+                {!!search.trim() && (
+                  <View
+                    style={[
+                      styles.kpiCard,
+                      {
+                        backgroundColor: theme.card,
+                        borderColor: theme.border,
+                      },
+                    ]}
+                  >
+                    <Text style={[styles.kpiLabel, { color: theme.textMuted }]}>
+                      Filtrados
+                    </Text>
+                    <Text style={[styles.kpiValue, { color: theme.text }]}>
+                      {filtered.length}
+                    </Text>
+                  </View>
+                )}
+              </View>
 
-            <SearchBar
-              value={search}
-              onChangeText={(value) => {
-                registerUserActivity();
-                setSearch(value);
-              }}
+              <SearchBar
+                value={search}
+                onChangeText={(value) => {
+                  registerUserActivity();
+                  setSearch(value);
+                }}
+                theme={theme}
+              />
+
+              <Text style={[styles.listTitle, { color: theme.text }]}>
+                Credenciais salvas
+              </Text>
+            </View>
+          }
+          ListEmptyComponent={
+            <View
+              style={[
+                styles.emptyState,
+                { backgroundColor: theme.card, borderColor: theme.border },
+              ]}
+            >
+              <Text style={[styles.emptyTitle, { color: theme.text }]}>
+                Nenhuma credencial ainda
+              </Text>
+              <Text style={[styles.emptyText, { color: theme.textSoft }]}>
+                Toque no botao + para criar seu primeiro registro.
+              </Text>
+            </View>
+          }
+          renderItem={({ item, index }) => (
+            <PasswordCard
+              item={item}
+              onDelete={removePassword}
+              onUpdate={updatePassword}
+              index={index}
               theme={theme}
             />
-
-            <Text style={[styles.listTitle, { color: theme.text }]}>
-              Credenciais salvas
-            </Text>
-          </View>
-        }
-        ListEmptyComponent={
-          <View
-            style={[
-              styles.emptyState,
-              { backgroundColor: theme.card, borderColor: theme.border },
-            ]}
-          >
-            <Text style={[styles.emptyTitle, { color: theme.text }]}>
-              Nenhuma credencial ainda
-            </Text>
-            <Text style={[styles.emptyText, { color: theme.textSoft }]}>
-              Toque no botao + para criar seu primeiro registro.
-            </Text>
-          </View>
-        }
-        renderItem={({ item, index }) => (
-          <PasswordCard
-            item={item}
-            onDelete={removePassword}
-            onUpdate={updatePassword}
-            index={index}
-            theme={theme}
-          />
-        )}
-        onScrollBeginDrag={registerUserActivity}
-        keyboardShouldPersistTaps="handled"
-        ListFooterComponent={
-          <View style={styles.dangerZone}>
-            <Pressable
-              style={({ pressed }) => [
-                styles.dangerZoneButton,
-                { borderColor: theme.border },
-                pressed && styles.pressed,
-              ]}
-              onPress={handleDeleteAccount}
-            >
-              <Text
-                style={[styles.dangerLinkText, { color: theme.dangerText }]}
+          )}
+          onScrollBeginDrag={registerUserActivity}
+          keyboardShouldPersistTaps="handled"
+          ListFooterComponent={
+            <View style={styles.dangerZone}>
+              <Pressable
+                style={({ pressed }) => [
+                  styles.dangerZoneButton,
+                  { borderColor: theme.border },
+                  pressed && styles.pressed,
+                ]}
+                onPress={handleDeleteAccount}
               >
-                Excluir conta e todos os dados
-              </Text>
-            </Pressable>
-          </View>
-        }
-      />
+                <Text
+                  style={[styles.dangerLinkText, { color: theme.dangerText }]}
+                >
+                  Excluir conta e todos os dados
+                </Text>
+              </Pressable>
+            </View>
+          }
+        />
       </KeyboardAvoidingView>
 
       <Pressable
@@ -1498,7 +1593,8 @@ export default function HomeScreen() {
       >
         <KeyboardAvoidingView
           style={styles.modalKeyboardAvoider}
-          behavior={Platform.OS === "ios" ? "padding" : undefined}
+          behavior="padding"
+          keyboardVerticalOffset={Platform.OS === "android" ? 24 : 0}
         >
           <Pressable
             style={styles.modalOverlay}
@@ -1511,29 +1607,36 @@ export default function HomeScreen() {
               ]}
               onPress={(event) => event.stopPropagation()}
             >
-              <PasswordForm
-                title={title}
-                username={username}
-                password={password}
-                theme={theme}
-                onTitleChange={(value) => {
-                  registerUserActivity();
-                  setTitle(value);
-                }}
-                onUsernameChange={(value) => {
-                  registerUserActivity();
-                  setUsername(value);
-                }}
-                onPasswordChange={(value) => {
-                  registerUserActivity();
-                  setPassword(value);
-                }}
-                onGenerate={() => {
-                  registerUserActivity();
-                  setPassword(generatePassword());
-                }}
-                onSave={addPassword}
-              />
+              <ScrollView
+                keyboardShouldPersistTaps="handled"
+                keyboardDismissMode="on-drag"
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={styles.modalFormContent}
+              >
+                <PasswordForm
+                  title={title}
+                  username={username}
+                  password={password}
+                  theme={theme}
+                  onTitleChange={(value) => {
+                    registerUserActivity();
+                    setTitle(value);
+                  }}
+                  onUsernameChange={(value) => {
+                    registerUserActivity();
+                    setUsername(value);
+                  }}
+                  onPasswordChange={(value) => {
+                    registerUserActivity();
+                    setPassword(value);
+                  }}
+                  onGenerate={() => {
+                    registerUserActivity();
+                    setPassword(generatePassword());
+                  }}
+                  onSave={addPassword}
+                />
+              </ScrollView>
             </Pressable>
           </Pressable>
         </KeyboardAvoidingView>
@@ -1559,59 +1662,64 @@ export default function HomeScreen() {
               <Text style={[styles.modalTitle, { color: theme.text }]}>
                 Importar backup
               </Text>
-            <Text style={[styles.modalText, { color: theme.textSoft }]}>
-              Cole abaixo o conteudo do backup exportado. Precisa ter sido
-              gerado com a mesma conta (email e senha) em uso agora.
-            </Text>
-            <TextInput
-              value={importText}
-              onChangeText={setImportText}
-              placeholder="Cole o backup aqui"
-              placeholderTextColor={theme.textMuted}
-              multiline
-              autoCapitalize="none"
-              autoCorrect={false}
-              style={[
-                styles.modalInput,
-                {
-                  backgroundColor: theme.cardSoft,
-                  borderColor: theme.borderStrong,
-                  color: theme.text,
-                },
-              ]}
-            />
-            <View style={styles.modalActions}>
-              <Pressable
-                style={({ pressed }) => [
-                  styles.secondaryButton,
-                  { backgroundColor: theme.secondaryButton },
-                  pressed && styles.pressed,
+              <Text style={[styles.modalText, { color: theme.textSoft }]}>
+                Cole abaixo o conteudo do backup exportado. Precisa ter sido
+                gerado com a mesma conta (email e senha) em uso agora.
+              </Text>
+              <TextInput
+                value={importText}
+                onChangeText={setImportText}
+                placeholder="Cole o backup aqui"
+                placeholderTextColor={theme.textMuted}
+                multiline
+                autoCapitalize="none"
+                autoCorrect={false}
+                style={[
+                  styles.modalInput,
+                  {
+                    backgroundColor: theme.cardSoft,
+                    borderColor: theme.borderStrong,
+                    color: theme.text,
+                  },
                 ]}
-                onPress={() => {
-                  setIsImportModalVisible(false);
-                  setImportText("");
-                }}
-              >
-                <Text
-                  style={[styles.secondaryText, { color: theme.secondaryText }]}
+              />
+              <View style={styles.modalActions}>
+                <Pressable
+                  style={({ pressed }) => [
+                    styles.secondaryButton,
+                    { backgroundColor: theme.secondaryButton },
+                    pressed && styles.pressed,
+                  ]}
+                  onPress={() => {
+                    setIsImportModalVisible(false);
+                    setImportText("");
+                  }}
                 >
-                  Cancelar
-                </Text>
-              </Pressable>
-              <Pressable
-                style={({ pressed }) => [
-                  styles.secondaryButton,
-                  { backgroundColor: theme.primary },
-                  pressed && styles.pressed,
-                ]}
-                onPress={handleImportVault}
-              >
-                <Text style={[styles.secondaryText, { color: theme.primaryText }]}>
-                  Confirmar importacao
-                </Text>
-              </Pressable>
+                  <Text
+                    style={[
+                      styles.secondaryText,
+                      { color: theme.secondaryText },
+                    ]}
+                  >
+                    Cancelar
+                  </Text>
+                </Pressable>
+                <Pressable
+                  style={({ pressed }) => [
+                    styles.secondaryButton,
+                    { backgroundColor: theme.primary },
+                    pressed && styles.pressed,
+                  ]}
+                  onPress={handleImportVault}
+                >
+                  <Text
+                    style={[styles.secondaryText, { color: theme.primaryText }]}
+                  >
+                    Confirmar importacao
+                  </Text>
+                </Pressable>
+              </View>
             </View>
-          </View>
           </View>
         </KeyboardAvoidingView>
       </Modal>
@@ -1700,7 +1808,9 @@ export default function HomeScreen() {
                 ]}
                 onPress={handleClearSecurityLog}
               >
-                <Text style={[styles.secondaryText, { color: theme.dangerText }]}>
+                <Text
+                  style={[styles.secondaryText, { color: theme.dangerText }]}
+                >
                   Limpar historico
                 </Text>
               </Pressable>
@@ -1755,6 +1865,7 @@ const styles = StyleSheet.create({
   },
   loginScrollContent: {
     flexGrow: 1,
+    paddingBottom: 32,
   },
   loginContainer: {
     marginTop: 80,
@@ -1776,12 +1887,54 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginBottom: 6,
   },
+  themeSelector: {
+    gap: 6,
+    marginTop: 2,
+    marginBottom: 2,
+  },
+  themeLabel: {
+    fontSize: 12,
+    fontWeight: "700",
+  },
+  themeOptions: {
+    flexDirection: "row",
+    gap: 6,
+  },
+  themeOption: {
+    flex: 1,
+    minHeight: 38,
+    borderWidth: 1,
+    borderRadius: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 5,
+  },
   loginInput: {
     borderWidth: 1,
     borderRadius: 12,
     paddingVertical: 12,
     paddingHorizontal: 14,
     fontSize: 14,
+  },
+  passwordInputWrap: {
+    borderWidth: 1,
+    borderRadius: 12,
+    flexDirection: "row",
+    alignItems: "center",
+    minHeight: 48,
+  },
+  passwordInput: {
+    flex: 1,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    fontSize: 14,
+  },
+  passwordVisibilityButton: {
+    minWidth: 46,
+    minHeight: 46,
+    alignItems: "center",
+    justifyContent: "center",
   },
   loginButton: {
     borderRadius: 12,
@@ -2011,6 +2164,10 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 20,
     padding: 20,
     gap: 10,
+    maxHeight: "90%",
+  },
+  modalFormContent: {
+    paddingBottom: 24,
   },
   securityLogCard: {
     maxHeight: "80%",

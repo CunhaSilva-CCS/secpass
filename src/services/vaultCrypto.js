@@ -15,6 +15,7 @@ const PBKDF2_ITERATIONS = 600000;
 const LEGACY_PBKDF2_ITERATIONS = 310000;
 const KEY_SIZE_BYTES = 64;
 const GCM_NONCE_BYTES = 12;
+const MAX_ITEM_FIELD_LENGTH = 4096;
 
 const bytesToHex = (bytes) =>
   Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("");
@@ -183,7 +184,11 @@ export const encryptVaultItem = (item, keys) => {
   const plaintext = JSON.stringify(item ?? {});
   const id = item?.id || "";
 
-  const cipher = QuickCrypto.createCipheriv("aes-256-gcm", keys.encKey, ivBytes);
+  const cipher = QuickCrypto.createCipheriv(
+    "aes-256-gcm",
+    keys.encKey,
+    ivBytes,
+  );
   cipher.setAAD(Buffer.from(`${VAULT_VERSION}:${id}`, "utf8"));
   const ciphertext = Buffer.concat([
     cipher.update(Buffer.from(plaintext, "utf8")),
@@ -272,6 +277,42 @@ export const encryptVaultItems = async (items, vaultSecret) => {
     ciphertext,
     authTag,
   };
+};
+
+const validateVaultItems = (items) => {
+  if (!Array.isArray(items)) {
+    throw new Error("Formato de cofre invalido.");
+  }
+
+  for (const item of items) {
+    if (!item || typeof item !== "object" || typeof item.id !== "string") {
+      throw new Error("Item de cofre invalido.");
+    }
+
+    if (item.id.length === 0 || item.id.length > MAX_ITEM_FIELD_LENGTH) {
+      throw new Error("Item de cofre invalido.");
+    }
+
+    if (item.tombstone) {
+      if (!Number.isFinite(Number(item.deletedAt))) {
+        throw new Error("Item de cofre invalido.");
+      }
+      continue;
+    }
+
+    if (
+      typeof item.title !== "string" ||
+      typeof item.username !== "string" ||
+      typeof item.password !== "string" ||
+      item.title.length > MAX_ITEM_FIELD_LENGTH ||
+      item.username.length > MAX_ITEM_FIELD_LENGTH ||
+      item.password.length > MAX_ITEM_FIELD_LENGTH
+    ) {
+      throw new Error("Item de cofre invalido.");
+    }
+  }
+
+  return items;
 };
 
 // v1 (legado): AES-256-CBC + HMAC-SHA256 sobre o envelope inteiro. Mantido
@@ -406,5 +447,5 @@ export const decryptVaultEnvelope = async (envelope, vaultSecret) => {
   }
 
   const parsed = JSON.parse(plaintext);
-  return Array.isArray(parsed?.items) ? parsed.items : [];
+  return validateVaultItems(parsed?.items);
 };

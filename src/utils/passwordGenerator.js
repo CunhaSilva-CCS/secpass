@@ -1,25 +1,55 @@
 import QuickCrypto from "react-native-quick-crypto";
 
-const CHARS =
-  "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%";
+const UPPER = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+const LOWER = "abcdefghijklmnopqrstuvwxyz";
+const DIGITS = "0123456789";
+const SPECIAL = "!@#$%";
+const ALL_CHARS = UPPER + LOWER + DIGITS + SPECIAL;
+
 const PASSWORD_LENGTH = 16;
-// Discard bytes above this threshold so `byte % CHARS.length` stays unbiased.
-const MAX_UNBIASED_BYTE = Math.floor(256 / CHARS.length) * CHARS.length;
 
-export const generatePassword = () => {
-  let password = "";
+const getRandomChar = (charset) => {
+  const len = charset.length;
+  const maxUnbiasedByte = Math.floor(256 / len) * len;
 
-  while (password.length < PASSWORD_LENGTH) {
-    const randomBytes = QuickCrypto.randomBytes(
-      PASSWORD_LENGTH - password.length,
-    );
-
-    for (const byte of randomBytes) {
-      if (byte < MAX_UNBIASED_BYTE) {
-        password += CHARS.charAt(byte % CHARS.length);
-      }
+  while (true) {
+    const randomByte = QuickCrypto.randomBytes(1)[0];
+    if (randomByte < maxUnbiasedByte) {
+      return charset.charAt(randomByte % len);
     }
   }
+};
 
-  return password;
+const shuffleArray = (arr) => {
+  for (let i = arr.length - 1; i > 0; i -= 1) {
+    const range = i + 1;
+    const maxUnbiasedByte = Math.floor(256 / range) * range;
+    let j;
+    while (true) {
+      const randomByte = QuickCrypto.randomBytes(1)[0];
+      if (randomByte < maxUnbiasedByte) {
+        j = randomByte % range;
+        break;
+      }
+    }
+    const temp = arr[i];
+    arr[i] = arr[j];
+    arr[j] = temp;
+  }
+  return arr;
+};
+
+export const generatePassword = () => {
+  const charArray = [
+    getRandomChar(UPPER),
+    getRandomChar(LOWER),
+    getRandomChar(DIGITS),
+    getRandomChar(SPECIAL),
+  ];
+
+  while (charArray.length < PASSWORD_LENGTH) {
+    charArray.push(getRandomChar(ALL_CHARS));
+  }
+
+  return shuffleArray(charArray).join("");
 };

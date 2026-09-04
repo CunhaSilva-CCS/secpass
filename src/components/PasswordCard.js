@@ -1,6 +1,6 @@
 import { Feather } from "@expo/vector-icons";
 import * as Clipboard from "expo-clipboard";
-import { memo, useEffect, useState } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 import {
   Alert,
   Animated,
@@ -54,6 +54,7 @@ function PasswordCard({
   const [editUsername, setEditUsername] = useState(item.username);
   const [editPassword, setEditPassword] = useState(item.password);
   const [appear] = useState(() => new Animated.Value(0));
+  const clipboardTimerRef = useRef(null);
 
   useEffect(() => {
     Animated.timing(appear, {
@@ -63,6 +64,14 @@ function PasswordCard({
       useNativeDriver: true,
     }).start();
   }, [appear, index]);
+
+  useEffect(() => {
+    return () => {
+      if (clipboardTimerRef.current) {
+        clearTimeout(clipboardTimerRef.current);
+      }
+    };
+  }, []);
 
   const authenticateSensitiveAction = async () => {
     try {
@@ -99,7 +108,11 @@ function PasswordCard({
       setCopied(true);
       setTimeout(() => setCopied(false), 1400);
 
-      setTimeout(async () => {
+      if (clipboardTimerRef.current) {
+        clearTimeout(clipboardTimerRef.current);
+      }
+
+      clipboardTimerRef.current = setTimeout(async () => {
         try {
           const currentClipboard = await Clipboard.getStringAsync();
           if (currentClipboard === item.password) {
@@ -153,6 +166,13 @@ function PasswordCard({
     setEditUsername(item.username);
     setEditPassword(item.password);
     setIsEditing(true);
+  };
+
+  const handleDelete = async () => {
+    const isAuthorized = await authenticateSensitiveAction();
+    if (!isAuthorized) return;
+
+    onDelete(item.id);
   };
 
   return (
@@ -242,7 +262,9 @@ function PasswordCard({
             <Text style={[styles.label, { color: theme.textMuted }]}>
               Senha
             </Text>
-            <Text style={[styles.value, styles.valueMono, { color: theme.text }]}>
+            <Text
+              style={[styles.value, styles.valueMono, { color: theme.text }]}
+            >
               {showPassword ? item.password : "••••••••••"}
             </Text>
           </View>
@@ -312,9 +334,7 @@ function PasswordCard({
               ]}
               onPress={handleCopy}
               accessibilityRole="button"
-              accessibilityLabel={
-                copied ? "Senha copiada" : "Copiar senha"
-              }
+              accessibilityLabel={copied ? "Senha copiada" : "Copiar senha"}
             >
               <Feather
                 name={copied ? "check" : "copy"}
@@ -342,11 +362,15 @@ function PasswordCard({
                 { backgroundColor: theme.dangerSoft },
                 pressed && styles.pressed,
               ]}
-              onPress={() => onDelete(item.id)}
+              onPress={handleDelete}
               accessibilityRole="button"
               accessibilityLabel="Excluir credencial"
             >
-              <Feather name="trash-2" size={ICON_SIZE} color={theme.dangerText} />
+              <Feather
+                name="trash-2"
+                size={ICON_SIZE}
+                color={theme.dangerText}
+              />
             </Pressable>
           </>
         )}

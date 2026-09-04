@@ -1,5 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as SecureStore from "expo-secure-store";
+import { createItemId } from "../utils/createItemId";
 
 const AUDIT_KEY = "secpass_security_audit";
 const MAX_AUDIT_EVENTS = 200;
@@ -61,7 +62,7 @@ export const logSecurityEvent = async ({
   const events = await loadSecurityEvents();
   const nextEvents = [
     {
-      id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      id: createItemId(),
       type,
       status,
       details,

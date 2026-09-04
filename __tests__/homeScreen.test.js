@@ -1,9 +1,21 @@
-import React from "react";
+import React, { act as reactAct } from "react";
+if (!React.act) {
+  React.act = reactAct;
+}
 import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
 import { Alert, AppState, Platform, Share } from "react-native";
 
 import HomeScreen from "../src/screens/HomeScreen";
-import { createVaultSecret, encryptVaultItems } from "../src/services/vaultCrypto";
+import {
+  createVaultSecret,
+  encryptVaultItems,
+} from "../src/services/vaultCrypto";
+
+jest.mock("@react-native-async-storage/async-storage", () => ({
+  getItem: jest.fn().mockResolvedValue(null),
+  setItem: jest.fn().mockResolvedValue(),
+  removeItem: jest.fn().mockResolvedValue(),
+}));
 
 jest.mock("../src/hooks/use-color-scheme", () => ({
   useColorScheme: () => "light",
@@ -129,10 +141,18 @@ jest.mock("expo-screen-capture", () => ({
   addScreenshotListener: jest.fn().mockReturnValue({ remove: jest.fn() }),
 }));
 
-const { loadPasswords, clearVault, savePasswords, peekRemoteVault } = require("../src/services/storage");
+const {
+  loadPasswords,
+  clearVault,
+  savePasswords,
+  peekRemoteVault,
+} = require("../src/services/storage");
 const { loadLoginGuard } = require("../src/services/loginGuard");
-const { logSecurityEvent, clearSecurityEvents, loadSecurityEvents } =
-  require("../src/services/securityAudit");
+const {
+  logSecurityEvent,
+  clearSecurityEvents,
+  loadSecurityEvents,
+} = require("../src/services/securityAudit");
 const ScreenCapture = require("expo-screen-capture");
 const {
   loadLocalAccount,
@@ -235,8 +255,12 @@ describe("HomeScreen", () => {
   it("adiciona nova credencial", async () => {
     loadPasswords.mockResolvedValueOnce([]);
 
-    const { findByPlaceholderText, getByPlaceholderText, getByText, getByLabelText } =
-      render(<HomeScreen />);
+    const {
+      findByPlaceholderText,
+      getByPlaceholderText,
+      getByText,
+      getByLabelText,
+    } = render(<HomeScreen />);
 
     await loginInApp(findByPlaceholderText, getByText);
 
@@ -391,7 +415,9 @@ describe("HomeScreen", () => {
 
     await waitFor(() => {
       expect(ScreenCapture.allowScreenCaptureAsync).toHaveBeenCalled();
-      expect(ScreenCapture.disableAppSwitcherProtectionAsync).toHaveBeenCalled();
+      expect(
+        ScreenCapture.disableAppSwitcherProtectionAsync,
+      ).toHaveBeenCalled();
     });
   });
 
@@ -457,8 +483,12 @@ describe("HomeScreen", () => {
       },
     ]);
 
-    const { findByPlaceholderText, getByText, getByPlaceholderText, queryByText } =
-      render(<HomeScreen />);
+    const {
+      findByPlaceholderText,
+      getByText,
+      getByPlaceholderText,
+      queryByText,
+    } = render(<HomeScreen />);
     await loginInApp(findByPlaceholderText, getByText);
 
     await waitFor(() => {
@@ -572,7 +602,9 @@ describe("HomeScreen", () => {
     fireEvent.press(getByText("Entrar"));
 
     await waitFor(() => {
-      expect(getByText(/^Muitas tentativas\. Tente novamente em \d+s\.$/)).toBeTruthy();
+      expect(
+        getByText(/^Muitas tentativas\. Tente novamente em \d+s\.$/),
+      ).toBeTruthy();
     });
   });
 
@@ -593,8 +625,8 @@ describe("HomeScreen", () => {
 
     await waitFor(() => {
       expect(alertSpy).toHaveBeenCalledWith(
-        "Isso apaga o acesso ao cofre atual",
-        expect.stringContaining("nao ha como recuperar a senha antiga"),
+        "Redefinir acesso com segurança",
+        expect.stringContaining("não pode ser recuperada"),
         expect.any(Array),
       );
     });
@@ -602,7 +634,7 @@ describe("HomeScreen", () => {
     await waitFor(() => {
       expect(
         getByText(
-          "Recriando conta local. O cofre anterior sera perdido sem um backup.",
+          "Identidade confirmada. Crie uma nova senha; o cofre anterior será perdido sem um backup.",
         ),
       ).toBeTruthy();
     });
@@ -642,9 +674,7 @@ describe("HomeScreen", () => {
     });
 
     await waitFor(() => {
-      expect(
-        getByText("Conta e dados excluidos deste aparelho."),
-      ).toBeTruthy();
+      expect(getByText("Conta e dados excluidos deste aparelho.")).toBeTruthy();
       expect(getByText("Criar conta")).toBeTruthy();
     });
 
@@ -889,9 +919,7 @@ describe("HomeScreen", () => {
     await waitFor(() => {
       expect(getByText("Cofre bloqueado")).toBeTruthy();
     });
-    expect(
-      queryByText("Biometria/senha do aparelho indisponivel."),
-    ).toBeNull();
+    expect(queryByText("Biometria/senha do aparelho indisponivel.")).toBeNull();
   });
 
   it("mostra falha quando a autenticacao biometrica lanca excecao", async () => {
@@ -955,8 +983,12 @@ describe("HomeScreen", () => {
     savePasswords.mockRejectedValueOnce(new Error("write-failure"));
     const alertSpy = jest.spyOn(Alert, "alert").mockImplementation(() => {});
 
-    const { findByPlaceholderText, getByPlaceholderText, getByText, getByLabelText } =
-      render(<HomeScreen />);
+    const {
+      findByPlaceholderText,
+      getByPlaceholderText,
+      getByText,
+      getByLabelText,
+    } = render(<HomeScreen />);
     await loginInApp(findByPlaceholderText, getByText);
 
     fireEvent.press(getByLabelText("Nova credencial"));
@@ -996,7 +1028,9 @@ describe("HomeScreen", () => {
     fireEvent.press(getByText("Entrar"));
 
     await waitFor(() => {
-      expect(getByText(/^Muitas tentativas\. Tente novamente em \d+s\.$/)).toBeTruthy();
+      expect(
+        getByText(/^Muitas tentativas\. Tente novamente em \d+s\.$/),
+      ).toBeTruthy();
     });
     expect(verifyLocalAccount).not.toHaveBeenCalled();
   });
