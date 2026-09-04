@@ -141,6 +141,30 @@ jest.mock("expo-screen-capture", () => ({
   addScreenshotListener: jest.fn().mockReturnValue({ remove: jest.fn() }),
 }));
 
+jest.mock("expo-sharing", () => ({
+  isAvailableAsync: jest.fn().mockResolvedValue(false),
+  shareAsync: jest.fn().mockResolvedValue(),
+}));
+
+jest.mock("expo-file-system", () => {
+  const mockFileInstance = {
+    exists: false,
+    create: jest.fn(),
+    write: jest.fn(),
+    delete: jest.fn(),
+    uri: "file://mock-backup.json",
+    text: jest.fn().mockResolvedValue(""),
+  };
+  const File = jest.fn().mockImplementation(() => mockFileInstance);
+  File.pickFileAsync = jest.fn().mockResolvedValue({ canceled: true });
+  File.__mockInstance = mockFileInstance;
+
+  return {
+    Paths: { cache: {} },
+    File,
+  };
+});
+
 const {
   loadPasswords,
   clearVault,
@@ -154,6 +178,8 @@ const {
   loadSecurityEvents,
 } = require("../src/services/securityAudit");
 const ScreenCapture = require("expo-screen-capture");
+const Sharing = require("expo-sharing");
+const { File } = require("expo-file-system");
 const {
   loadLocalAccount,
   saveLocalAccount,
@@ -783,6 +809,102 @@ describe("HomeScreen", () => {
     },
     REAL_CRYPTO_TIMEOUT,
   );
+
+  it(
+    "exporta o cofre como arquivo quando o compartilhamento nativo de arquivos esta disponivel",
+    async () => {
+      loadPasswords.mockResolvedValueOnce([
+        {
+          id: "1",
+          title: "GitHub",
+          username: "dev-user",
+          password: "A!23456789",
+        },
+      ]);
+      Sharing.isAvailableAsync.mockResolvedValueOnce(true);
+
+      const { findByPlaceholderText, getByText } = render(<HomeScreen />);
+      await loginInApp(findByPlaceholderText, getByText);
+
+      await waitFor(() => {
+        expect(getByText("GitHub")).toBeTruthy();
+      });
+
+      fireEvent.press(getByText("Exportar backup"));
+
+      await waitFor(
+        () => {
+          expect(File.__mockInstance.write).toHaveBeenCalledWith(
+            expect.stringContaining('"type":"encrypted_vault"'),
+          );
+          expect(Sharing.shareAsync).toHaveBeenCalledWith(
+            File.__mockInstance.uri,
+            expect.objectContaining({ dialogTitle: "Backup SecPass" }),
+          );
+          expect(File.__mockInstance.delete).toHaveBeenCalled();
+        },
+        { timeout: REAL_CRYPTO_TIMEOUT },
+      );
+    },
+    REAL_CRYPTO_TIMEOUT,
+  );
+
+  it("importa um backup escolhendo um arquivo", async () => {
+    loadPasswords.mockResolvedValueOnce([]);
+
+    const vaultSecret = createVaultSecret({
+      email: "user@email.com",
+      password: ACCESS_PASSWORD,
+    });
+    const backupItems = [
+      {
+        id: "9",
+        title: "Backup Arquivo",
+        username: "backup-user",
+        password: "B4ckup!99",
+      },
+    ];
+    const envelope = await encryptVaultItems(backupItems, vaultSecret);
+
+    File.pickFileAsync.mockResolvedValueOnce({
+      canceled: false,
+      result: { text: jest.fn().mockResolvedValue(JSON.stringify(envelope)) },
+    });
+
+    const alertSpy = jest
+      .spyOn(Alert, "alert")
+      .mockImplementation((title, message, buttons) => {
+        if (Array.isArray(buttons)) {
+          const confirmButton = buttons.find(
+            (button) => button.text === "Substituir",
+          );
+          confirmButton?.onPress();
+        }
+      });
+
+    const { findByPlaceholderText, getByText, getByPlaceholderText } = render(
+      <HomeScreen />,
+    );
+    await loginInApp(findByPlaceholderText, getByText);
+
+    fireEvent.press(getByText("Importar backup"));
+    fireEvent.press(getByText("Escolher arquivo"));
+
+    await waitFor(() => {
+      expect(getByPlaceholderText("Cole o backup aqui").props.value).toBe(
+        JSON.stringify(envelope),
+      );
+    });
+
+    fireEvent.press(getByText("Confirmar importacao"));
+
+    await waitFor(() => {
+      expect(getByText("Backup Arquivo")).toBeTruthy();
+      expect(getByText("backup-user")).toBeTruthy();
+    });
+
+    alertSpy.mockRestore();
+  });
 
   it(
     "importa um backup valido e substitui o cofre atual",

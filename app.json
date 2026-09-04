@@ -43,7 +43,8 @@
       ],
       "expo-local-authentication",
       "expo-secure-store",
-      "expo-asset"
+      "expo-asset",
+      "expo-sharing"
     ],
     "extra": {
       "router": {},

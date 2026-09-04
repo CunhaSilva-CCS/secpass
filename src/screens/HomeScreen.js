@@ -26,6 +26,8 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import * as ScreenCapture from "expo-screen-capture";
+import { File, Paths } from "expo-file-system";
+import * as Sharing from "expo-sharing";
 
 import PasswordForm from "../components/PasswordForm";
 import PasswordCard from "../components/PasswordCard";
@@ -855,10 +857,35 @@ export default function HomeScreen() {
 
     try {
       const envelope = await encryptVaultItems(items, vaultSecret);
-      await Share.share({
-        title: "Backup SecPass",
-        message: JSON.stringify(envelope),
-      });
+      const payload = JSON.stringify(envelope);
+      const canShareFile = await Sharing.isAvailableAsync();
+
+      if (canShareFile) {
+        const file = new File(Paths.cache, "secpass-backup.json");
+        if (file.exists) {
+          file.delete();
+        }
+        file.create();
+        file.write(payload);
+        try {
+          await Sharing.shareAsync(file.uri, {
+            mimeType: "application/json",
+            dialogTitle: "Backup SecPass",
+          });
+        } finally {
+          try {
+            file.delete();
+          } catch {
+            // Limpeza do arquivo temporario e best-effort.
+          }
+        }
+      } else {
+        await Share.share({
+          title: "Backup SecPass",
+          message: payload,
+        });
+      }
+
       logSecurityEvent({
         type: "vault_exported",
         status: "info",
@@ -867,6 +894,28 @@ export default function HomeScreen() {
       Alert.alert(
         "Falha ao exportar",
         "Nao foi possivel gerar o backup criptografado do cofre.",
+      );
+    }
+  };
+
+  const handlePickImportFile = async () => {
+    registerUserActivity();
+
+    try {
+      const picked = await File.pickFileAsync({
+        mimeTypes: ["application/json", "text/*"],
+      });
+
+      if (picked.canceled) {
+        return;
+      }
+
+      const content = await picked.result.text();
+      setImportText(content);
+    } catch {
+      Alert.alert(
+        "Falha ao abrir arquivo",
+        "Nao foi possivel ler o arquivo de backup selecionado.",
       );
     }
   };
@@ -1663,9 +1712,24 @@ export default function HomeScreen() {
                 Importar backup
               </Text>
               <Text style={[styles.modalText, { color: theme.textSoft }]}>
-                Cole abaixo o conteudo do backup exportado. Precisa ter sido
-                gerado com a mesma conta (email e senha) em uso agora.
+                Escolha o arquivo de backup exportado ou cole o conteudo
+                abaixo. Precisa ter sido gerado com a mesma conta (email e
+                senha) em uso agora.
               </Text>
+              <Pressable
+                style={({ pressed }) => [
+                  styles.filePickerButton,
+                  { backgroundColor: theme.secondaryButton },
+                  pressed && styles.pressed,
+                ]}
+                onPress={handlePickImportFile}
+              >
+                <Text
+                  style={[styles.secondaryText, { color: theme.secondaryText }]}
+                >
+                  Escolher arquivo
+                </Text>
+              </Pressable>
               <TextInput
                 value={importText}
                 onChangeText={setImportText}
@@ -2212,6 +2276,11 @@ const styles = StyleSheet.create({
   },
   secondaryButton: {
     flex: 1,
+    borderRadius: 12,
+    paddingVertical: 12,
+    alignItems: "center",
+  },
+  filePickerButton: {
     borderRadius: 12,
     paddingVertical: 12,
     alignItems: "center",
