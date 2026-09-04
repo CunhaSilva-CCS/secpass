@@ -2,10 +2,12 @@ import { Slot } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 
 import { AnimatedSplashOverlay } from '@/components/animated-icon';
+import { initErrorMonitoring, wrapRootComponent } from '@/services/errorMonitoring';
 
 SplashScreen.preventAutoHideAsync();
+initErrorMonitoring();
 
-export default function TabLayout() {
+function TabLayout() {
   return (
     <>
       <AnimatedSplashOverlay />
@@ -13,3 +15,5 @@ export default function TabLayout() {
     </>
   );
 }
+
+export default wrapRootComponent(TabLayout);

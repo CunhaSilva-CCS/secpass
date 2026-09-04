@@ -1,6 +1,6 @@
 # Política de Privacidade do SecPass
 
-Última atualização: 17 de agosto de 2026
+Última atualização: 4 de setembro de 2026
 
 Esta Política de Privacidade descreve como o aplicativo **SecPass** ("o
 Aplicativo") trata dados ao ser usado em seu dispositivo iOS ou Android.
@@ -14,10 +14,11 @@ Aplicativo") trata dados ao ser usado em seu dispositivo iOS ou Android.
 ## 1. Resumo
 
 O SecPass é um cofre de senhas que funciona **inteiramente no seu
-dispositivo**. O Aplicativo não possui servidor próprio, não envia dados
-para a internet e não compartilha informações com terceiros. Tudo o que
-você cadastra fica armazenado, de forma criptografada, apenas no aparelho
-em que o Aplicativo está instalado.
+dispositivo**. O Aplicativo não possui servidor próprio e não compartilha
+o conteúdo do seu cofre com terceiros. Tudo o que você cadastra fica
+armazenado, de forma criptografada, apenas no aparelho em que o Aplicativo
+está instalado. A única exceção é o envio automático de relatórios técnicos
+de erro (sem senhas ou dados do cofre) para diagnóstico — ver Seção 2.5.
 
 ## 2. Quais dados o Aplicativo processa
 
@@ -58,13 +59,32 @@ O Aplicativo mantém, localmente e de forma cifrada, um histórico dos
 importação de backup). Esse histórico não sai do dispositivo e pode ser
 apagado a qualquer momento pelo usuário.
 
+### 2.5 Relatórios de erro (Sentry)
+
+O Aplicativo usa o serviço **Sentry** para receber, automaticamente,
+relatórios técnicos quando ocorre um erro ou travamento. O que é enviado:
+mensagem e pilha de chamadas (*stack trace*) do erro, modelo/versão do
+sistema operacional, versão do Aplicativo e identificadores técnicos
+genéricos (não vinculados à sua identidade — nenhum e-mail, nome ou dado de
+conta é enviado).
+
+O Aplicativo aplica um filtro antes de qualquer envio que remove
+automaticamente campos com nomes associados a dados sensíveis (senha,
+segredo do cofre, chaves de criptografia, valores cifrados) de qualquer
+relatório. Nenhum item do cofre, senha mestra ou conteúdo de tela é
+capturado ou enviado — o Aplicativo não usa gravação de tela nem captura
+de tela para esse fim. O Sentry processa esses relatórios como
+subcontratado (processador de dados) do desenvolvedor do SecPass, apenas
+para fins de diagnóstico e correção de falhas.
+
 ## 3. O que o Aplicativo NÃO faz
 
-- Não coleta dados analíticos, de uso ou de diagnóstico.
-- Não usa SDKs de publicidade, rastreamento ou métricas de terceiros.
-- Não possui backend, API remota ou banco de dados na nuvem.
-- Não compartilha, vende ou transfere dados a terceiros — porque nenhum
-  dado deixa o dispositivo.
+- Não coleta dados analíticos ou de uso (cliques, navegação, publicidade).
+- Não usa SDKs de publicidade ou rastreamento de terceiros.
+- Não possui backend ou banco de dados na nuvem para o cofre do usuário.
+- Não compartilha, vende ou transfere itens do cofre a terceiros — o
+  conteúdo do cofre nunca deixa o dispositivo. O único dado que sai do
+  aparelho é o relatório técnico de erro descrito na Seção 2.5.
 
 ## 4. Backup exportado pelo usuário
 
@@ -86,9 +106,11 @@ a sessão salva, o histórico de tentativas de login e o registro de eventos
 de segurança. Desinstalar o Aplicativo também remove todos os dados
 armazenados por ele no dispositivo.
 
-Como nenhum dado é enviado a servidores, não existe cópia remota a ser
-apagada além da local — a exclusão no Aplicativo (ou a desinstalação) já
-é completa e definitiva.
+Como nenhum dado do cofre é enviado a servidores, não existe cópia remota
+do seu cofre a ser apagada além da local — a exclusão no Aplicativo (ou a
+desinstalação) já é completa e definitiva para o conteúdo do cofre.
+Relatórios de erro já enviados ao Sentry antes da exclusão (Seção 2.5) não
+contêm dados do cofre e seguem a política de retenção do próprio Sentry.
 
 ## 6. Perda de dados e recuperação de senha
 
@@ -117,8 +139,9 @@ de pedidos ao desenvolvedor. Ainda assim, para fins de conformidade legal:
   direitos de acesso, retificação, apagamento e portabilidade (arts.
   15–20) são exercidos localmente, pelas funções descritas acima.
 - **CCPA/CPRA (Califórnia, EUA)**: o desenvolvedor não vende nem
-  compartilha informações pessoais, pois nenhuma informação é coletada ou
-  transmitida a este desenvolvedor ou a terceiros.
+  compartilha informações pessoais. Os relatórios técnicos de erro
+  enviados ao Sentry (Seção 2.5) não constituem venda ou compartilhamento
+  de informação pessoal, pois não identificam o usuário.
 
 Caso deseje contato formal sobre esses direitos ainda assim, use o e-mail
 na Seção 12 — mas note que, por não haver dados no lado do desenvolvedor,
@@ -146,21 +169,25 @@ autorizado ao seu dispositivo.
 Para preencher os formulários de privacidade exigidos na submissão, com
 base no funcionamento atual do Aplicativo:
 
-**Apple App Store — App Privacy ("Nutrition Label")**: "Data Not
-Collected" — nenhuma categoria de dado é coletada pelo desenvolvedor
-(marcar todas as categorias como não coletadas, já que tudo permanece no
-dispositivo do usuário).
+**Apple App Store — App Privacy ("Nutrition Label")**: declarar a categoria
+"Diagnostics" → "Crash Data" e "Performance Data" como coletada, com
+finalidade "App Functionality" e **"Data Not Linked to You"** (o Sentry
+está configurado sem PII — sem e-mail, nome ou identificador de usuário).
+Todas as demais categorias (informações de contato, financeiras,
+localização, conteúdo do usuário, etc.) continuam como não coletadas,
+pois o cofre nunca deixa o dispositivo.
 
-**Google Play — Data safety**: "No data shared with third parties" e "No
-data collected" — o app não coleta nem transmite nenhum dos tipos de dados
-listados no formulário (localização, informações pessoais, financeiras,
-etc.), pois todo o processamento é local. Marcar "Data is encrypted in
-transit" como não aplicável (não há tráfego de rede) e confirmar que os
-dados armazenados no dispositivo são criptografados.
+**Google Play — Data safety**: declarar em "App activity" → "Crash logs" e
+"Diagnostics" como coletados, com finalidade "App functionality", **não
+compartilhados com terceiros para publicidade** (o Sentry recebe os dados
+como processador, não como parceiro de anúncio) e marcar "Data is
+encrypted in transit" como aplicável para esse tráfego (o Sentry usa
+HTTPS). Todas as demais categorias (senhas, informações pessoais,
+financeiras, localização etc.) continuam como não coletadas.
 
-> Reavalie estas declarações sempre que adicionar qualquer SDK de
-> terceiros, analytics, crash reporting ou comunicação de rede ao
-> Aplicativo — elas deixam de ser válidas nesse momento.
+> Reavalie estas declarações sempre que adicionar qualquer outro SDK de
+> terceiros, analytics ou comunicação de rede ao Aplicativo além do
+> Sentry — elas deixam de ser válidas nesse momento.
 
 ## 11. Alterações a esta política
 

@@ -44,13 +44,21 @@
       "expo-local-authentication",
       "expo-secure-store",
       "expo-asset",
-      "expo-sharing"
+      "expo-sharing",
+      [
+        "@sentry/react-native",
+        {
+          "organization": "cortexis-tech",
+          "project": "secpass"
+        }
+      ]
     ],
     "extra": {
       "router": {},
       "eas": {
         "projectId": "c5b78fd3-b2c6-45a3-87d7-1f266d29dd2e"
-      }
+      },
+      "sentryDsn": "https://433aba595341ba63447b6b0c0088fafa@o4511976253423616.ingest.de.sentry.io/4512028541452368"
     }
   }
 }
