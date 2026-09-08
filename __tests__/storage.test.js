@@ -1,3 +1,4 @@
+import { Platform } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as SecureStore from "expo-secure-store";
 
@@ -17,6 +18,25 @@ import {
 } from "../src/services/vaultCrypto";
 import SecureVaultCloudKit from "../modules/secure-vault-cloudkit/src/SecureVaultCloudKitModule";
 import SecureVaultSync from "../modules/secure-vault-sync/src/SecureVaultSyncModule";
+import { isDriveSignedIn } from "../src/services/driveAuth";
+import DriveVaultModule from "../src/services/driveVaultModule";
+
+jest.mock("../src/services/driveAuth", () => ({
+  isDriveSignedIn: jest.fn(),
+  signOutDrive: jest.fn().mockResolvedValue(),
+}));
+
+jest.mock("../src/services/driveVaultModule", () => ({
+  __esModule: true,
+  default: {
+    getAccountStatusAsync: jest.fn(),
+    fetchVaultMetaAsync: jest.fn(),
+    saveVaultMetaAsync: jest.fn(),
+    fetchCredentialsAsync: jest.fn(),
+    upsertCredentialsAsync: jest.fn(),
+    deleteVaultAsync: jest.fn(),
+  },
+}));
 
 jest.mock("@react-native-async-storage/async-storage", () => ({
   setItem: jest.fn(),
@@ -84,6 +104,7 @@ describe("storage service", () => {
     SecureVaultCloudKit.upsertCredentialsAsync.mockResolvedValue();
     SecureVaultCloudKit.deleteVaultAsync.mockResolvedValue();
     SecureVaultSync.getItemAsync.mockResolvedValue(null);
+    isDriveSignedIn.mockResolvedValue(false);
   });
 
   it("recusa salvar sem vaultSecret", async () => {
@@ -261,5 +282,85 @@ describe("storage service", () => {
     await clearVault();
 
     expect(AsyncStorage.removeItem).toHaveBeenCalledWith("passwords");
+  });
+});
+
+describe("storage service - backend remoto no Android (Google Drive)", () => {
+  const originalPlatformOS = Platform.OS;
+
+  beforeEach(() => {
+    Platform.OS = "android";
+    jest.clearAllMocks();
+    SecureStore.setItemAsync.mockResolvedValue();
+    SecureStore.getItemAsync.mockResolvedValue(null);
+    SecureStore.deleteItemAsync.mockResolvedValue();
+    AsyncStorage.getItem.mockResolvedValue(null);
+    DriveVaultModule.getAccountStatusAsync.mockResolvedValue("available");
+    DriveVaultModule.fetchVaultMetaAsync.mockResolvedValue(null);
+    DriveVaultModule.saveVaultMetaAsync.mockResolvedValue();
+    DriveVaultModule.fetchCredentialsAsync.mockResolvedValue([]);
+    DriveVaultModule.upsertCredentialsAsync.mockResolvedValue();
+    DriveVaultModule.deleteVaultAsync.mockResolvedValue();
+  });
+
+  afterEach(() => {
+    Platform.OS = originalPlatformOS;
+  });
+
+  it("ignora o Drive quando o usuario nao autenticou com Google", async () => {
+    isDriveSignedIn.mockResolvedValue(false);
+
+    const remote = await peekRemoteVault();
+
+    expect(remote).toEqual({ available: false, status: "unsupported", meta: null });
+    expect(DriveVaultModule.getAccountStatusAsync).not.toHaveBeenCalled();
+  });
+
+  it("peekRemoteVault usa o Drive quando ha sessao Google ativa", async () => {
+    isDriveSignedIn.mockResolvedValue(true);
+    DriveVaultModule.fetchVaultMetaAsync.mockResolvedValueOnce({
+      email: "user@email.com",
+      salt: "aa",
+      verifier: "bb",
+      iterations: 600000,
+    });
+
+    const remote = await peekRemoteVault();
+
+    expect(remote.available).toBe(true);
+    expect(remote.meta.email).toBe("user@email.com");
+    expect(SecureVaultCloudKit.getAccountStatusAsync).not.toHaveBeenCalled();
+  });
+
+  it("savePasswords publica no Drive quando o usuario esta autenticado com Google", async () => {
+    isDriveSignedIn.mockResolvedValue(true);
+
+    await savePasswords(sampleList, { vaultSecret: VAULT_SECRET });
+
+    expect(DriveVaultModule.saveVaultMetaAsync).toHaveBeenCalled();
+    expect(DriveVaultModule.upsertCredentialsAsync).toHaveBeenCalledWith(
+      expect.arrayContaining([
+        expect.objectContaining({ id: "1", envelope: expect.any(String) }),
+      ]),
+    );
+  });
+
+  it("savePasswords nao chama o Drive quando o usuario nao ativou a sincronizacao", async () => {
+    isDriveSignedIn.mockResolvedValue(false);
+
+    await savePasswords(sampleList, { vaultSecret: VAULT_SECRET });
+
+    expect(DriveVaultModule.upsertCredentialsAsync).not.toHaveBeenCalled();
+    expect(SecureStore.setItemAsync).toHaveBeenCalled();
+  });
+
+  it("clearVault apaga o cofre no Drive e encerra a sessao Google", async () => {
+    const { signOutDrive } = require("../src/services/driveAuth");
+    isDriveSignedIn.mockResolvedValue(true);
+
+    await clearVault();
+
+    expect(DriveVaultModule.deleteVaultAsync).toHaveBeenCalled();
+    expect(signOutDrive).toHaveBeenCalled();
   });
 });

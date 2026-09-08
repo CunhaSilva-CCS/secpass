@@ -11,6 +11,7 @@ import {
   unlockVaultKeys,
 } from "./vaultCrypto";
 import { mergeVaultItems } from "./vaultMerge";
+import { isDriveSignedIn, signOutDrive } from "./driveAuth";
 import {
   DEVICE_AUTH_NOT_CONFIGURED,
   isDeviceAuthNotConfiguredError,
@@ -39,6 +40,39 @@ const getCloudKitModule = () => {
   } catch {
     return null;
   }
+};
+
+// So retorna o modulo Drive se ja houver sessao Google autenticada: sem
+// login explicito do usuario nao ha "sync habilitado" (ver
+// src/services/driveAuth.js - login e sempre uma acao explicita, nunca
+// automatica no boot).
+const getDriveVaultModule = async () => {
+  if (Platform.OS !== "android") {
+    return null;
+  }
+
+  try {
+    const signedIn = await isDriveSignedIn();
+    if (!signedIn) {
+      return null;
+    }
+    return require("./driveVaultModule").default;
+  } catch {
+    return null;
+  }
+};
+
+// Ponto unico de despacho do backend remoto: iOS usa CloudKit (inalterado),
+// Android usa Google Drive quando o usuario ativou a sincronizacao. Nenhuma
+// das duas depende de servidor proprio, e nenhuma altera o comportamento
+// hoje existente quando nao configurada (retorna null -> cofre 100% local).
+const getRemoteVaultModule = async () => {
+  const cloudKit = getCloudKitModule();
+  if (cloudKit) {
+    return cloudKit;
+  }
+
+  return getDriveVaultModule();
 };
 
 // Legado: blob unico no iCloud Keychain, usado so para migrar para CloudKit.
@@ -156,7 +190,7 @@ const parseLoadedData = async (rawValue, vaultSecret) => {
   return parseData(rawValue);
 };
 
-const decryptCloudKitItems = (records, keys) =>
+const decryptRemoteVaultItems = (records, keys) =>
   (Array.isArray(records) ? records : []).map((record) => {
     const envelope =
       typeof record?.envelope === "string"
@@ -165,8 +199,8 @@ const decryptCloudKitItems = (records, keys) =>
     return decryptVaultItem(envelope, keys);
   });
 
-const pushItemsToCloudKit = async (cloudKit, items, vaultSecret) => {
-  let rawMeta = await cloudKit.fetchVaultMetaAsync();
+const pushItemsToRemoteVault = async (remoteVault, items, vaultSecret) => {
+  let rawMeta = await remoteVault.fetchVaultMetaAsync();
   let meta = toMetaShape(rawMeta);
 
   if (!meta?.verifier) {
@@ -174,7 +208,7 @@ const pushItemsToCloudKit = async (cloudKit, items, vaultSecret) => {
       vaultSecret,
       email: emailFromVaultSecret(vaultSecret),
     });
-    await cloudKit.saveVaultMetaAsync({
+    await remoteVault.saveVaultMetaAsync({
       email: meta.email,
       version: meta.version,
       kdfName: meta.kdf.name,
@@ -192,22 +226,22 @@ const pushItemsToCloudKit = async (cloudKit, items, vaultSecret) => {
     tombstone: Boolean(item.tombstone),
   }));
 
-  await cloudKit.upsertCredentialsAsync(records);
+  await remoteVault.upsertCredentialsAsync(records);
 };
 
 export const peekRemoteVault = async () => {
-  const cloudKit = getCloudKitModule();
-  if (!cloudKit) {
+  const remoteVault = await getRemoteVaultModule();
+  if (!remoteVault) {
     return { available: false, status: "unsupported", meta: null };
   }
 
   try {
-    const status = await cloudKit.getAccountStatusAsync();
+    const status = await remoteVault.getAccountStatusAsync();
     if (status !== "available") {
       return { available: false, status, meta: null };
     }
 
-    const rawMeta = await cloudKit.fetchVaultMetaAsync();
+    const rawMeta = await remoteVault.fetchVaultMetaAsync();
     return {
       available: true,
       status,
@@ -229,13 +263,13 @@ export const savePasswords = async (data, { vaultSecret } = {}) => {
     await writeLocalVault(payload);
     await AsyncStorage.removeItem(KEY);
 
-    const cloudKit = getCloudKitModule();
-    if (cloudKit) {
+    const remoteVault = await getRemoteVaultModule();
+    if (remoteVault) {
       try {
-        await pushItemsToCloudKit(cloudKit, data, vaultSecret);
+        await pushItemsToRemoteVault(remoteVault, data, vaultSecret);
         await deleteLegacyKeychainVault();
       } catch {
-        // Cache local ja foi gravado; o proximo unlock tenta o CloudKit de novo.
+        // Cache local ja foi gravado; o proximo unlock tenta o backend remoto de novo.
       }
     }
 
@@ -250,16 +284,16 @@ export const savePasswords = async (data, { vaultSecret } = {}) => {
 
 export const loadPasswords = async ({ vaultSecret } = {}) => {
   let cloudItems = null;
-  const cloudKit = getCloudKitModule();
+  const remoteVault = await getRemoteVaultModule();
 
-  if (cloudKit && vaultSecret) {
+  if (remoteVault && vaultSecret) {
     try {
-      const rawMeta = await cloudKit.fetchVaultMetaAsync();
+      const rawMeta = await remoteVault.fetchVaultMetaAsync();
       const meta = toMetaShape(rawMeta);
       if (meta?.verifier) {
         const keys = unlockVaultKeys(meta, vaultSecret);
-        const records = await cloudKit.fetchCredentialsAsync();
-        cloudItems = decryptCloudKitItems(records, keys);
+        const records = await remoteVault.fetchCredentialsAsync();
+        cloudItems = decryptRemoteVaultItems(records, keys);
       }
     } catch (err) {
       if (
@@ -278,7 +312,7 @@ export const loadPasswords = async ({ vaultSecret } = {}) => {
   try {
     localData = await SecureStore.getItemAsync(KEY, SECURE_STORE_OPTIONS);
   } catch {
-    // Continua com CloudKit / legado.
+    // Continua com backend remoto / legado.
   }
 
   const legacyKeychain = await readLegacyKeychainVault();
@@ -300,9 +334,9 @@ export const loadPasswords = async ({ vaultSecret } = {}) => {
     const legacyData = await AsyncStorage.getItem(KEY);
     const parsedLegacy = await parseLoadedData(legacyData, vaultSecret);
 
-    if (legacyData && vaultSecret && cloudKit) {
+    if (legacyData && vaultSecret && remoteVault) {
       try {
-        await pushItemsToCloudKit(cloudKit, parsedLegacy, vaultSecret);
+        await pushItemsToRemoteVault(remoteVault, parsedLegacy, vaultSecret);
         await writeLocalVault(await encryptPayload(parsedLegacy, vaultSecret));
         await AsyncStorage.removeItem(KEY);
       } catch {
@@ -315,9 +349,9 @@ export const loadPasswords = async ({ vaultSecret } = {}) => {
 
   const merged = sources.reduce((acc, list) => mergeVaultItems(acc, list), []);
 
-  if (vaultSecret && cloudKit && !cloudItems) {
+  if (vaultSecret && remoteVault && !cloudItems) {
     try {
-      await pushItemsToCloudKit(cloudKit, merged, vaultSecret);
+      await pushItemsToRemoteVault(remoteVault, merged, vaultSecret);
       await deleteLegacyKeychainVault();
     } catch {
       // Proxima gravacao tenta de novo.
@@ -328,12 +362,12 @@ export const loadPasswords = async ({ vaultSecret } = {}) => {
 };
 
 export const clearVault = async () => {
-  const cloudKit = getCloudKitModule();
-  if (cloudKit) {
+  const remoteVault = await getRemoteVaultModule();
+  if (remoteVault) {
     try {
-      const status = await cloudKit.getAccountStatusAsync();
+      const status = await remoteVault.getAccountStatusAsync();
       if (status === "available") {
-        await cloudKit.deleteVaultAsync();
+        await remoteVault.deleteVaultAsync();
       }
     } catch {
       throw new Error(VAULT_DELETE_ERROR);
@@ -341,6 +375,7 @@ export const clearVault = async () => {
   }
 
   await deleteLegacyKeychainVault();
+  await signOutDrive();
 
   try {
     await SecureStore.deleteItemAsync(KEY, SECURE_STORE_OPTIONS);

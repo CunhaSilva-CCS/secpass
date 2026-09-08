@@ -50,3 +50,4 @@ backend/data/auth-store.json
 /ios
 /android
 .vercel
+builds/

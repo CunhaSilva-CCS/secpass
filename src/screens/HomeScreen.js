@@ -27,6 +27,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import * as ScreenCapture from "expo-screen-capture";
 import { File, Paths } from "expo-file-system";
+import { StorageAccessFramework } from "expo-file-system/legacy";
 import * as Sharing from "expo-sharing";
 
 import PasswordForm from "../components/PasswordForm";
@@ -43,6 +44,11 @@ import {
   savePasswords,
   VAULT_DELETE_ERROR,
 } from "../services/storage";
+import {
+  isDriveSignedIn,
+  signInWithGoogleDrive,
+  signOutDrive,
+} from "../services/driveAuth";
 import {
   createVaultTombstone,
   getVisibleVaultItems,
@@ -102,6 +108,9 @@ const SECURITY_EVENT_LABELS = {
   vault_imported: "Backup do cofre importado",
   vault_load_failed: "Falha ao descriptografar o cofre salvo",
   screenshot_detected: "Captura de tela detectada",
+  sync_enabled: "Sincronizacao com Google Drive ativada",
+  sync_disabled: "Sincronizacao com Google Drive desativada",
+  sync_error: "Falha na sincronizacao com Google Drive",
 };
 const formatSecurityEventType = (type) => SECURITY_EVENT_LABELS[type] || type;
 const formatSecurityEventDate = (isoString) => {
@@ -160,6 +169,12 @@ const MONO_FONT = Platform.select({
   android: "monospace",
   default: "monospace",
 });
+// iOS sincroniza via CloudKit (conta Apple), Android via Google Drive
+// (conta Google) - nunca os dois na mesma plataforma, ver src/services/storage.js.
+const REMOTE_VAULT_PROVIDER_LABEL =
+  Platform.OS === "ios" ? "iCloud" : "Google Drive";
+const REMOTE_VAULT_ACCOUNT_LABEL =
+  Platform.OS === "ios" ? "conta Apple" : "conta Google";
 
 export default function HomeScreen() {
   const colorScheme = useColorScheme();
@@ -180,6 +195,8 @@ export default function HomeScreen() {
   const [hasLocalAccount, setHasLocalAccount] = useState(false);
   const [hasRemoteVault, setHasRemoteVault] = useState(false);
   const [isRegisterMode, setIsRegisterMode] = useState(false);
+  const [isDriveSyncActive, setIsDriveSyncActive] = useState(false);
+  const [isDriveSyncBusy, setIsDriveSyncBusy] = useState(false);
   const [email, setEmail] = useState("");
   const [accessPassword, setAccessPassword] = useState("");
   const [confirmAccessPassword, setConfirmAccessPassword] = useState("");
@@ -268,7 +285,7 @@ export default function HomeScreen() {
   }, [vaultSecret]);
 
   const requestAppUnlock = useCallback(
-    async (secretOverride = "") => {
+    async (secretOverride) => {
       setIsAuthenticating(true);
       setAuthMessage("");
       try {
@@ -301,6 +318,9 @@ export default function HomeScreen() {
     async function initializeSession() {
       const account = await loadLocalAccount();
       const loginGuard = await loadLoginGuard();
+      if (Platform.OS === "android") {
+        setIsDriveSyncActive(await isDriveSignedIn());
+      }
       const remoteVault = await peekRemoteVault();
       const remoteMeta = remoteVault?.meta;
 
@@ -858,6 +878,34 @@ export default function HomeScreen() {
     try {
       const envelope = await encryptVaultItems(items, vaultSecret);
       const payload = JSON.stringify(envelope);
+
+      if (Platform.OS === "android") {
+        const permissions =
+          await StorageAccessFramework.requestDirectoryPermissionsAsync();
+
+        if (!permissions.granted) {
+          return;
+        }
+
+        const fileUri = await StorageAccessFramework.createFileAsync(
+          permissions.directoryUri,
+          "secpass-backup",
+          "application/json",
+        );
+        await StorageAccessFramework.writeAsStringAsync(fileUri, payload);
+
+        logSecurityEvent({
+          type: "vault_exported",
+          status: "info",
+        }).catch(() => {});
+
+        Alert.alert(
+          "Backup exportado",
+          "O backup criptografado foi salvo na pasta selecionada.",
+        );
+        return;
+      }
+
       const canShareFile = await Sharing.isAvailableAsync();
 
       if (canShareFile) {
@@ -1001,6 +1049,102 @@ export default function HomeScreen() {
     );
   };
 
+  const handleEnableDriveSync = () => {
+    Alert.alert(
+      "Sincronizar com Google Drive",
+      "O cofre cifrado passa a ser salvo tambem na pasta privada do app na sua conta Google, para abrir em outro aparelho Android. O Google nunca ve suas senhas em texto claro, so o cofre ja cifrado. Isso amplia o que protege seus dados: quem comprometer sua conta Google podera baixar esse cofre cifrado e tentar quebrar a senha offline. Recomendamos ativar a verificacao em duas etapas na conta Google antes de continuar. Deseja continuar?",
+      [
+        { text: "Cancelar", style: "cancel" },
+        {
+          text: "Continuar",
+          onPress: async () => {
+            setIsDriveSyncBusy(true);
+            try {
+              const result = await signInWithGoogleDrive();
+              if (!result.success) {
+                return;
+              }
+              if (vaultSecret && hasLoadedData) {
+                await savePasswords(items, { vaultSecret });
+              }
+              setIsDriveSyncActive(true);
+              logSecurityEvent({ type: "sync_enabled", status: "info" }).catch(
+                () => {},
+              );
+            } catch (err) {
+              Alert.alert(
+                "Falha ao ativar sincronizacao",
+                err?.message || "Tente novamente.",
+              );
+              logSecurityEvent({
+                type: "sync_error",
+                status: "warning",
+                details: { action: "enable" },
+              }).catch(() => {});
+            } finally {
+              setIsDriveSyncBusy(false);
+            }
+          },
+        },
+      ],
+    );
+  };
+
+  const handleDisableDriveSync = () => {
+    Alert.alert(
+      "Desativar sincronizacao",
+      "Este aparelho para de enviar/receber o cofre pelo Google Drive. O cofre ja salvo la nao e apagado (use 'Excluir conta e todos os dados' se quiser apaga-lo). Deseja desativar?",
+      [
+        { text: "Cancelar", style: "cancel" },
+        {
+          text: "Desativar",
+          onPress: async () => {
+            await signOutDrive();
+            setIsDriveSyncActive(false);
+            logSecurityEvent({ type: "sync_disabled", status: "info" }).catch(
+              () => {},
+            );
+          },
+        },
+      ],
+    );
+  };
+
+  const handleUseExistingDriveVault = async () => {
+    setIsAuthSubmitting(true);
+    setLoginMessage("");
+    try {
+      const result = await signInWithGoogleDrive();
+      if (!result.success) {
+        return;
+      }
+
+      setIsDriveSyncActive(true);
+      const remoteVault = await peekRemoteVault();
+      const remoteMeta = remoteVault?.meta;
+      if (remoteMeta?.verifier) {
+        setHasRemoteVault(true);
+        setIsRegisterMode(false);
+        if (remoteMeta.email) {
+          setEmail(remoteMeta.email);
+        }
+        setLoginMessage(
+          "Cofre encontrado no Google Drive. Entre com o mesmo email e senha usados no outro aparelho.",
+        );
+      } else {
+        setLoginMessage(
+          "Nenhum cofre encontrado nessa conta Google ainda. Crie a conta local normalmente - a sincronizacao ja fica ativa a partir de agora.",
+        );
+      }
+    } catch (err) {
+      setLoginMessage(
+        err?.message || "Falha ao conectar com o Google Drive.",
+      );
+    } finally {
+      setIsAuthSubmitting(false);
+    }
+  };
+
   const handleLogout = async () => {
     needsVaultReloadRef.current = false;
     setVaultSecret("");
@@ -1063,6 +1207,7 @@ export default function HomeScreen() {
             setSearch("");
             setHasLoadedData(false);
             setVaultSecret("");
+            setIsDriveSyncActive(false);
             setIsLoggedIn(false);
             setIsAppUnlocked(false);
             setHasLocalAccount(false);
@@ -1118,12 +1263,12 @@ export default function HomeScreen() {
               <BrandLogo theme={theme} size="compact" />
               <Text style={[styles.loginTitle, { color: theme.text }]}>
                 {hasRemoteVault && !hasLocalAccount
-                  ? "Abrir cofre iCloud"
+                  ? `Abrir cofre ${REMOTE_VAULT_PROVIDER_LABEL}`
                   : "Entrar no SecPass"}
               </Text>
               <Text style={[styles.loginText, { color: theme.textSoft }]}>
                 {hasRemoteVault && !hasLocalAccount
-                  ? "Encontramos um cofre nesta conta Apple. Use o mesmo email e senha do outro aparelho."
+                  ? `Encontramos um cofre nesta ${REMOTE_VAULT_ACCOUNT_LABEL}. Use o mesmo email e senha do outro aparelho.`
                   : isRegisterMode
                     ? "Crie sua conta local para acessar o cofre."
                     : "Acesse sua conta para abrir o cofre."}
@@ -1347,6 +1492,19 @@ export default function HomeScreen() {
                 </Text>
               </Pressable>
 
+              {Platform.OS === "android" && !hasLocalAccount && !hasRemoteVault && (
+                <Pressable
+                  disabled={isAuthSubmitting}
+                  onPress={handleUseExistingDriveVault}
+                >
+                  <Text
+                    style={[styles.switchAuthText, { color: theme.accent }]}
+                  >
+                    Ja uso o SecPass em outro aparelho (Google Drive)
+                  </Text>
+                </Pressable>
+              )}
+
               <View style={styles.loginMetaRow}>
                 <Pressable onPress={handleForgotPassword}>
                   <Text style={[styles.forgotText, { color: theme.accent }]}>
@@ -1500,6 +1658,40 @@ export default function HomeScreen() {
                     Importar backup
                   </Text>
                 </Pressable>
+
+                {Platform.OS === "android" && (
+                  <Pressable
+                    style={({ pressed }) => [
+                      styles.backupButton,
+                      { backgroundColor: theme.secondaryButton },
+                      pressed && styles.pressed,
+                    ]}
+                    disabled={isDriveSyncBusy}
+                    onPress={
+                      isDriveSyncActive
+                        ? handleDisableDriveSync
+                        : handleEnableDriveSync
+                    }
+                  >
+                    {isDriveSyncBusy ? (
+                      <ActivityIndicator
+                        size="small"
+                        color={theme.secondaryText}
+                      />
+                    ) : (
+                      <Text
+                        style={[
+                          styles.headerButtonText,
+                          { color: theme.secondaryText },
+                        ]}
+                      >
+                        {isDriveSyncActive
+                          ? "Sincronizacao com Google Drive ativa"
+                          : "Sincronizar com Google Drive"}
+                      </Text>
+                    )}
+                  </Pressable>
+                )}
 
                 <Pressable
                   style={styles.securityLogLinkWrap}
