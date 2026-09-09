@@ -39,9 +39,13 @@ import { useColorScheme } from "../hooks/use-color-scheme";
 import { authenticateVaultAccess } from "../utils/biometricAuth";
 import {
   clearVault,
+  getVaultModuleForBackend,
   loadPasswords,
+  migrateVaultBackend,
   peekRemoteVault,
+  peekRemoteVaultSummary,
   savePasswords,
+  SYNC_BACKEND_UNAVAILABLE,
   VAULT_DELETE_ERROR,
 } from "../services/storage";
 import {
@@ -49,6 +53,12 @@ import {
   signInWithGoogleDrive,
   signOutDrive,
 } from "../services/driveAuth";
+import {
+  getSyncBackendPreference,
+  setSyncBackendPreference as persistSyncBackendPreference,
+  SYNC_BACKEND_DRIVE,
+  SYNC_BACKEND_ICLOUD,
+} from "../services/syncPreference";
 import {
   createVaultTombstone,
   getVisibleVaultItems,
@@ -87,6 +97,8 @@ import {
   clearSecurityEvents,
   loadSecurityEvents,
   logSecurityEvent,
+  sealSecurityLog,
+  verifySecurityLogIntegrity,
 } from "../services/securityAudit";
 import { generatePassword } from "../utils/passwordGenerator";
 import { DEVICE_AUTH_NOT_CONFIGURED } from "../utils/secureStoreErrors";
@@ -111,6 +123,10 @@ const SECURITY_EVENT_LABELS = {
   sync_enabled: "Sincronizacao com Google Drive ativada",
   sync_disabled: "Sincronizacao com Google Drive desativada",
   sync_error: "Falha na sincronizacao com Google Drive",
+  sync_backend_changed: "Backend de sincronizacao alterado",
+  vault_delete_incomplete: "Exclusao de conta incompleta (dado legado retido)",
+  audit_log_tampered: "Historico de seguranca pode ter sido adulterado",
+  remote_vault_confirmation_shown: "Confirmacao de cofre remoto exibida",
 };
 const formatSecurityEventType = (type) => SECURITY_EVENT_LABELS[type] || type;
 const formatSecurityEventDate = (isoString) => {
@@ -169,12 +185,11 @@ const MONO_FONT = Platform.select({
   android: "monospace",
   default: "monospace",
 });
-// iOS sincroniza via CloudKit (conta Apple), Android via Google Drive
-// (conta Google) - nunca os dois na mesma plataforma, ver src/services/storage.js.
-const REMOTE_VAULT_PROVIDER_LABEL =
-  Platform.OS === "ios" ? "iCloud" : "Google Drive";
-const REMOTE_VAULT_ACCOUNT_LABEL =
-  Platform.OS === "ios" ? "conta Apple" : "conta Google";
+// Google Drive e o mecanismo hibrido (Android + iOS + Mac, mesma conta
+// Google) e tem prioridade sobre o CloudKit em ambas as plataformas - ver
+// src/services/storage.js.
+const REMOTE_VAULT_PROVIDER_LABEL = "Google Drive";
+const REMOTE_VAULT_ACCOUNT_LABEL = "conta Google";
 
 export default function HomeScreen() {
   const colorScheme = useColorScheme();
@@ -219,6 +234,11 @@ export default function HomeScreen() {
   const [isSecurityLogVisible, setIsSecurityLogVisible] = useState(false);
   const [securityEvents, setSecurityEvents] = useState([]);
   const [isLoadingSecurityLog, setIsLoadingSecurityLog] = useState(false);
+  const [isSyncSettingsVisible, setIsSyncSettingsVisible] = useState(false);
+  const [syncBackendPreference, setSyncBackendPreference] = useState(
+    SYNC_BACKEND_DRIVE,
+  );
+  const [isSyncBackendBusy, setIsSyncBackendBusy] = useState(false);
 
   const idleTimerRef = useRef(null);
   const skipNextPersistRef = useRef(false);
@@ -304,6 +324,26 @@ export default function HomeScreen() {
         }
         setIsAppUnlocked(true);
         setAuthMessage("");
+
+        // A senha mestra so existe em memoria enquanto o cofre esta
+        // desbloqueado - verifica se o historico de seguranca ainda bate
+        // com o ultimo selo (detecta adulteracao feita por quem tem acesso
+        // ao armazenamento mas nao sabe a senha) e depois sela de novo,
+        // cobrindo tambem eventos registrados antes deste desbloqueio (ex:
+        // tentativas de login que falharam).
+        const effectiveSecret = secretOverride || vaultSecret;
+        verifySecurityLogIntegrity(effectiveSecret)
+          .then((result) => {
+            if (result === "tampered") {
+              return logSecurityEvent({
+                type: "audit_log_tampered",
+                status: "warning",
+              });
+            }
+            return null;
+          })
+          .then(() => sealSecurityLog(effectiveSecret))
+          .catch(() => {});
       } catch {
         setAuthMessage("Falha ao iniciar autenticacao.");
         setIsAppUnlocked(false);
@@ -311,16 +351,14 @@ export default function HomeScreen() {
         setIsAuthenticating(false);
       }
     },
-    [hasLoadedData, pullRemoteVaultUpdates, reloadVaultFromStorage],
+    [hasLoadedData, pullRemoteVaultUpdates, reloadVaultFromStorage, vaultSecret],
   );
 
   useEffect(() => {
     async function initializeSession() {
       const account = await loadLocalAccount();
       const loginGuard = await loadLoginGuard();
-      if (Platform.OS === "android") {
-        setIsDriveSyncActive(await isDriveSignedIn());
-      }
+      setIsDriveSyncActive(await isDriveSignedIn());
       const remoteVault = await peekRemoteVault();
       const remoteMeta = remoteVault?.meta;
 
@@ -401,23 +439,19 @@ export default function HomeScreen() {
     };
   }, [isLoggedIn, isAppUnlocked, registerUserActivity]);
 
+  // Protecao ativa por toda a vida do app, nao so depois do login: a senha
+  // mestra pode ser revelada em texto claro na propria tela de login/
+  // cadastro (icone de olho) e um screenshot/preview do app switcher nesse
+  // momento exporia esse texto claro tanto quanto uma credencial no cofre.
   useEffect(() => {
-    if (!isLoggedIn) {
-      return undefined;
-    }
-
     ScreenCapture.enableAppSwitcherProtectionAsync().catch(() => {});
 
     return () => {
       ScreenCapture.disableAppSwitcherProtectionAsync().catch(() => {});
     };
-  }, [isLoggedIn]);
+  }, []);
 
   useEffect(() => {
-    if (!(isLoggedIn && isAppUnlocked)) {
-      return undefined;
-    }
-
     ScreenCapture.preventScreenCaptureAsync().catch(() => {});
 
     const subscription = ScreenCapture.addScreenshotListener(() => {
@@ -431,7 +465,7 @@ export default function HomeScreen() {
       ScreenCapture.allowScreenCaptureAsync().catch(() => {});
       subscription?.remove?.();
     };
-  }, [isLoggedIn, isAppUnlocked]);
+  }, []);
 
   useEffect(() => {
     if (!hasLoadedLoginGuard) {
@@ -621,11 +655,22 @@ export default function HomeScreen() {
       return;
     }
 
-    const registerFailedAttempt = () => {
+    const registerFailedAttempt = async () => {
       const throttleState = computeFailedLoginState({
         failedAttempts: decayedState.failedAttempts,
         lockLevel: decayedState.lockLevel,
       });
+
+      // Persiste antes de devolver o controle: se so confiassemos no
+      // useEffect reativo (que roda num ciclo de render posterior), matar o
+      // app logo apos errar a senha perderia o incremento, permitindo
+      // tentativas ilimitadas sem nunca acionar o bloqueio.
+      try {
+        await saveLoginGuard(throttleState);
+      } catch {
+        // Continua mesmo se a persistencia falhar - o estado em memoria
+        // ainda reflete a tentativa falha para esta sessao.
+      }
 
       setFailedLoginAttempts(throttleState.failedAttempts);
       setLoginLockLevel(throttleState.lockLevel);
@@ -677,30 +722,68 @@ export default function HomeScreen() {
         password: credentials.accessPassword,
       });
 
-      try {
-        await loadPasswords({ vaultSecret: nextSecret });
-        await saveLocalAccount({
-          email: credentials.normalizedEmail,
-          password: credentials.accessPassword,
-        });
-      } catch {
-        registerFailedAttempt();
-        return;
-      }
+      // Este aparelho nao tem cofre local pra comparar - aceitar o
+      // remoto as cegas significaria confiar de olhos fechados em
+      // qualquer coisa que esteja la (ver plano de seguranca: um
+      // atacante com acesso de escrita anterior ao backend poderia ter
+      // devolvido uma copia antiga e genuina do cofre). Mostra um resumo
+      // de sanidade (nao prova nada criptograficamente, mas pega os
+      // casos obvios) e exige confirmacao explicita antes de decifrar e
+      // aceitar.
+      const finishRegisterFromRemoteVault = async () => {
+        try {
+          await loadPasswords({ vaultSecret: nextSecret });
+          await saveLocalAccount({
+            email: credentials.normalizedEmail,
+            password: credentials.accessPassword,
+          });
+        } catch {
+          await registerFailedAttempt();
+          return;
+        }
 
-      setHasLocalAccount(true);
-      setFailedLoginAttempts(0);
-      setLoginLockLevel(0);
-      setLoginLockUntil(0);
-      setVaultSecret(nextSecret);
+        setHasLocalAccount(true);
+        setFailedLoginAttempts(0);
+        setLoginLockLevel(0);
+        setLoginLockUntil(0);
+        setVaultSecret(nextSecret);
+        logSecurityEvent({
+          type: "login_success",
+          status: "info",
+        }).catch(() => {});
+        setLoginMessage("");
+        setIsLoggedIn(true);
+        requestAppUnlock();
+        resetAuthFields();
+      };
+
+      const summary = await peekRemoteVaultSummary().catch(() => null);
+      const itemsLabel = summary
+        ? `${summary.itemCount} ${summary.itemCount === 1 ? "item" : "itens"}`
+        : "quantidade de itens desconhecida";
+      const lastModifiedLabel = summary?.lastModifiedAt
+        ? formatSecurityEventDate(
+            new Date(summary.lastModifiedAt).toISOString(),
+          )
+        : "data desconhecida";
+
       logSecurityEvent({
-        type: "login_success",
+        type: "remote_vault_confirmation_shown",
         status: "info",
+        details: { itemCount: summary?.itemCount ?? null },
       }).catch(() => {});
-      setLoginMessage("");
-      setIsLoggedIn(true);
-      requestAppUnlock();
-      resetAuthFields();
+
+      Alert.alert(
+        "Cofre encontrado na nuvem",
+        `Encontramos um cofre para ${credentials.normalizedEmail} com ${itemsLabel}, ` +
+          `ultima modificacao em ${lastModifiedLabel}. Confira se isso e o que voce ` +
+          "espera antes de continuar - um cofre desatualizado ou com menos itens do " +
+          "que o esperado pode indicar um problema. Deseja continuar?",
+        [
+          { text: "Cancelar", style: "cancel" },
+          { text: "Continuar", onPress: finishRegisterFromRemoteVault },
+        ],
+      );
       return;
     }
 
@@ -710,7 +793,7 @@ export default function HomeScreen() {
     });
 
     if (!isValidAccount) {
-      registerFailedAttempt();
+      await registerFailedAttempt();
       return;
     }
 
@@ -1110,6 +1193,76 @@ export default function HomeScreen() {
     );
   };
 
+  const handleOpenSyncSettings = async () => {
+    const preference = await getSyncBackendPreference();
+    setSyncBackendPreference(preference);
+    setIsSyncSettingsVisible(true);
+  };
+
+  // Troca de backend e uma acao explicita do usuario, nunca um fallback
+  // automatico (ver src/services/storage.js) - migra o cofre pro novo
+  // backend antes de persistir a preferencia, pra nunca deixar
+  // "preferencia trocada mas dados nao copiados". A preferencia e local
+  // deste aparelho, entao avisamos explicitamente que a troca precisa ser
+  // repetida em todos os outros aparelhos que compartilham o cofre.
+  const handleSelectSyncBackend = (newBackend) => {
+    if (newBackend === syncBackendPreference || isSyncBackendBusy) {
+      return;
+    }
+
+    Alert.alert(
+      newBackend === SYNC_BACKEND_ICLOUD
+        ? "Trocar para iCloud"
+        : "Trocar para Google Drive",
+      "O cofre atual sera copiado para o novo backend antes da troca (o backend antigo nao e apagado). Repita esta mesma troca em todos os outros aparelhos que acessam este cofre, ou eles vao parar de se sincronizar entre si. Deseja continuar?",
+      [
+        { text: "Cancelar", style: "cancel" },
+        {
+          text: "Trocar e migrar",
+          onPress: async () => {
+            setIsSyncBackendBusy(true);
+            try {
+              const fromModule = await getVaultModuleForBackend(
+                syncBackendPreference,
+              );
+              const toModule = await getVaultModuleForBackend(newBackend);
+              await migrateVaultBackend({ fromModule, toModule, vaultSecret });
+              await persistSyncBackendPreference(newBackend);
+              setSyncBackendPreference(newBackend);
+              logSecurityEvent({
+                type: "sync_backend_changed",
+                status: "info",
+                details: { from: syncBackendPreference, to: newBackend },
+              }).catch(() => {});
+
+              if (vaultSecret && hasLoadedData) {
+                try {
+                  await savePasswords(items, { vaultSecret });
+                } catch {
+                  // cache local ja esta correto; proxima gravacao tenta de novo
+                }
+              }
+
+              Alert.alert(
+                "Backend alterado",
+                "Repita esta mesma troca em todos os outros aparelhos que acessam este cofre.",
+              );
+            } catch (err) {
+              Alert.alert(
+                "Falha ao trocar backend",
+                err?.message === SYNC_BACKEND_UNAVAILABLE
+                  ? "Esse backend nao esta disponivel neste aparelho."
+                  : err?.message || "Tente novamente.",
+              );
+            } finally {
+              setIsSyncBackendBusy(false);
+            }
+          },
+        },
+      ],
+    );
+  };
+
   const handleUseExistingDriveVault = async () => {
     setIsAuthSubmitting(true);
     setLoginMessage("");
@@ -1492,7 +1645,7 @@ export default function HomeScreen() {
                 </Text>
               </Pressable>
 
-              {Platform.OS === "android" && !hasLocalAccount && !hasRemoteVault && (
+              {!hasLocalAccount && !hasRemoteVault && (
                 <Pressable
                   disabled={isAuthSubmitting}
                   onPress={handleUseExistingDriveVault}
@@ -1563,7 +1716,7 @@ export default function HomeScreen() {
                 { backgroundColor: theme.primary },
                 pressed && styles.pressed,
               ]}
-              onPress={requestAppUnlock}
+              onPress={() => requestAppUnlock()}
             >
               <Text style={[styles.unlockText, { color: theme.primaryText }]}>
                 Desbloquear
@@ -1659,39 +1812,34 @@ export default function HomeScreen() {
                   </Text>
                 </Pressable>
 
-                {Platform.OS === "android" && (
-                  <Pressable
-                    style={({ pressed }) => [
-                      styles.backupButton,
-                      { backgroundColor: theme.secondaryButton },
-                      pressed && styles.pressed,
-                    ]}
-                    disabled={isDriveSyncBusy}
-                    onPress={
-                      isDriveSyncActive
-                        ? handleDisableDriveSync
-                        : handleEnableDriveSync
-                    }
-                  >
-                    {isDriveSyncBusy ? (
-                      <ActivityIndicator
-                        size="small"
-                        color={theme.secondaryText}
-                      />
-                    ) : (
-                      <Text
-                        style={[
-                          styles.headerButtonText,
-                          { color: theme.secondaryText },
-                        ]}
-                      >
-                        {isDriveSyncActive
-                          ? "Sincronizacao com Google Drive ativa"
-                          : "Sincronizar com Google Drive"}
-                      </Text>
-                    )}
-                  </Pressable>
-                )}
+                <Pressable
+                  style={({ pressed }) => [
+                    styles.backupButton,
+                    { backgroundColor: theme.secondaryButton },
+                    pressed && styles.pressed,
+                  ]}
+                  disabled={isDriveSyncBusy}
+                  onPress={
+                    isDriveSyncActive
+                      ? handleDisableDriveSync
+                      : handleEnableDriveSync
+                  }
+                >
+                  {isDriveSyncBusy ? (
+                    <ActivityIndicator size="small" color={theme.secondaryText} />
+                  ) : (
+                    <Text
+                      style={[
+                        styles.headerButtonText,
+                        { color: theme.secondaryText },
+                      ]}
+                    >
+                      {isDriveSyncActive
+                        ? "Sincronizacao com Google Drive ativa"
+                        : "Sincronizar com Google Drive"}
+                    </Text>
+                  )}
+                </Pressable>
 
                 <Pressable
                   style={styles.securityLogLinkWrap}
@@ -1704,6 +1852,20 @@ export default function HomeScreen() {
                     ]}
                   >
                     Ver historico de seguranca
+                  </Text>
+                </Pressable>
+
+                <Pressable
+                  style={styles.securityLogLinkWrap}
+                  onPress={handleOpenSyncSettings}
+                >
+                  <Text
+                    style={[
+                      styles.securityLogLinkText,
+                      { color: theme.accent },
+                    ]}
+                  >
+                    Escolher backend de sincronizacao
                   </Text>
                 </Pressable>
 
@@ -2068,6 +2230,108 @@ export default function HomeScreen() {
                   style={[styles.secondaryText, { color: theme.dangerText }]}
                 >
                   Limpar historico
+                </Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      <Modal
+        visible={isSyncSettingsVisible}
+        animationType="slide"
+        transparent
+        onRequestClose={() => setIsSyncSettingsVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View
+            style={[
+              styles.modalCard,
+              { backgroundColor: theme.card, borderColor: theme.border },
+            ]}
+          >
+            <Text style={[styles.modalTitle, { color: theme.text }]}>
+              Sincronizacao
+            </Text>
+            <Text style={[styles.modalText, { color: theme.textSoft }]}>
+              Escolha por onde este aparelho sincroniza o cofre. Trocar de
+              backend copia o cofre atual para o novo, sem apagar o antigo.
+            </Text>
+
+            <Pressable
+              style={({ pressed }) => [
+                styles.syncBackendOption,
+                { borderColor: theme.border },
+                syncBackendPreference === SYNC_BACKEND_DRIVE && {
+                  borderColor: theme.accent,
+                },
+                pressed && styles.pressed,
+              ]}
+              disabled={isSyncBackendBusy}
+              onPress={() => handleSelectSyncBackend(SYNC_BACKEND_DRIVE)}
+            >
+              <Text
+                style={[styles.syncBackendOptionTitle, { color: theme.text }]}
+              >
+                Google Drive
+              </Text>
+              <Text
+                style={[
+                  styles.syncBackendOptionHint,
+                  { color: theme.textMuted },
+                ]}
+              >
+                Funciona com Android, iPhone e Mac
+              </Text>
+            </Pressable>
+
+            <Pressable
+              style={({ pressed }) => [
+                styles.syncBackendOption,
+                { borderColor: theme.border },
+                syncBackendPreference === SYNC_BACKEND_ICLOUD && {
+                  borderColor: theme.accent,
+                },
+                Platform.OS !== "ios" && styles.syncBackendOptionDisabled,
+                pressed && styles.pressed,
+              ]}
+              disabled={isSyncBackendBusy || Platform.OS !== "ios"}
+              onPress={() => handleSelectSyncBackend(SYNC_BACKEND_ICLOUD)}
+            >
+              <Text
+                style={[styles.syncBackendOptionTitle, { color: theme.text }]}
+              >
+                iCloud (CloudKit)
+              </Text>
+              <Text
+                style={[
+                  styles.syncBackendOptionHint,
+                  { color: theme.textMuted },
+                ]}
+              >
+                {Platform.OS === "ios"
+                  ? "So entre iPhone e Mac"
+                  : "Indisponivel neste aparelho"}
+              </Text>
+            </Pressable>
+
+            {isSyncBackendBusy ? (
+              <ActivityIndicator color={theme.accent} style={styles.loader} />
+            ) : null}
+
+            <View style={styles.modalActions}>
+              <Pressable
+                style={({ pressed }) => [
+                  styles.secondaryButton,
+                  { backgroundColor: theme.secondaryButton },
+                  pressed && styles.pressed,
+                ]}
+                onPress={() => setIsSyncSettingsVisible(false)}
+              >
+                <Text
+                  style={[styles.secondaryText, { color: theme.secondaryText }]}
+                >
+                  Fechar
                 </Text>
               </Pressable>
             </View>
@@ -2471,6 +2735,23 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingVertical: 12,
     alignItems: "center",
+  },
+  syncBackendOption: {
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+  },
+  syncBackendOptionDisabled: {
+    opacity: 0.5,
+  },
+  syncBackendOptionTitle: {
+    fontSize: 14,
+    fontWeight: "700",
+  },
+  syncBackendOptionHint: {
+    fontSize: 12,
+    marginTop: 2,
   },
   filePickerButton: {
     borderRadius: 12,

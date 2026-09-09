@@ -102,6 +102,31 @@ describe("errorMonitoring", () => {
     expect(scrubbed.message).toBe("Falha ao descriptografar");
   });
 
+  it("redige email/username/mac mesmo sem chamada hoje passar esses campos (robustez contra uso futuro)", () => {
+    mockExtra = { sentryDsn: "https://key@o1.ingest.sentry.io/1" };
+    const { initErrorMonitoring } = require("../src/services/errorMonitoring");
+
+    initErrorMonitoring();
+    const { beforeSend } = mockSentryInit.mock.calls[0][0];
+
+    const scrubbed = beforeSend({
+      message: "Falha no login",
+      extra: {
+        email: "user@email.com",
+        username: "user",
+        usuario: "user",
+        mac: "aabbcc",
+        expectedMac: "aabbcc",
+      },
+    });
+
+    expect(scrubbed.extra.email).toBe("[Redacted]");
+    expect(scrubbed.extra.username).toBe("[Redacted]");
+    expect(scrubbed.extra.usuario).toBe("[Redacted]");
+    expect(scrubbed.extra.mac).toBe("[Redacted]");
+    expect(scrubbed.extra.expectedMac).toBe("[Redacted]");
+  });
+
   it("captureError redige o contexto extra antes de repassar ao Sentry", () => {
     mockExtra = { sentryDsn: "https://key@o1.ingest.sentry.io/1" };
     const { captureError } = require("../src/services/errorMonitoring");

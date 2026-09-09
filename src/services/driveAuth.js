@@ -1,155 +1,95 @@
-// Autenticacao Google (OAuth2 + PKCE) usada so para o escopo
-// drive.appdata: o token nunca da acesso ao Drive visivel do usuario, so a
-// pasta oculta do proprio app. Tokens ficam no SecureStore, nunca no
-// AsyncStorage (mesmo padrao de src/services/account.js).
-import * as AuthSession from "expo-auth-session";
+// Autenticacao Google via SDK nativo (Play Services no Android,
+// GoogleSignIn nativo no iOS), usada so para o escopo drive.appdata: o
+// token nunca da acesso ao Drive visivel do usuario, so a pasta oculta do
+// proprio app. Diferente de um fluxo OAuth generico via navegador, esse
+// SDK valida o app pelo cliente OAuth ja registrado no Google Cloud
+// Console (pacote+assinatura no Android, bundle id no iOS), sem precisar
+// de redirect_uri - por isso funciona onde AuthSession genérico nao
+// funciona no tipo de cliente "Android"/"iOS".
+//
+// A sessao (incluindo o refresh do access token) fica sob gestao do SDK
+// nativo - nao guardamos tokens no SecureStore aqui, so consultamos
+// hasPreviousSignIn()/getTokens() quando precisamos de um token valido.
+import { Platform } from "react-native";
 import Constants from "expo-constants";
-import * as SecureStore from "expo-secure-store";
+import { GoogleSignin } from "@react-native-google-signin/google-signin";
 
-const TOKEN_KEY = "secpass_drive_tokens";
-const SECURE_STORE_OPTIONS = {
-  keychainService: "secpass.drivesync",
-  keychainAccessible: SecureStore.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
-};
+const DRIVE_APPDATA_SCOPE = "https://www.googleapis.com/auth/drive.appdata";
 
-const DISCOVERY = {
-  authorizationEndpoint: "https://accounts.google.com/o/oauth2/v2/auth",
-  tokenEndpoint: "https://oauth2.googleapis.com/token",
-  revocationEndpoint: "https://oauth2.googleapis.com/revoke",
-};
+let isConfigured = false;
+const ensureConfigured = () => {
+  if (isConfigured) {
+    return;
+  }
 
-const SCOPES = ["https://www.googleapis.com/auth/drive.appdata"];
-
-// Expirar a antecipacao evita usar um access token nos seus ultimos
-// segundos de vida, o que causaria uma chamada Drive falhar por 401 em vez
-// de renovar o token preventivamente.
-const EXPIRY_SAFETY_MARGIN_MS = 60_000;
-
-export const getGoogleClientId = () =>
-  Constants.expoConfig?.extra?.googleDriveClientId || "";
-
-const readTokens = async () => {
+  const iosClientId = Constants.expoConfig?.extra?.googleIosClientId || undefined;
   try {
-    const raw = await SecureStore.getItemAsync(TOKEN_KEY, SECURE_STORE_OPTIONS);
-    if (!raw) return null;
-    return JSON.parse(raw);
+    GoogleSignin.configure({
+      scopes: [DRIVE_APPDATA_SCOPE],
+      ...(Platform.OS === "ios" ? { iosClientId } : {}),
+    });
+    isConfigured = true;
   } catch {
-    return null;
+    // Configuracao ausente/invalida (ex: iosClientId nao resolvido) - trata
+    // como "Drive indisponivel neste aparelho" em vez de derrubar o app;
+    // quem chama (isDriveSignedIn/getValidAccessToken) ja trata ausencia de
+    // sessao como sync indisponivel, nunca como erro fatal do cofre local.
   }
 };
 
-const writeTokens = async (tokens) => {
-  await SecureStore.setItemAsync(
-    TOKEN_KEY,
-    JSON.stringify(tokens),
-    SECURE_STORE_OPTIONS,
-  );
-};
-
-const isExpired = (tokens) =>
-  !tokens?.expiresAt || Date.now() >= tokens.expiresAt - EXPIRY_SAFETY_MARGIN_MS;
-
-const persistFromTokenResponse = async (tokenResponse) => {
-  const tokens = {
-    accessToken: tokenResponse.accessToken,
-    refreshToken: tokenResponse.refreshToken,
-    expiresAt: Date.now() + (tokenResponse.expiresIn || 0) * 1000,
-  };
-  await writeTokens(tokens);
-  return tokens;
-};
-
-// Inicia o fluxo interativo (abre o navegador do sistema para login
-// Google) e persiste os tokens resultantes. So deve ser chamado a partir de
-// uma acao explicita do usuario (botao "Ativar sincronizacao" / "Ja uso o
-// SecPass em outro aparelho"), nunca automaticamente no boot do app.
+// Inicia o fluxo interativo (tela nativa de escolha de conta Google). So
+// deve ser chamado a partir de uma acao explicita do usuario (botao
+// "Ativar sincronizacao" / "Ja uso o SecPass em outro aparelho"), nunca
+// automaticamente no boot do app.
 export const signInWithGoogleDrive = async () => {
-  const clientId = getGoogleClientId();
-  if (!clientId) {
-    throw new Error(
-      "Sincronizacao com Google Drive nao configurada neste build.",
-    );
-  }
+  ensureConfigured();
 
-  const redirectUri = AuthSession.makeRedirectUri({ scheme: "secpass" });
-  const request = new AuthSession.AuthRequest({
-    clientId,
-    scopes: SCOPES,
-    redirectUri,
-    responseType: AuthSession.ResponseType.Code,
-    usePKCE: true,
-  });
+  try {
+    await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
+    const result = await GoogleSignin.signIn();
 
-  const result = await request.promptAsync(DISCOVERY);
-  if (result.type !== "success" || !result.params?.code) {
-    if (result.type === "cancel" || result.type === "dismiss") {
+    if (result.type !== "success") {
       return { success: false, cancelled: true };
     }
+
+    return { success: true, cancelled: false };
+  } catch {
     throw new Error("Falha ao autenticar com o Google.");
   }
-
-  const tokenResponse = await AuthSession.exchangeCodeAsync(
-    {
-      clientId,
-      code: result.params.code,
-      redirectUri,
-      extraParams: { code_verifier: request.codeVerifier || "" },
-    },
-    DISCOVERY,
-  );
-
-  await persistFromTokenResponse(tokenResponse);
-  return { success: true, cancelled: false };
 };
 
-const refreshTokens = async (tokens) => {
-  const clientId = getGoogleClientId();
-  if (!clientId || !tokens?.refreshToken) {
+// Devolve um access token valido para o escopo drive.appdata, ou null se
+// nunca autenticou ou se a sessao nao pode ser renovada (ex: usuario
+// revogou acesso na conta Google) - quem chama trata isso como "sync
+// indisponivel", nunca como erro fatal do cofre local.
+export const getValidAccessToken = async () => {
+  ensureConfigured();
+
+  if (!isConfigured || !GoogleSignin.hasPreviousSignIn()) {
     return null;
   }
 
   try {
-    const refreshed = await AuthSession.refreshAsync(
-      { clientId, refreshToken: tokens.refreshToken },
-      DISCOVERY,
-    );
-    const nextTokens = await persistFromTokenResponse({
-      ...refreshed,
-      refreshToken: refreshed.refreshToken || tokens.refreshToken,
-    });
-    return nextTokens;
+    await GoogleSignin.signInSilently();
+    const { accessToken } = await GoogleSignin.getTokens();
+    return accessToken || null;
   } catch {
     return null;
   }
-};
-
-// Devolve um access token valido, renovando via refresh token se
-// necessario. Retorna null se nunca autenticou ou se o refresh falhou (ex:
-// usuario revogou acesso na conta Google) - quem chama trata isso como
-// "sync indisponivel", nunca como erro fatal do cofre local.
-export const getValidAccessToken = async () => {
-  const tokens = await readTokens();
-  if (!tokens?.accessToken) {
-    return null;
-  }
-
-  if (!isExpired(tokens)) {
-    return tokens.accessToken;
-  }
-
-  const refreshed = await refreshTokens(tokens);
-  return refreshed?.accessToken || null;
 };
 
 export const isDriveSignedIn = async () => {
-  const tokens = await readTokens();
-  return Boolean(tokens?.accessToken);
+  ensureConfigured();
+  if (!isConfigured) {
+    return false;
+  }
+  return GoogleSignin.hasPreviousSignIn();
 };
 
 export const signOutDrive = async () => {
   try {
-    await SecureStore.deleteItemAsync(TOKEN_KEY, SECURE_STORE_OPTIONS);
+    await GoogleSignin.signOut();
   } catch {
-    // Best-effort: pior caso o token fica no SecureStore ate a proxima tentativa.
+    // Best-effort: pior caso a sessao fica ativa ate a proxima tentativa.
   }
 };

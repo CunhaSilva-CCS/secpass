@@ -5,6 +5,18 @@ import { constantTimeCompare } from "../utils/constantTimeCompare";
 
 const VAULT_VERSION = 2;
 const LEGACY_VAULT_VERSION = 1;
+// v3 do envelope por item (encryptVaultItem/decryptVaultItem, usado so no
+// registro remoto de sync): amarra updatedAt/tombstone na AAD do GCM junto
+// com id, alem da versao. Sem isso, um backend remoto adulterado (Drive/
+// CloudKit comprometido) pode reetiquetar um envelope antigo legitimo com
+// um updatedAt forjado no futuro para vencer o merge (mergeVaultItems e
+// last-write-wins) e ressuscitar permanentemente um item ja apagado ou
+// reverter uma senha ja trocada - o merge nunca decifra nada, so compara
+// esse campo em texto claro. Com a revisao amarrada na AAD, adulterar
+// updatedAt/tombstone sem a senha mestra invalida o authTag e o item e
+// descartado (ver decryptRemoteVaultItems), em vez de aceito com uma
+// revisao forjada.
+const ITEM_ENVELOPE_VERSION = 3;
 // OWASP recomenda >=600k para PBKDF2-HMAC-SHA256 (2023+). So usado para
 // novas contas/cofres: cofres existentes continuam com o valor gravado no
 // proprio kdf.iterations, lido dinamicamente (nunca forcamos re-derivacao).
@@ -174,7 +186,7 @@ const decryptVaultItemV2 = (envelope, keys) => {
   }
 };
 
-export const encryptVaultItem = (item, keys) => {
+export const encryptVaultItem = (item, keys, revision) => {
   if (!keys?.encKey || !keys?.macKey) {
     throw new Error("Segredo do cofre ausente.");
   }
@@ -183,13 +195,20 @@ export const encryptVaultItem = (item, keys) => {
   const ivHex = bytesToHex(ivBytes);
   const plaintext = JSON.stringify(item ?? {});
   const id = item?.id || "";
+  const revisionAt = Number(revision?.revisionAt || 0);
+  const tombstone = Boolean(revision?.tombstone);
 
   const cipher = QuickCrypto.createCipheriv(
     "aes-256-gcm",
     keys.encKey,
     ivBytes,
   );
-  cipher.setAAD(Buffer.from(`${VAULT_VERSION}:${id}`, "utf8"));
+  cipher.setAAD(
+    Buffer.from(
+      `${ITEM_ENVELOPE_VERSION}:${id}:${revisionAt}:${tombstone}`,
+      "utf8",
+    ),
+  );
   const ciphertext = Buffer.concat([
     cipher.update(Buffer.from(plaintext, "utf8")),
     cipher.final(),
@@ -198,7 +217,7 @@ export const encryptVaultItem = (item, keys) => {
 
   return {
     type: "encrypted_item",
-    version: VAULT_VERSION,
+    version: ITEM_ENVELOPE_VERSION,
     id,
     iv: ivHex,
     ciphertext,
@@ -206,7 +225,42 @@ export const encryptVaultItem = (item, keys) => {
   };
 };
 
-export const decryptVaultItem = (envelope, keys) => {
+// v3 (atual, so para o envelope por item de sync remoto): igual ao v2, mas
+// a AAD tambem amarra updatedAt/tombstone - ver comentario de
+// ITEM_ENVELOPE_VERSION. `revision` precisa vir de fora (do registro
+// remoto que acompanha o envelope, nunca de dentro dele) com os MESMOS
+// valores usados por quem chamou encryptVaultItem, senao a autenticacao
+// falha por design.
+const decryptVaultItemV3 = (envelope, keys) => {
+  const { version, id, ivHex, ciphertext, authTag, revision } = envelope;
+
+  if (!authTag) {
+    throw new Error("Payload criptografado incompleto.");
+  }
+
+  const revisionAt = Number(revision?.revisionAt || 0);
+  const tombstone = Boolean(revision?.tombstone);
+
+  try {
+    const decipher = QuickCrypto.createDecipheriv(
+      "aes-256-gcm",
+      keys.encKey,
+      hexToBytes(ivHex),
+    );
+    decipher.setAAD(
+      Buffer.from(`${version}:${id}:${revisionAt}:${tombstone}`, "utf8"),
+    );
+    decipher.setAuthTag(Buffer.from(authTag, "hex"));
+    return Buffer.concat([
+      decipher.update(Buffer.from(ciphertext, "base64")),
+      decipher.final(),
+    ]).toString("utf8");
+  } catch {
+    throw new Error("Falha de integridade do cofre.");
+  }
+};
+
+export const decryptVaultItem = (envelope, keys, revision) => {
   if (!keys?.encKey || !keys?.macKey) {
     throw new Error("Segredo do cofre ausente.");
   }
@@ -224,16 +278,23 @@ export const decryptVaultItem = (envelope, keys) => {
     throw new Error("Payload criptografado incompleto.");
   }
 
-  const plaintext =
-    version === LEGACY_VAULT_VERSION
-      ? decryptVaultItemV1(
-          { version, id, ivHex, ciphertext, expectedMac: envelope.mac || "" },
-          keys,
-        )
-      : decryptVaultItemV2(
-          { version, id, ivHex, ciphertext, authTag: envelope.authTag },
-          keys,
-        );
+  let plaintext;
+  if (version === LEGACY_VAULT_VERSION) {
+    plaintext = decryptVaultItemV1(
+      { version, id, ivHex, ciphertext, expectedMac: envelope.mac || "" },
+      keys,
+    );
+  } else if (version >= ITEM_ENVELOPE_VERSION) {
+    plaintext = decryptVaultItemV3(
+      { version, id, ivHex, ciphertext, authTag: envelope.authTag, revision },
+      keys,
+    );
+  } else {
+    plaintext = decryptVaultItemV2(
+      { version, id, ivHex, ciphertext, authTag: envelope.authTag },
+      keys,
+    );
+  }
 
   return JSON.parse(plaintext);
 };

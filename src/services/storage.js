@@ -13,9 +13,14 @@ import {
 import { mergeVaultItems } from "./vaultMerge";
 import { isDriveSignedIn, signOutDrive } from "./driveAuth";
 import {
+  SYNC_BACKEND_ICLOUD,
+  getSyncBackendPreference,
+} from "./syncPreference";
+import {
   DEVICE_AUTH_NOT_CONFIGURED,
   isDeviceAuthNotConfiguredError,
 } from "../utils/secureStoreErrors";
+import { logSecurityEvent } from "./securityAudit";
 
 const KEY = "passwords";
 const STORAGE_WRITE_ERROR =
@@ -24,6 +29,8 @@ const VAULT_SECRET_REQUIRED =
   "Nao e possivel salvar o cofre sem a senha de acesso.";
 export const VAULT_DELETE_ERROR =
   "Nao foi possivel apagar o cofre sincronizado. Tente novamente.";
+export const SYNC_BACKEND_UNAVAILABLE =
+  "Este backend de sincronizacao nao esta disponivel neste aparelho.";
 const SECURE_STORE_OPTIONS = {
   keychainService: "secpass.vault",
   keychainAccessible: SecureStore.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
@@ -45,12 +52,10 @@ const getCloudKitModule = () => {
 // So retorna o modulo Drive se ja houver sessao Google autenticada: sem
 // login explicito do usuario nao ha "sync habilitado" (ver
 // src/services/driveAuth.js - login e sempre uma acao explicita, nunca
-// automatica no boot).
+// automatica no boot). Disponivel tanto no Android quanto no iOS - e o
+// mecanismo que permite Mac, iPhone e Android compartilharem o mesmo cofre
+// com a mesma conta Google, sem depender de CloudKit (exclusivo Apple).
 const getDriveVaultModule = async () => {
-  if (Platform.OS !== "android") {
-    return null;
-  }
-
   try {
     const signedIn = await isDriveSignedIn();
     if (!signedIn) {
@@ -62,14 +67,20 @@ const getDriveVaultModule = async () => {
   }
 };
 
-// Ponto unico de despacho do backend remoto: iOS usa CloudKit (inalterado),
-// Android usa Google Drive quando o usuario ativou a sincronizacao. Nenhuma
-// das duas depende de servidor proprio, e nenhuma altera o comportamento
-// hoje existente quando nao configurada (retorna null -> cofre 100% local).
+// Ponto unico de despacho do backend remoto: qual dos dois usar e uma
+// escolha explicita do usuario (ver src/services/syncPreference.js), nao
+// mais um fallback automatico. Drive e o mecanismo hibrido (Android + iOS +
+// Mac, mesma conta Google); CloudKit e exclusivo Apple (so iPhone e Mac).
+// Retornar null aqui e um estado normal ("sync desativado/indisponivel
+// neste aparelho" -> cofre 100% local) - tornar isso visivel pro usuario e
+// responsabilidade da UI (ver peekRemoteVault), nao deste ponto de
+// despacho, pra nao quebrar o invariante de que salvar/carregar local
+// nunca falha por causa do backend remoto escolhido.
 const getRemoteVaultModule = async () => {
-  const cloudKit = getCloudKitModule();
-  if (cloudKit) {
-    return cloudKit;
+  const preference = await getSyncBackendPreference();
+
+  if (preference === SYNC_BACKEND_ICLOUD) {
+    return getCloudKitModule();
   }
 
   return getDriveVaultModule();
@@ -111,16 +122,25 @@ const readLegacyKeychainVault = async () => {
   }
 };
 
+// Retorna se a exclusao realmente aconteceu (ou se nao havia nada a
+// excluir) - so no fluxo de "Excluir conta e todos os dados" (clearVault)
+// isso importa de verdade: silenciar essa falha ali faria o app reportar
+// exclusao total quando o blob cifrado do cofre legado pode continuar
+// retido no circulo de iCloud Keychain do usuario.
 const deleteLegacyKeychainVault = async () => {
   const vaultSync = getLegacyKeychainSyncModule();
   if (!vaultSync) {
-    return;
+    return true;
   }
 
   try {
     await vaultSync.deleteItemAsync(KEY, SECURE_STORE_OPTIONS.keychainService);
+    return true;
   } catch {
-    // Migracao ja foi para CloudKit; limpeza do Keychain e best-effort.
+    // Migracao ja foi para CloudKit; limpeza do Keychain e best-effort nos
+    // fluxos de save/load (proxima gravacao tenta de novo) - so clearVault
+    // trata o retorno false como algo a registrar.
+    return false;
   }
 };
 
@@ -190,14 +210,33 @@ const parseLoadedData = async (rawValue, vaultSecret) => {
   return parseData(rawValue);
 };
 
-const decryptRemoteVaultItems = (records, keys) =>
-  (Array.isArray(records) ? records : []).map((record) => {
-    const envelope =
-      typeof record?.envelope === "string"
-        ? parsePayload(record.envelope)
-        : record?.envelope;
-    return decryptVaultItem(envelope, keys);
-  });
+// Um unico registro remoto corrompido/adulterado (auth tag invalido, JSON
+// malformado) nao deve derrubar o carregamento do cofre inteiro - descarta
+// so o item afetado. So um erro de integridade do PROPRIO meta/verifier
+// (ver unlockVaultKeys, chamado antes desta funcao) deve propagar e travar
+// o load: isso sim significa "senha errada para este cofre", nao "um item
+// especifico esta corrompido".
+const decryptRemoteVaultItems = (records, keys) => {
+  const items = [];
+
+  for (const record of Array.isArray(records) ? records : []) {
+    try {
+      const envelope =
+        typeof record?.envelope === "string"
+          ? parsePayload(record.envelope)
+          : record?.envelope;
+      const revision = {
+        revisionAt: Number(record?.updatedAt || 0),
+        tombstone: Boolean(record?.tombstone),
+      };
+      items.push(decryptVaultItem(envelope, keys, revision));
+    } catch {
+      // Item individual descartado; o resto do cofre continua acessivel.
+    }
+  }
+
+  return items;
+};
 
 const pushItemsToRemoteVault = async (remoteVault, items, vaultSecret) => {
   let rawMeta = await remoteVault.fetchVaultMetaAsync();
@@ -219,14 +258,70 @@ const pushItemsToRemoteVault = async (remoteVault, items, vaultSecret) => {
   }
 
   const keys = unlockVaultKeys(meta, vaultSecret);
-  const records = (Array.isArray(items) ? items : []).map((item) => ({
-    id: String(item.id),
-    envelope: JSON.stringify(encryptVaultItem(item, keys)),
-    updatedAt: Number(item.updatedAt || item.deletedAt || 0),
-    tombstone: Boolean(item.tombstone),
-  }));
+  const records = (Array.isArray(items) ? items : []).map((item) => {
+    const revision = {
+      revisionAt: Number(item.updatedAt || item.deletedAt || 0),
+      tombstone: Boolean(item.tombstone),
+    };
+    return {
+      id: String(item.id),
+      envelope: JSON.stringify(encryptVaultItem(item, keys, revision)),
+      updatedAt: revision.revisionAt,
+      tombstone: revision.tombstone,
+    };
+  });
 
   await remoteVault.upsertCredentialsAsync(records);
+};
+
+// Resolve o modulo de um backend especifico (nao o preferido/ativo) - usado
+// pela UI de configuracao para obter "de onde" e "para onde" migrar, sem
+// depender da preferencia gravada (que so muda apos a migracao dar certo).
+export const getVaultModuleForBackend = async (backendId) => {
+  if (backendId === SYNC_BACKEND_ICLOUD) {
+    return getCloudKitModule();
+  }
+
+  return getDriveVaultModule();
+};
+
+// Copia o cofre remoto (meta + credenciais, ainda cifradas) de um backend
+// para outro, sem nunca decifrar os itens - so valida que a senha atual
+// abre o cofre de origem antes de copiar, pra nao levar dados de uma conta
+// que essa senha nao pertence. Nao apaga a origem: a migracao e aditiva,
+// entao um dispositivo que ainda nao trocou de preferencia continua vendo
+// o cofre antigo intacto. Quem chama so deve persistir a nova preferencia
+// depois desta funcao resolver sem lancar.
+export const migrateVaultBackend = async ({
+  fromModule,
+  toModule,
+  vaultSecret,
+}) => {
+  if (!toModule || (await toModule.getAccountStatusAsync()) !== "available") {
+    throw new Error(SYNC_BACKEND_UNAVAILABLE);
+  }
+
+  if (!fromModule) {
+    return;
+  }
+
+  const fromStatus = await fromModule.getAccountStatusAsync();
+  const rawMeta =
+    fromStatus === "available" ? await fromModule.fetchVaultMetaAsync() : null;
+  const meta = toMetaShape(rawMeta);
+
+  if (!meta?.verifier) {
+    return;
+  }
+
+  unlockVaultKeys(meta, vaultSecret);
+
+  await toModule.saveVaultMetaAsync(rawMeta);
+
+  const records = await fromModule.fetchCredentialsAsync();
+  if (Array.isArray(records) && records.length > 0) {
+    await toModule.upsertCredentialsAsync(records);
+  }
 };
 
 export const peekRemoteVault = async () => {
@@ -249,6 +344,44 @@ export const peekRemoteVault = async () => {
     };
   } catch {
     return { available: false, status: "error", meta: null };
+  }
+};
+
+// So pra mostrar um resumo de sanidade ao usuario ANTES de um aparelho
+// novo aceitar um cofre remoto existente pela primeira vez (nao ha cofre
+// local pra comparar nesse momento - ver comentario em
+// src/screens/HomeScreen.js, branch de registro com hasRemoteVault). Nao
+// decifra nada: updatedAt/tombstone de cada record ja vem em texto claro.
+// Chamar so quando a confirmacao for realmente necessaria, nao no boot do
+// app - fetchCredentialsAsync e uma chamada de rede a mais que a maioria
+// dos usuarios (que ja tem conta local) nao precisa pagar toda vez.
+export const peekRemoteVaultSummary = async () => {
+  const remoteVault = await getRemoteVaultModule();
+  if (!remoteVault) {
+    return null;
+  }
+
+  try {
+    const status = await remoteVault.getAccountStatusAsync();
+    if (status !== "available") {
+      return null;
+    }
+
+    const records = await remoteVault.fetchCredentialsAsync();
+    const activeRecords = (Array.isArray(records) ? records : []).filter(
+      (record) => !record?.tombstone,
+    );
+    const lastModifiedAt = activeRecords.reduce(
+      (max, record) => Math.max(max, Number(record?.updatedAt) || 0),
+      0,
+    );
+
+    return {
+      itemCount: activeRecords.length,
+      lastModifiedAt: lastModifiedAt || null,
+    };
+  } catch {
+    return null;
   }
 };
 
@@ -374,7 +507,19 @@ export const clearVault = async () => {
     }
   }
 
-  await deleteLegacyKeychainVault();
+  const legacyKeychainDeleted = await deleteLegacyKeychainVault();
+  if (!legacyKeychainDeleted) {
+    // Nao interrompe a exclusao (o cofre remoto ativo e a conta local ja
+    // foram apagados) - so registra que o blob legado no iCloud Keychain
+    // sincronizavel pode ter ficado retido, pra nao dar falsa certeza de
+    // exclusao total.
+    logSecurityEvent({
+      type: "vault_delete_incomplete",
+      status: "warning",
+      details: { reason: "legacy_keychain_delete_failed" },
+    }).catch(() => {});
+  }
+
   await signOutDrive();
 
   try {

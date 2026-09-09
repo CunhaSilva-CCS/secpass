@@ -110,6 +110,7 @@ jest.mock("../src/services/storage", () => ({
     status: "unsupported",
     meta: null,
   }),
+  peekRemoteVaultSummary: jest.fn().mockResolvedValue(null),
   VAULT_DELETE_ERROR:
     "Nao foi possivel apagar o cofre sincronizado. Tente novamente.",
 }));
@@ -131,6 +132,8 @@ jest.mock("../src/services/securityAudit", () => ({
   logSecurityEvent: jest.fn().mockResolvedValue(),
   clearSecurityEvents: jest.fn().mockResolvedValue(),
   loadSecurityEvents: jest.fn().mockResolvedValue([]),
+  sealSecurityLog: jest.fn().mockResolvedValue(),
+  verifySecurityLogIntegrity: jest.fn().mockResolvedValue("ok"),
 }));
 
 jest.mock("expo-screen-capture", () => ({
@@ -170,6 +173,7 @@ const {
   clearVault,
   savePasswords,
   peekRemoteVault,
+  peekRemoteVaultSummary,
 } = require("../src/services/storage");
 const { loadLoginGuard } = require("../src/services/loginGuard");
 const {
@@ -426,18 +430,33 @@ describe("HomeScreen", () => {
     alertSpy.mockRestore();
   });
 
-  it("ativa protecao de captura de tela ao desbloquear e desativa ao sair", async () => {
+  it("ativa protecao de captura de tela mesmo antes do login e mantem ativa apos sair", async () => {
     loadPasswords.mockResolvedValueOnce([]);
 
-    const { findByPlaceholderText, getByText } = render(<HomeScreen />);
-    await loginInApp(findByPlaceholderText, getByText);
+    const { findByPlaceholderText, getByText, unmount } = render(<HomeScreen />);
 
+    // A senha mestra pode ser revelada em texto claro na propria tela de
+    // login/cadastro (icone de olho) - a protecao precisa estar ativa desde
+    // o primeiro render, nao so depois do login.
     await waitFor(() => {
       expect(ScreenCapture.enableAppSwitcherProtectionAsync).toHaveBeenCalled();
       expect(ScreenCapture.preventScreenCaptureAsync).toHaveBeenCalled();
     });
 
+    await loginInApp(findByPlaceholderText, getByText);
+
     fireEvent.press(getByText("Sair"));
+
+    await waitFor(() => {
+      expect(getByText("Entrar no SecPass")).toBeTruthy();
+    });
+
+    // Sair do cofre nao desmonta o componente - a protecao contra captura
+    // de tela deve continuar ativa (a tela de login ainda esta exposta).
+    expect(ScreenCapture.allowScreenCaptureAsync).not.toHaveBeenCalled();
+    expect(ScreenCapture.disableAppSwitcherProtectionAsync).not.toHaveBeenCalled();
+
+    unmount();
 
     await waitFor(() => {
       expect(ScreenCapture.allowScreenCaptureAsync).toHaveBeenCalled();
@@ -597,6 +616,32 @@ describe("HomeScreen", () => {
           "Email ou senha incorretos. Restam 4 tentativa(s) antes do bloqueio.",
         ),
       ).toBeTruthy();
+    });
+  });
+
+  it("persiste a tentativa falha no login guard antes de liberar a UI (evita bypass do bloqueio matando o app)", async () => {
+    const { saveLoginGuard } = require("../src/services/loginGuard");
+    const { findByPlaceholderText, getByText } = render(<HomeScreen />);
+    await registerAccount(findByPlaceholderText, getByText);
+    saveLoginGuard.mockClear();
+
+    const loginEmailInput = await findByPlaceholderText("Email");
+    const loginAccessPasswordInput =
+      await findByPlaceholderText("Senha de acesso");
+
+    fireEvent.changeText(loginEmailInput, "user@email.com");
+    fireEvent.changeText(loginAccessPasswordInput, "SenhaErrada!1");
+    fireEvent.press(getByText("Entrar"));
+
+    // A gravacao no SecureStore precisa acontecer como parte do proprio
+    // fluxo de login (aguardada antes de devolver o controle), nao so
+    // reativamente via useEffect num ciclo de render posterior - senao
+    // matar o app logo apos a mensagem de erro aparecer perderia o
+    // incremento do contador de tentativas.
+    await waitFor(() => {
+      expect(saveLoginGuard).toHaveBeenCalledWith(
+        expect.objectContaining({ failedAttempts: 1 }),
+      );
     });
   });
 
@@ -1157,7 +1202,7 @@ describe("HomeScreen", () => {
     expect(verifyLocalAccount).not.toHaveBeenCalled();
   });
 
-  it("abre um cofre ja existente na iCloud no segundo aparelho", async () => {
+  it("abre um cofre ja existente no segundo aparelho apos confirmar o resumo", async () => {
     peekRemoteVault.mockResolvedValue({
       available: true,
       status: "available",
@@ -1167,17 +1212,38 @@ describe("HomeScreen", () => {
         kdf: { salt: "00", iterations: 310000 },
       },
     });
+    peekRemoteVaultSummary.mockResolvedValue({
+      itemCount: 3,
+      lastModifiedAt: Date.now(),
+    });
     loadPasswords.mockResolvedValue([]);
+
+    const alertSpy = jest
+      .spyOn(Alert, "alert")
+      .mockImplementation((title, message, buttons) => {
+        const continueButton = buttons.find(
+          (button) => button.text === "Continuar",
+        );
+        continueButton.onPress();
+      });
 
     const { findByPlaceholderText, getByText } = render(<HomeScreen />);
 
     await waitFor(() => {
-      expect(getByText("Abrir cofre iCloud")).toBeTruthy();
+      expect(getByText("Abrir cofre Google Drive")).toBeTruthy();
     });
 
     const passwordInput = await findByPlaceholderText("Senha de acesso");
     fireEvent.changeText(passwordInput, ACCESS_PASSWORD);
     fireEvent.press(getByText("Abrir cofre"));
+
+    await waitFor(() => {
+      expect(alertSpy).toHaveBeenCalledWith(
+        "Cofre encontrado na nuvem",
+        expect.stringContaining("3 itens"),
+        expect.any(Array),
+      );
+    });
 
     await waitFor(() => {
       expect(saveLocalAccount).toHaveBeenCalledWith({
@@ -1186,5 +1252,48 @@ describe("HomeScreen", () => {
       });
       expect(getByText("Sua central de credenciais")).toBeTruthy();
     });
+
+    alertSpy.mockRestore();
+  });
+
+  it("nao abre o cofre remoto se o usuario cancelar a confirmacao do resumo", async () => {
+    peekRemoteVault.mockResolvedValue({
+      available: true,
+      status: "available",
+      meta: {
+        email: "user@email.com",
+        verifier: "abc",
+        kdf: { salt: "00", iterations: 310000 },
+      },
+    });
+    peekRemoteVaultSummary.mockResolvedValue({
+      itemCount: 1,
+      lastModifiedAt: Date.now(),
+    });
+
+    const alertSpy = jest
+      .spyOn(Alert, "alert")
+      .mockImplementation(() => {
+        // Usuario cancela: nao chama nenhum botao.
+      });
+
+    const { findByPlaceholderText, getByText } = render(<HomeScreen />);
+
+    await waitFor(() => {
+      expect(getByText("Abrir cofre Google Drive")).toBeTruthy();
+    });
+
+    const passwordInput = await findByPlaceholderText("Senha de acesso");
+    fireEvent.changeText(passwordInput, ACCESS_PASSWORD);
+    fireEvent.press(getByText("Abrir cofre"));
+
+    await waitFor(() => {
+      expect(alertSpy).toHaveBeenCalled();
+    });
+
+    expect(loadPasswords).not.toHaveBeenCalled();
+    expect(saveLocalAccount).not.toHaveBeenCalled();
+
+    alertSpy.mockRestore();
   });
 });

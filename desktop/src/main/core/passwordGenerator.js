@@ -1,0 +1,58 @@
+// Porta de src/utils/passwordGenerator.js (app mobile): mesma logica de
+// geracao (CSPRNG com rejection sampling pra evitar vies), troca
+// QuickCrypto.randomBytes por crypto.randomBytes do Node.
+import { randomBytes } from "node:crypto";
+
+const UPPER = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+const LOWER = "abcdefghijklmnopqrstuvwxyz";
+const DIGITS = "0123456789";
+const SPECIAL = "!@#$%";
+const ALL_CHARS = UPPER + LOWER + DIGITS + SPECIAL;
+
+const PASSWORD_LENGTH = 16;
+
+const getRandomChar = (charset) => {
+  const len = charset.length;
+  const maxUnbiasedByte = Math.floor(256 / len) * len;
+
+  while (true) {
+    const randomByte = randomBytes(1)[0];
+    if (randomByte < maxUnbiasedByte) {
+      return charset.charAt(randomByte % len);
+    }
+  }
+};
+
+const shuffleArray = (arr) => {
+  for (let i = arr.length - 1; i > 0; i -= 1) {
+    const range = i + 1;
+    const maxUnbiasedByte = Math.floor(256 / range) * range;
+    let j;
+    while (true) {
+      const randomByte = randomBytes(1)[0];
+      if (randomByte < maxUnbiasedByte) {
+        j = randomByte % range;
+        break;
+      }
+    }
+    const temp = arr[i];
+    arr[i] = arr[j];
+    arr[j] = temp;
+  }
+  return arr;
+};
+
+export const generatePassword = () => {
+  const charArray = [
+    getRandomChar(UPPER),
+    getRandomChar(LOWER),
+    getRandomChar(DIGITS),
+    getRandomChar(SPECIAL),
+  ];
+
+  while (charArray.length < PASSWORD_LENGTH) {
+    charArray.push(getRandomChar(ALL_CHARS));
+  }
+
+  return shuffleArray(charArray).join("");
+};

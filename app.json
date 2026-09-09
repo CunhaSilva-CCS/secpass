@@ -4,12 +4,23 @@
     "slug": "secpass",
     "version": "1.0.0",
     "platforms": [
-      "android"
+      "android",
+      "ios"
     ],
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "secpass",
     "userInterfaceStyle": "automatic",
+    "ios": {
+      "bundleIdentifier": "com.cortexistech.secpass",
+      "appleTeamId": "U9U9M3H2AP",
+      "infoPlist": {
+        "NSAppTransportSecurity": {
+          "NSAllowsArbitraryLoads": false,
+          "NSAllowsLocalNetworking": false
+        }
+      }
+    },
     "android": {
       "package": "com.cortexistech.secpass",
       "allowBackup": false,
@@ -52,7 +63,13 @@
           "project": "secpass"
         }
       ],
-      "expo-web-browser"
+      [
+        "@react-native-google-signin/google-signin",
+        {
+          "iosUrlScheme": "com.googleusercontent.apps.114456559466-ko4p814or855id67eb000i5ipjojdtrr"
+        }
+      ],
+      "./plugins/withCloudKitCapability"
     ],
     "extra": {
       "router": {},
@@ -60,7 +77,7 @@
         "projectId": "c5b78fd3-b2c6-45a3-87d7-1f266d29dd2e"
       },
       "sentryDsn": "https://433aba595341ba63447b6b0c0088fafa@o4511976253423616.ingest.de.sentry.io/4512028541452368",
-      "googleDriveClientId": ""
+      "googleIosClientId": "114456559466-ko4p814or855id67eb000i5ipjojdtrr.apps.googleusercontent.com"
     }
   }
 }

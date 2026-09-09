@@ -1,0 +1,50 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <!--
+      Restringe o que essa pagina pode carregar/executar: ela e a unica
+      janela do app que hospeda script de terceiro (CloudKit JS da Apple),
+      entao precisa da mesma defesa em profundidade que o renderer
+      principal (ver src/renderer/index.html) - script-src so o CDN da
+      Apple, sem eval, sem objetos plugin, conexoes so pros dominios do
+      CloudKit/sign-in.
+    -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'none'; script-src https://cdn.apple-cloudkit.com; connect-src https://api.apple-cloudkit.com https://gateway.icloud.com https://idmsa.apple.com; style-src 'unsafe-inline'; frame-src https://idmsa.apple.com; object-src 'none'; base-uri 'none'"
+    />
+    <style>
+      body {
+        margin: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        background: #0b1420;
+        font-family: -apple-system, sans-serif;
+        color: #e6ecf5;
+      }
+      #signInButton {
+        display: none;
+        padding: 12px 24px;
+        font-size: 14px;
+        border-radius: 8px;
+        border: none;
+        background: #2f6fed;
+        color: white;
+        cursor: pointer;
+      }
+      #status {
+        font-size: 13px;
+        opacity: 0.7;
+      }
+    </style>
+  </head>
+  <body>
+    <button id="signInButton">Entrar com Apple ID (iCloud)</button>
+    <div id="status">Conectando ao iCloud...</div>
+    <script src="https://cdn.apple-cloudkit.com/ck/2/cloudkit.js"></script>
+    <script src="./worker-renderer.js"></script>
+  </body>
+</html>

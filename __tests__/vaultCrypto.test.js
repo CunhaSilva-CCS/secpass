@@ -274,9 +274,31 @@ describe("vaultCrypto", () => {
     const envelope = encryptVaultItem(sampleItems[0], keys);
 
     expect(envelope.type).toBe("encrypted_item");
-    expect(envelope.version).toBe(2);
+    expect(envelope.version).toBe(3);
     expect(envelope.authTag).toEqual(expect.any(String));
     expect(decryptVaultItem(envelope, keys)).toEqual(sampleItems[0]);
+  });
+
+  it("recusa decifrar um item de sync remoto cuja revisao (updatedAt/tombstone) foi adulterada", () => {
+    const vaultSecret = "secret";
+    const meta = createVaultMeta({ vaultSecret, email: "a@b.c" });
+    const keys = unlockVaultKeys(meta, vaultSecret);
+    const revision = { revisionAt: 1000, tombstone: false };
+    const envelope = encryptVaultItem(sampleItems[0], keys, revision);
+
+    // A mesma revisao usada para cifrar decifra normalmente.
+    expect(decryptVaultItem(envelope, keys, revision)).toEqual(sampleItems[0]);
+
+    // Um backend remoto adulterado que reetiqueta o mesmo envelope com um
+    // updatedAt forjado (ex: pra vencer o merge e ressuscitar um item
+    // apagado) precisa falhar a autenticacao, nao ser aceito silenciosamente.
+    expect(() =>
+      decryptVaultItem(envelope, keys, { revisionAt: 9999999999999, tombstone: false }),
+    ).toThrow("Falha de integridade do cofre.");
+
+    expect(() =>
+      decryptVaultItem(envelope, keys, { revisionAt: 1000, tombstone: true }),
+    ).toThrow("Falha de integridade do cofre.");
   });
 
   it("detecta item com id trocado (impede substituicao entre registros)", () => {

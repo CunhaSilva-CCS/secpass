@@ -7,7 +7,7 @@ import * as Sentry from "@sentry/react-native";
 // isolados nao expoem a senha, mas nao ha motivo pra um servico externo ver
 // nem isso.
 const SENSITIVE_KEY_PATTERN =
-  /password|senha|secret|segredo|token|ciphertext|authtag|iv|salt|verifier|passwordhash/i;
+  /password|senha|secret|segredo|token|ciphertext|authtag|iv|salt|verifier|passwordhash|email|username|usuario|mac/i;
 
 const scrubValue = (value: unknown, seen: WeakSet<object>): unknown => {
   if (Array.isArray(value)) {

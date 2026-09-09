@@ -51,3 +51,9 @@ backend/data/auth-store.json
 /android
 .vercel
 builds/
+
+# desktop (Electron)
+desktop/out/
+desktop/release/
+desktop/src/main/googleConfig.js
+desktop/src/main/cloudkitConfig.js
