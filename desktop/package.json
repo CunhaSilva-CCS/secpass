@@ -7,7 +7,9 @@
     "dev": "electron-vite dev",
     "build": "electron-vite build",
     "start": "electron-vite preview",
-    "dist": "electron-vite build && electron-builder --mac"
+    "dist": "electron-vite build && electron-builder --mac -c.mac.identity=null",
+    "dist:release": "electron-vite build && electron-builder --mac dmg zip",
+    "test": "jest"
   },
   "dependencies": {
     "@electron-toolkit/preload": "^3.0.2",
@@ -16,10 +18,14 @@
     "react-dom": "^18.3.1"
   },
   "devDependencies": {
+    "@babel/core": "^8.0.1",
+    "@babel/preset-env": "^8.0.2",
     "@vitejs/plugin-react": "^4.3.4",
+    "babel-jest": "^30.5.1",
     "electron": "^33.2.1",
     "electron-builder": "^25.1.8",
     "electron-vite": "^2.3.0",
+    "jest": "^30.5.1",
     "vite": "^5.4.11"
   },
   "build": {
@@ -33,7 +39,11 @@
     ],
     "mac": {
       "category": "public.app-category.utilities",
-      "target": "dir"
+      "target": "dir",
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false,
+      "entitlements": "build/entitlements.mac.plist",
+      "entitlementsInherit": "build/entitlements.mac.plist"
     }
   }
 }

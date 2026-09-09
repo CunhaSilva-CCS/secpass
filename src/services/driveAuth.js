@@ -16,13 +16,25 @@ import { GoogleSignin } from "@react-native-google-signin/google-signin";
 
 const DRIVE_APPDATA_SCOPE = "https://www.googleapis.com/auth/drive.appdata";
 
+// Fallback fixo: em builds fora do fluxo padrao do EAS (ex: `expo run:ios`
+// direto, sem dev-launcher), o modulo nativo que expo-constants usa pra
+// entregar o manifesto (EXDevLauncher) pode nao existir, deixando
+// Constants.expoConfig vazio mesmo com o Metro servindo a config
+// corretamente. O client ID do Google e um identificador publico (nao e
+// segredo), entao usar um valor fixo como reserva aqui e seguro e evita
+// depender de um mecanismo de manifesto fragil so pra entregar esse unico
+// valor. Mantido sincronizado manualmente com app.json (expo.extra.googleIosClientId).
+const GOOGLE_IOS_CLIENT_ID_FALLBACK =
+  "114456559466-ko4p814or855id67eb000i5ipjojdtrr.apps.googleusercontent.com";
+
 let isConfigured = false;
 const ensureConfigured = () => {
   if (isConfigured) {
     return;
   }
 
-  const iosClientId = Constants.expoConfig?.extra?.googleIosClientId || undefined;
+  const iosClientId =
+    Constants.expoConfig?.extra?.googleIosClientId || GOOGLE_IOS_CLIENT_ID_FALLBACK;
   try {
     GoogleSignin.configure({
       scopes: [DRIVE_APPDATA_SCOPE],
@@ -30,7 +42,7 @@ const ensureConfigured = () => {
     });
     isConfigured = true;
   } catch {
-    // Configuracao ausente/invalida (ex: iosClientId nao resolvido) - trata
+    // Configuracao ausente/invalida - trata
     // como "Drive indisponivel neste aparelho" em vez de derrubar o app;
     // quem chama (isDriveSignedIn/getValidAccessToken) ja trata ausencia de
     // sessao como sync indisponivel, nunca como erro fatal do cofre local.

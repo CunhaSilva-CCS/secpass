@@ -198,6 +198,10 @@ export default function HomeScreen() {
     themePreference === "dark" ||
     (themePreference === "system" && colorScheme === "dark");
   const theme = isDark ? DARK_THEME : LIGHT_THEME;
+  // So oferecemos o oposto do tema atual do sistema como alternativa - o
+  // padrao ja segue o sistema, entao um seletor com 3 opcoes (claro/escuro/
+  // sistema) era redundante na pratica.
+  const oppositeOfSystemTheme = colorScheme === "dark" ? "light" : "dark";
 
   const [items, setItems] = useState([]);
   const [title, setTitle] = useState("");
@@ -228,13 +232,13 @@ export default function HomeScreen() {
   const [isAuthenticating, setIsAuthenticating] = useState(false);
   const [authMessage, setAuthMessage] = useState("");
   const [isAddModalVisible, setIsAddModalVisible] = useState(false);
+  const [isMenuVisible, setIsMenuVisible] = useState(false);
   const [isImportModalVisible, setIsImportModalVisible] = useState(false);
   const [importText, setImportText] = useState("");
   const [isAuthSubmitting, setIsAuthSubmitting] = useState(false);
   const [isSecurityLogVisible, setIsSecurityLogVisible] = useState(false);
   const [securityEvents, setSecurityEvents] = useState([]);
   const [isLoadingSecurityLog, setIsLoadingSecurityLog] = useState(false);
-  const [isSyncSettingsVisible, setIsSyncSettingsVisible] = useState(false);
   const [syncBackendPreference, setSyncBackendPreference] = useState(
     SYNC_BACKEND_DRIVE,
   );
@@ -344,8 +348,8 @@ export default function HomeScreen() {
           })
           .then(() => sealSecurityLog(effectiveSecret))
           .catch(() => {});
-      } catch {
-        setAuthMessage("Falha ao iniciar autenticacao.");
+      } catch (err) {
+        setAuthMessage(err?.message || "Falha ao iniciar autenticacao.");
         setIsAppUnlocked(false);
       } finally {
         setIsAuthenticating(false);
@@ -359,6 +363,7 @@ export default function HomeScreen() {
       const account = await loadLocalAccount();
       const loginGuard = await loadLoginGuard();
       setIsDriveSyncActive(await isDriveSignedIn());
+      setSyncBackendPreference(await getSyncBackendPreference());
       const remoteVault = await peekRemoteVault();
       const remoteMeta = remoteVault?.meta;
 
@@ -1193,12 +1198,6 @@ export default function HomeScreen() {
     );
   };
 
-  const handleOpenSyncSettings = async () => {
-    const preference = await getSyncBackendPreference();
-    setSyncBackendPreference(preference);
-    setIsSyncSettingsVisible(true);
-  };
-
   // Troca de backend e uma acao explicita do usuario, nunca um fallback
   // automatico (ver src/services/storage.js) - migra o cofre pro novo
   // backend antes de persistir a preferencia, pra nunca deixar
@@ -1261,6 +1260,31 @@ export default function HomeScreen() {
         },
       ],
     );
+  };
+
+  // Ponto unico de entrada da caixa de sincronizacao: decide se o toque numa
+  // opcao deve trocar de backend (migrar) ou conectar/desconectar o backend
+  // ja selecionado - antes isso era duas acoes separadas na tela (o link
+  // "Escolher backend" so trocava a preferencia, e um botao a parte "
+  // Sincronizar com Google Drive" fazia login) o que confundia sobre qual
+  // tocar pra realmente ativar a sincronizacao.
+  const handleSyncOptionPress = (backend) => {
+    if (backend !== syncBackendPreference) {
+      handleSelectSyncBackend(backend);
+      return;
+    }
+
+    // iCloud nao tem uma etapa de login separada no iOS - usa a sessao do
+    // sistema automaticamente, entao tocar na opcao ja ativa nao faz nada.
+    if (backend !== SYNC_BACKEND_DRIVE) {
+      return;
+    }
+
+    if (isDriveSyncActive) {
+      handleDisableDriveSync();
+    } else {
+      handleEnableDriveSync();
+    }
   };
 
   const handleUseExistingDriveVault = async () => {
@@ -1387,6 +1411,292 @@ export default function HomeScreen() {
     );
   }
 
+  // Um unico modal de configuracoes, usado tanto na tela de login quanto no
+  // cofre - antes eram tres controles espalhados e duplicados (tema na tela
+  // de login, "escolher backend" e "sincronizar com Google Drive" separados
+  // no cofre). As secoes de conta/cofre so aparecem quando ha sessao ativa.
+  const settingsModal = (
+    <Modal
+      visible={isMenuVisible}
+      animationType="slide"
+      transparent
+      onRequestClose={() => setIsMenuVisible(false)}
+    >
+      <View style={styles.modalOverlay}>
+        <View
+          style={[
+            styles.modalCard,
+            { backgroundColor: theme.card, borderColor: theme.border },
+          ]}
+        >
+          <ScrollView keyboardShouldPersistTaps="handled">
+            <Text style={[styles.modalTitle, { color: theme.text }]}>
+              Configuracoes
+            </Text>
+
+            <Text style={[styles.sectionLabel, { color: theme.textMuted }]}>
+              Tema
+            </Text>
+            <Pressable
+              onPress={() =>
+                chooseTheme(
+                  themePreference === "system" ? oppositeOfSystemTheme : "system",
+                )
+              }
+              accessibilityRole="button"
+              accessibilityLabel="Alternar tema"
+              style={[
+                styles.menuRow,
+                { borderColor: theme.border },
+              ]}
+            >
+              <Text style={[styles.menuRowText, { color: theme.text }]}>
+                {themePreference === "system"
+                  ? `Usar tema ${oppositeOfSystemTheme === "dark" ? "escuro" : "claro"}`
+                  : `Tema ${themePreference === "dark" ? "escuro" : "claro"} (toque para usar o do sistema)`}
+              </Text>
+            </Pressable>
+
+            {isLoggedIn ? (
+              <>
+                <Text
+                  style={[styles.sectionLabel, { color: theme.textMuted }]}
+                >
+                  Sincronizacao
+                </Text>
+                <Text style={[styles.modalText, { color: theme.textSoft }]}>
+                  Tocar na opcao ja selecionada conecta (ou desconecta) esse
+                  backend. Trocar de opcao migra o cofre atual, sem apagar o
+                  antigo.
+                </Text>
+
+                <Pressable
+                  style={({ pressed }) => [
+                    styles.syncBackendOption,
+                    { borderColor: theme.border },
+                    syncBackendPreference === SYNC_BACKEND_DRIVE && {
+                      borderColor: theme.accent,
+                    },
+                    pressed && styles.pressed,
+                  ]}
+                  disabled={isSyncBackendBusy || isDriveSyncBusy}
+                  onPress={() => handleSyncOptionPress(SYNC_BACKEND_DRIVE)}
+                >
+                  <Text
+                    style={[
+                      styles.syncBackendOptionTitle,
+                      { color: theme.text },
+                    ]}
+                  >
+                    Google Drive
+                  </Text>
+                  <Text
+                    style={[
+                      styles.syncBackendOptionHint,
+                      { color: theme.textMuted },
+                    ]}
+                  >
+                    Funciona com Android, iPhone e Mac
+                  </Text>
+                  {syncBackendPreference === SYNC_BACKEND_DRIVE ? (
+                    isDriveSyncBusy ? (
+                      <ActivityIndicator
+                        size="small"
+                        color={theme.accent}
+                        style={styles.syncBackendStatusRow}
+                      />
+                    ) : (
+                      <Text
+                        style={[
+                          styles.syncBackendStatusRow,
+                          {
+                            color: isDriveSyncActive
+                              ? theme.accent
+                              : theme.textMuted,
+                          },
+                        ]}
+                      >
+                        {isDriveSyncActive
+                          ? "Conectado - toque para desconectar"
+                          : "Nao conectado - toque para conectar"}
+                      </Text>
+                    )
+                  ) : null}
+                </Pressable>
+
+                <Pressable
+                  style={({ pressed }) => [
+                    styles.syncBackendOption,
+                    { borderColor: theme.border },
+                    syncBackendPreference === SYNC_BACKEND_ICLOUD && {
+                      borderColor: theme.accent,
+                    },
+                    Platform.OS !== "ios" && styles.syncBackendOptionDisabled,
+                    pressed && styles.pressed,
+                  ]}
+                  disabled={isSyncBackendBusy || Platform.OS !== "ios"}
+                  onPress={() => handleSyncOptionPress(SYNC_BACKEND_ICLOUD)}
+                >
+                  <Text
+                    style={[
+                      styles.syncBackendOptionTitle,
+                      { color: theme.text },
+                    ]}
+                  >
+                    iCloud (CloudKit)
+                  </Text>
+                  <Text
+                    style={[
+                      styles.syncBackendOptionHint,
+                      { color: theme.textMuted },
+                    ]}
+                  >
+                    {Platform.OS === "ios"
+                      ? "So entre iPhone e Mac"
+                      : "Indisponivel neste aparelho"}
+                  </Text>
+                  {syncBackendPreference === SYNC_BACKEND_ICLOUD &&
+                  Platform.OS === "ios" ? (
+                    <Text
+                      style={[
+                        styles.syncBackendStatusRow,
+                        { color: theme.accent },
+                      ]}
+                    >
+                      Ativo (usa a conta iCloud deste aparelho)
+                    </Text>
+                  ) : null}
+                </Pressable>
+
+                {isSyncBackendBusy ? (
+                  <ActivityIndicator
+                    color={theme.accent}
+                    style={styles.loader}
+                  />
+                ) : null}
+
+                <Text
+                  style={[styles.sectionLabel, { color: theme.textMuted }]}
+                >
+                  Backup e seguranca
+                </Text>
+
+                <Pressable
+                  style={({ pressed }) => [
+                    styles.menuRow,
+                    { borderColor: theme.border },
+                    pressed && styles.pressed,
+                  ]}
+                  onPress={() => {
+                    setIsMenuVisible(false);
+                    handleOpenSecurityLog();
+                  }}
+                >
+                  <Text style={[styles.menuRowText, { color: theme.text }]}>
+                    Ver historico de seguranca
+                  </Text>
+                </Pressable>
+
+                <Pressable
+                  style={({ pressed }) => [
+                    styles.menuRow,
+                    { borderColor: theme.border },
+                    pressed && styles.pressed,
+                  ]}
+                  onPress={() => {
+                    setIsMenuVisible(false);
+                    handleExportVault();
+                  }}
+                >
+                  <Text style={[styles.menuRowText, { color: theme.text }]}>
+                    Exportar backup
+                  </Text>
+                </Pressable>
+
+                <Pressable
+                  style={({ pressed }) => [
+                    styles.menuRow,
+                    { borderColor: theme.border },
+                    pressed && styles.pressed,
+                  ]}
+                  onPress={() => {
+                    setIsMenuVisible(false);
+                    setIsImportModalVisible(true);
+                  }}
+                >
+                  <Text style={[styles.menuRowText, { color: theme.text }]}>
+                    Importar backup
+                  </Text>
+                </Pressable>
+
+                <Text
+                  style={[styles.sectionLabel, { color: theme.textMuted }]}
+                >
+                  Conta
+                </Text>
+
+                <Pressable
+                  style={({ pressed }) => [
+                    styles.menuRow,
+                    { borderColor: theme.border },
+                    pressed && styles.pressed,
+                  ]}
+                  onPress={() => {
+                    setIsMenuVisible(false);
+                    handleLogout();
+                  }}
+                >
+                  <Text style={[styles.menuRowText, { color: theme.text }]}>
+                    Sair
+                  </Text>
+                </Pressable>
+
+                <Pressable
+                  style={({ pressed }) => [
+                    styles.menuRow,
+                    styles.menuRowDanger,
+                    { borderColor: theme.dangerText },
+                    pressed && styles.pressed,
+                  ]}
+                  onPress={() => {
+                    setIsMenuVisible(false);
+                    handleDeleteAccount();
+                  }}
+                >
+                  <Text
+                    style={[styles.menuRowText, { color: theme.dangerText }]}
+                  >
+                    Excluir conta e todos os dados
+                  </Text>
+                </Pressable>
+              </>
+            ) : null}
+
+            <View style={styles.modalActions}>
+              <Pressable
+                style={({ pressed }) => [
+                  styles.secondaryButton,
+                  { backgroundColor: theme.secondaryButton },
+                  pressed && styles.pressed,
+                ]}
+                onPress={() => setIsMenuVisible(false)}
+              >
+                <Text
+                  style={[
+                    styles.secondaryText,
+                    { color: theme.secondaryText },
+                  ]}
+                >
+                  Fechar
+                </Text>
+              </Pressable>
+            </View>
+          </ScrollView>
+        </View>
+      </View>
+    </Modal>
+  );
+
   if (!isLoggedIn) {
     return (
       <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.bg }]}>
@@ -1413,74 +1723,45 @@ export default function HomeScreen() {
                 { backgroundColor: theme.card, borderColor: theme.border },
               ]}
             >
-              <BrandLogo theme={theme} size="compact" />
-              <Text style={[styles.loginTitle, { color: theme.text }]}>
-                {hasRemoteVault && !hasLocalAccount
-                  ? `Abrir cofre ${REMOTE_VAULT_PROVIDER_LABEL}`
-                  : "Entrar no SecPass"}
-              </Text>
-              <Text style={[styles.loginText, { color: theme.textSoft }]}>
-                {hasRemoteVault && !hasLocalAccount
-                  ? `Encontramos um cofre nesta ${REMOTE_VAULT_ACCOUNT_LABEL}. Use o mesmo email e senha do outro aparelho.`
-                  : isRegisterMode
-                    ? "Crie sua conta local para acessar o cofre."
-                    : "Acesse sua conta para abrir o cofre."}
-              </Text>
-
-              <View style={styles.themeSelector}>
-                <Text style={[styles.themeLabel, { color: theme.textMuted }]}>
-                  Tema
-                </Text>
-                <View style={styles.themeOptions}>
-                  {[
-                    ["light", "Claro", "sun"],
-                    ["dark", "Escuro", "moon"],
-                    ["system", "Sistema", "smartphone"],
-                  ].map(([value, label, icon]) => (
-                    <Pressable
-                      key={value}
-                      onPress={() => chooseTheme(value)}
-                      accessibilityRole="button"
-                      accessibilityLabel={`Tema ${label}`}
-                      style={[
-                        styles.themeOption,
-                        {
-                          backgroundColor:
-                            themePreference === value
-                              ? theme.accentSoft
-                              : theme.cardSoft,
-                          borderColor:
-                            themePreference === value
-                              ? theme.accent
-                              : theme.border,
-                        },
-                      ]}
-                    >
-                      <Feather
-                        name={icon}
-                        size={14}
-                        color={
-                          themePreference === value
-                            ? theme.accent
-                            : theme.textMuted
-                        }
-                      />
-                      <Text
-                        style={{
-                          color:
-                            themePreference === value
-                              ? theme.accent
-                              : theme.textSoft,
-                          fontSize: 12,
-                          fontWeight: "700",
-                        }}
-                      >
-                        {label}
-                      </Text>
-                    </Pressable>
-                  ))}
-                </View>
+              <View style={styles.loginTopRow}>
+                <BrandLogo theme={theme} size="compact" />
+                <Pressable
+                  style={({ pressed }) => [
+                    styles.headerButton,
+                    { backgroundColor: theme.secondaryButton },
+                    pressed && styles.pressed,
+                  ]}
+                  accessibilityLabel="Menu"
+                  accessibilityRole="button"
+                  onPress={() => setIsMenuVisible(true)}
+                >
+                  <Feather name="menu" size={18} color={theme.secondaryText} />
+                </Pressable>
               </View>
+
+              {hasRemoteVault && !hasLocalAccount ? (
+                <>
+                  <Text style={[styles.loginTitle, { color: theme.text }]}>
+                    {`Abrir cofre ${REMOTE_VAULT_PROVIDER_LABEL}`}
+                  </Text>
+                  <Text style={[styles.loginText, { color: theme.textSoft }]}>
+                    {`Encontramos um cofre nesta ${REMOTE_VAULT_ACCOUNT_LABEL}. Use o mesmo email e senha do outro aparelho.`}
+                  </Text>
+                </>
+              ) : isRegisterMode ? (
+                <Text style={[styles.loginText, { color: theme.textSoft }]}>
+                  Crie sua conta local para acessar o cofre.
+                </Text>
+              ) : (
+                <>
+                  <Text style={[styles.loginTitle, { color: theme.text }]}>
+                    Sua central de credenciais
+                  </Text>
+                  <Text style={[styles.loginText, { color: theme.textSoft }]}>
+                    Organize logins com um visual limpo e acesso rapido.
+                  </Text>
+                </>
+              )}
 
               <TextInput
                 placeholder="Email"
@@ -1678,6 +1959,7 @@ export default function HomeScreen() {
             <CortexisCredit theme={theme} />
           </ScrollView>
         </KeyboardAvoidingView>
+        {settingsModal}
       </SafeAreaView>
     );
   }
@@ -1761,120 +2043,13 @@ export default function HomeScreen() {
                       { backgroundColor: theme.secondaryButton },
                       pressed && styles.pressed,
                     ]}
-                    onPress={handleLogout}
+                    accessibilityLabel="Menu"
+                    accessibilityRole="button"
+                    onPress={() => setIsMenuVisible(true)}
                   >
-                    <Text
-                      style={[
-                        styles.headerButtonText,
-                        { color: theme.secondaryText },
-                      ]}
-                    >
-                      Sair
-                    </Text>
+                    <Feather name="menu" size={18} color={theme.secondaryText} />
                   </Pressable>
                 </View>
-
-                <View style={styles.backupRow}>
-                  <Pressable
-                    style={({ pressed }) => [
-                      styles.backupButton,
-                      { backgroundColor: theme.secondaryButton },
-                      pressed && styles.pressed,
-                    ]}
-                    onPress={handleExportVault}
-                  >
-                    <Text
-                      style={[
-                        styles.headerButtonText,
-                        { color: theme.secondaryText },
-                      ]}
-                    >
-                      Exportar backup
-                    </Text>
-                  </Pressable>
-                </View>
-
-                <Pressable
-                  style={({ pressed }) => [
-                    styles.backupButton,
-                    { backgroundColor: theme.secondaryButton },
-                    pressed && styles.pressed,
-                  ]}
-                  onPress={() => setIsImportModalVisible(true)}
-                >
-                  <Text
-                    style={[
-                      styles.headerButtonText,
-                      { color: theme.secondaryText },
-                    ]}
-                  >
-                    Importar backup
-                  </Text>
-                </Pressable>
-
-                <Pressable
-                  style={({ pressed }) => [
-                    styles.backupButton,
-                    { backgroundColor: theme.secondaryButton },
-                    pressed && styles.pressed,
-                  ]}
-                  disabled={isDriveSyncBusy}
-                  onPress={
-                    isDriveSyncActive
-                      ? handleDisableDriveSync
-                      : handleEnableDriveSync
-                  }
-                >
-                  {isDriveSyncBusy ? (
-                    <ActivityIndicator size="small" color={theme.secondaryText} />
-                  ) : (
-                    <Text
-                      style={[
-                        styles.headerButtonText,
-                        { color: theme.secondaryText },
-                      ]}
-                    >
-                      {isDriveSyncActive
-                        ? "Sincronizacao com Google Drive ativa"
-                        : "Sincronizar com Google Drive"}
-                    </Text>
-                  )}
-                </Pressable>
-
-                <Pressable
-                  style={styles.securityLogLinkWrap}
-                  onPress={handleOpenSecurityLog}
-                >
-                  <Text
-                    style={[
-                      styles.securityLogLinkText,
-                      { color: theme.accent },
-                    ]}
-                  >
-                    Ver historico de seguranca
-                  </Text>
-                </Pressable>
-
-                <Pressable
-                  style={styles.securityLogLinkWrap}
-                  onPress={handleOpenSyncSettings}
-                >
-                  <Text
-                    style={[
-                      styles.securityLogLinkText,
-                      { color: theme.accent },
-                    ]}
-                  >
-                    Escolher backend de sincronizacao
-                  </Text>
-                </Pressable>
-
-                <Text style={[styles.title, { color: theme.text }]}>
-                  Sua central de credenciais
-                </Text>
-                <Text style={[styles.subtitle, { color: theme.textSoft }]}>
-                  Organize logins com um visual limpo e acesso rapido.
-                </Text>
               </View>
 
               <View style={styles.kpiRow}>
@@ -1951,24 +2126,6 @@ export default function HomeScreen() {
           )}
           onScrollBeginDrag={registerUserActivity}
           keyboardShouldPersistTaps="handled"
-          ListFooterComponent={
-            <View style={styles.dangerZone}>
-              <Pressable
-                style={({ pressed }) => [
-                  styles.dangerZoneButton,
-                  { borderColor: theme.border },
-                  pressed && styles.pressed,
-                ]}
-                onPress={handleDeleteAccount}
-              >
-                <Text
-                  style={[styles.dangerLinkText, { color: theme.dangerText }]}
-                >
-                  Excluir conta e todos os dados
-                </Text>
-              </Pressable>
-            </View>
-          }
         />
       </KeyboardAvoidingView>
 
@@ -2237,107 +2394,7 @@ export default function HomeScreen() {
         </View>
       </Modal>
 
-      <Modal
-        visible={isSyncSettingsVisible}
-        animationType="slide"
-        transparent
-        onRequestClose={() => setIsSyncSettingsVisible(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View
-            style={[
-              styles.modalCard,
-              { backgroundColor: theme.card, borderColor: theme.border },
-            ]}
-          >
-            <Text style={[styles.modalTitle, { color: theme.text }]}>
-              Sincronizacao
-            </Text>
-            <Text style={[styles.modalText, { color: theme.textSoft }]}>
-              Escolha por onde este aparelho sincroniza o cofre. Trocar de
-              backend copia o cofre atual para o novo, sem apagar o antigo.
-            </Text>
-
-            <Pressable
-              style={({ pressed }) => [
-                styles.syncBackendOption,
-                { borderColor: theme.border },
-                syncBackendPreference === SYNC_BACKEND_DRIVE && {
-                  borderColor: theme.accent,
-                },
-                pressed && styles.pressed,
-              ]}
-              disabled={isSyncBackendBusy}
-              onPress={() => handleSelectSyncBackend(SYNC_BACKEND_DRIVE)}
-            >
-              <Text
-                style={[styles.syncBackendOptionTitle, { color: theme.text }]}
-              >
-                Google Drive
-              </Text>
-              <Text
-                style={[
-                  styles.syncBackendOptionHint,
-                  { color: theme.textMuted },
-                ]}
-              >
-                Funciona com Android, iPhone e Mac
-              </Text>
-            </Pressable>
-
-            <Pressable
-              style={({ pressed }) => [
-                styles.syncBackendOption,
-                { borderColor: theme.border },
-                syncBackendPreference === SYNC_BACKEND_ICLOUD && {
-                  borderColor: theme.accent,
-                },
-                Platform.OS !== "ios" && styles.syncBackendOptionDisabled,
-                pressed && styles.pressed,
-              ]}
-              disabled={isSyncBackendBusy || Platform.OS !== "ios"}
-              onPress={() => handleSelectSyncBackend(SYNC_BACKEND_ICLOUD)}
-            >
-              <Text
-                style={[styles.syncBackendOptionTitle, { color: theme.text }]}
-              >
-                iCloud (CloudKit)
-              </Text>
-              <Text
-                style={[
-                  styles.syncBackendOptionHint,
-                  { color: theme.textMuted },
-                ]}
-              >
-                {Platform.OS === "ios"
-                  ? "So entre iPhone e Mac"
-                  : "Indisponivel neste aparelho"}
-              </Text>
-            </Pressable>
-
-            {isSyncBackendBusy ? (
-              <ActivityIndicator color={theme.accent} style={styles.loader} />
-            ) : null}
-
-            <View style={styles.modalActions}>
-              <Pressable
-                style={({ pressed }) => [
-                  styles.secondaryButton,
-                  { backgroundColor: theme.secondaryButton },
-                  pressed && styles.pressed,
-                ]}
-                onPress={() => setIsSyncSettingsVisible(false)}
-              >
-                <Text
-                  style={[styles.secondaryText, { color: theme.secondaryText }]}
-                >
-                  Fechar
-                </Text>
-              </Pressable>
-            </View>
-          </View>
-        </View>
-      </Modal>
+      {settingsModal}
     </SafeAreaView>
   );
 }
@@ -2406,29 +2463,6 @@ const styles = StyleSheet.create({
   loginText: {
     fontSize: 14,
     marginBottom: 6,
-  },
-  themeSelector: {
-    gap: 6,
-    marginTop: 2,
-    marginBottom: 2,
-  },
-  themeLabel: {
-    fontSize: 12,
-    fontWeight: "700",
-  },
-  themeOptions: {
-    flexDirection: "row",
-    gap: 6,
-  },
-  themeOption: {
-    flex: 1,
-    minHeight: 38,
-    borderWidth: 1,
-    borderRadius: 10,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 5,
   },
   loginInput: {
     borderWidth: 1,
@@ -2509,59 +2543,17 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 8,
   },
+  loginTopRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    gap: 8,
+    marginBottom: 4,
+  },
   headerButton: {
     borderRadius: 10,
     paddingVertical: 8,
     paddingHorizontal: 14,
-  },
-  headerButtonText: {
-    fontWeight: "700",
-    fontSize: 12,
-  },
-  backupRow: {
-    flexDirection: "row",
-    gap: 10,
-    marginTop: 14,
-  },
-  backupButton: {
-    flex: 1,
-    borderRadius: 10,
-    paddingVertical: 10,
-    alignItems: "center",
-  },
-  securityLogLinkWrap: {
-    alignSelf: "center",
-    marginTop: 12,
-  },
-  securityLogLinkText: {
-    fontSize: 12,
-    fontWeight: "700",
-  },
-  dangerZone: {
-    marginTop: 24,
-    alignItems: "center",
-  },
-  dangerZoneButton: {
-    borderWidth: 1,
-    borderRadius: 10,
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-  },
-  dangerLinkText: {
-    fontSize: 12,
-    fontWeight: "700",
-  },
-  title: {
-    marginTop: 8,
-    fontSize: 28,
-    lineHeight: 34,
-    fontWeight: "800",
-    letterSpacing: 0.2,
-  },
-  subtitle: {
-    marginTop: 6,
-    fontSize: 15,
-    lineHeight: 21,
   },
   kpiRow: {
     flexDirection: "row",
@@ -2712,6 +2704,13 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "800",
   },
+  sectionLabel: {
+    fontSize: 12,
+    fontWeight: "700",
+    textTransform: "uppercase",
+    letterSpacing: 0.4,
+    marginTop: 10,
+  },
   modalText: {
     fontSize: 13,
     lineHeight: 19,
@@ -2752,6 +2751,24 @@ const styles = StyleSheet.create({
   syncBackendOptionHint: {
     fontSize: 12,
     marginTop: 2,
+  },
+  syncBackendStatusRow: {
+    fontSize: 12,
+    fontWeight: "600",
+    marginTop: 8,
+  },
+  menuRow: {
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+  },
+  menuRowDanger: {
+    marginTop: 8,
+  },
+  menuRowText: {
+    fontSize: 14,
+    fontWeight: "700",
   },
   filePickerButton: {
     borderRadius: 12,

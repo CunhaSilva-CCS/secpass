@@ -228,8 +228,15 @@ async function loginInApp(findByPlaceholderText, getByText) {
   fireEvent.press(getByText("Entrar"));
 
   await waitFor(() => {
-    expect(getByText("Sua central de credenciais")).toBeTruthy();
+    expect(getByText("Credenciais salvas")).toBeTruthy();
   });
+}
+
+// As acoes de exportar/importar backup, historico de seguranca, sincronizacao,
+// sair e excluir conta ficam dentro do menu consolidado (botao "Menu" no
+// cabecalho), nao mais soltas na tela principal.
+function openMenu(getByLabelText) {
+  fireEvent.press(getByLabelText("Menu"));
 }
 
 // O efeito do AppState e re-registrado sempre que isLoggedIn muda (login ou
@@ -365,9 +372,12 @@ describe("HomeScreen", () => {
       },
     ]);
 
-    const { findByPlaceholderText, getByText } = render(<HomeScreen />);
+    const { findByPlaceholderText, getByText, getByLabelText } = render(
+      <HomeScreen />,
+    );
     await loginInApp(findByPlaceholderText, getByText);
 
+    openMenu(getByLabelText);
     fireEvent.press(getByText("Ver historico de seguranca"));
 
     await waitFor(() => {
@@ -380,9 +390,12 @@ describe("HomeScreen", () => {
     loadPasswords.mockResolvedValueOnce([]);
     loadSecurityEvents.mockResolvedValueOnce([]);
 
-    const { findByPlaceholderText, getByText } = render(<HomeScreen />);
+    const { findByPlaceholderText, getByText, getByLabelText } = render(
+      <HomeScreen />,
+    );
     await loginInApp(findByPlaceholderText, getByText);
 
+    openMenu(getByLabelText);
     fireEvent.press(getByText("Ver historico de seguranca"));
 
     await waitFor(() => {
@@ -409,11 +422,11 @@ describe("HomeScreen", () => {
         confirmButton?.onPress();
       });
 
-    const { findByPlaceholderText, getByText, queryByText } = render(
-      <HomeScreen />,
-    );
+    const { findByPlaceholderText, getByText, getByLabelText, queryByText } =
+      render(<HomeScreen />);
     await loginInApp(findByPlaceholderText, getByText);
 
+    openMenu(getByLabelText);
     fireEvent.press(getByText("Ver historico de seguranca"));
 
     await waitFor(() => {
@@ -433,7 +446,8 @@ describe("HomeScreen", () => {
   it("ativa protecao de captura de tela mesmo antes do login e mantem ativa apos sair", async () => {
     loadPasswords.mockResolvedValueOnce([]);
 
-    const { findByPlaceholderText, getByText, unmount } = render(<HomeScreen />);
+    const { findByPlaceholderText, getByText, getByLabelText, unmount } =
+      render(<HomeScreen />);
 
     // A senha mestra pode ser revelada em texto claro na propria tela de
     // login/cadastro (icone de olho) - a protecao precisa estar ativa desde
@@ -445,10 +459,11 @@ describe("HomeScreen", () => {
 
     await loginInApp(findByPlaceholderText, getByText);
 
+    openMenu(getByLabelText);
     fireEvent.press(getByText("Sair"));
 
     await waitFor(() => {
-      expect(getByText("Entrar no SecPass")).toBeTruthy();
+      expect(getByText("Entrar")).toBeTruthy();
     });
 
     // Sair do cofre nao desmonta o componente - a protecao contra captura
@@ -497,7 +512,7 @@ describe("HomeScreen", () => {
     await loginInApp(findByPlaceholderText, getByText);
 
     await waitFor(() => {
-      expect(getByText("Sua central de credenciais")).toBeTruthy();
+      expect(getByText("Credenciais salvas")).toBeTruthy();
     });
 
     jest.useFakeTimers();
@@ -726,9 +741,12 @@ describe("HomeScreen", () => {
         }
       });
 
-    const { findByPlaceholderText, getByText } = render(<HomeScreen />);
+    const { findByPlaceholderText, getByText, getByLabelText } = render(
+      <HomeScreen />,
+    );
     await loginInApp(findByPlaceholderText, getByText);
 
+    openMenu(getByLabelText);
     fireEvent.press(getByText("Excluir conta e todos os dados"));
 
     await waitFor(() => {
@@ -770,9 +788,12 @@ describe("HomeScreen", () => {
         }
       });
 
-    const { findByPlaceholderText, getByText } = render(<HomeScreen />);
+    const { findByPlaceholderText, getByText, getByLabelText } = render(
+      <HomeScreen />,
+    );
     await loginInApp(findByPlaceholderText, getByText);
 
+    openMenu(getByLabelText);
     fireEvent.press(getByText("Excluir conta e todos os dados"));
 
     await waitFor(() => {
@@ -782,7 +803,7 @@ describe("HomeScreen", () => {
       );
     });
     expect(deleteLocalAccount).not.toHaveBeenCalled();
-    expect(getByText("Sua central de credenciais")).toBeTruthy();
+    expect(getByText("Credenciais salvas")).toBeTruthy();
 
     alertSpy.mockRestore();
   });
@@ -791,7 +812,9 @@ describe("HomeScreen", () => {
     loadPasswords.mockResolvedValueOnce([]);
     const alertSpy = jest.spyOn(Alert, "alert").mockImplementation(() => {});
 
-    const { findByPlaceholderText, getByText } = render(<HomeScreen />);
+    const { findByPlaceholderText, getByText, getByLabelText } = render(
+      <HomeScreen />,
+    );
     await loginInApp(findByPlaceholderText, getByText);
 
     const biometricAuth = require("../src/utils/biometricAuth");
@@ -800,6 +823,7 @@ describe("HomeScreen", () => {
       error: "not_available",
     });
 
+    openMenu(getByLabelText);
     fireEvent.press(getByText("Excluir conta e todos os dados"));
 
     await waitFor(() => {
@@ -829,13 +853,16 @@ describe("HomeScreen", () => {
         .spyOn(Share, "share")
         .mockResolvedValue({ action: "sharedAction" });
 
-      const { findByPlaceholderText, getByText } = render(<HomeScreen />);
+      const { findByPlaceholderText, getByText, getByLabelText } = render(
+        <HomeScreen />,
+      );
       await loginInApp(findByPlaceholderText, getByText);
 
       await waitFor(() => {
         expect(getByText("GitHub")).toBeTruthy();
       });
 
+      openMenu(getByLabelText);
       fireEvent.press(getByText("Exportar backup"));
 
       await waitFor(
@@ -868,13 +895,16 @@ describe("HomeScreen", () => {
       ]);
       Sharing.isAvailableAsync.mockResolvedValueOnce(true);
 
-      const { findByPlaceholderText, getByText } = render(<HomeScreen />);
+      const { findByPlaceholderText, getByText, getByLabelText } = render(
+        <HomeScreen />,
+      );
       await loginInApp(findByPlaceholderText, getByText);
 
       await waitFor(() => {
         expect(getByText("GitHub")).toBeTruthy();
       });
 
+      openMenu(getByLabelText);
       fireEvent.press(getByText("Exportar backup"));
 
       await waitFor(
@@ -927,11 +957,15 @@ describe("HomeScreen", () => {
         }
       });
 
-    const { findByPlaceholderText, getByText, getByPlaceholderText } = render(
-      <HomeScreen />,
-    );
+    const {
+      findByPlaceholderText,
+      getByText,
+      getByLabelText,
+      getByPlaceholderText,
+    } = render(<HomeScreen />);
     await loginInApp(findByPlaceholderText, getByText);
 
+    openMenu(getByLabelText);
     fireEvent.press(getByText("Importar backup"));
     fireEvent.press(getByText("Escolher arquivo"));
 
@@ -966,7 +1000,9 @@ describe("HomeScreen", () => {
           }
         });
 
-      const { findByPlaceholderText, getByText } = render(<HomeScreen />);
+      const { findByPlaceholderText, getByText, getByLabelText } = render(
+        <HomeScreen />,
+      );
       await loginInApp(findByPlaceholderText, getByText);
 
       const vaultSecret = createVaultSecret({
@@ -983,6 +1019,7 @@ describe("HomeScreen", () => {
       ];
       const envelope = await encryptVaultItems(backupItems, vaultSecret);
 
+      openMenu(getByLabelText);
       fireEvent.press(getByText("Importar backup"));
 
       const pasteInput = await findByPlaceholderText("Cole o backup aqui");
@@ -1008,9 +1045,12 @@ describe("HomeScreen", () => {
       loadPasswords.mockResolvedValueOnce([]);
       const alertSpy = jest.spyOn(Alert, "alert").mockImplementation(() => {});
 
-      const { findByPlaceholderText, getByText } = render(<HomeScreen />);
+      const { findByPlaceholderText, getByText, getByLabelText } = render(
+        <HomeScreen />,
+      );
       await loginInApp(findByPlaceholderText, getByText);
 
+      openMenu(getByLabelText);
       fireEvent.press(getByText("Importar backup"));
 
       const pasteInput = await findByPlaceholderText("Cole o backup aqui");
@@ -1089,7 +1129,7 @@ describe("HomeScreen", () => {
     expect(queryByText("Biometria/senha do aparelho indisponivel.")).toBeNull();
   });
 
-  it("mostra falha quando a autenticacao biometrica lanca excecao", async () => {
+  it("mostra a mensagem real da excecao quando a autenticacao biometrica falha", async () => {
     loadPasswords.mockResolvedValueOnce([]);
     const getLatestChangeHandler = mockAppStateChange();
 
@@ -1110,7 +1150,7 @@ describe("HomeScreen", () => {
     });
 
     await waitFor(() => {
-      expect(getByText("Falha ao iniciar autenticacao.")).toBeTruthy();
+      expect(getByText("hardware-error")).toBeTruthy();
     });
   });
 
@@ -1250,7 +1290,7 @@ describe("HomeScreen", () => {
         email: "user@email.com",
         password: ACCESS_PASSWORD,
       });
-      expect(getByText("Sua central de credenciais")).toBeTruthy();
+      expect(getByText("Credenciais salvas")).toBeTruthy();
     });
 
     alertSpy.mockRestore();

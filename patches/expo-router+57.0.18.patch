@@ -1,0 +1,27 @@
+diff --git a/node_modules/expo-router/build/link/linking.js b/node_modules/expo-router/build/link/linking.js
+index b9535b5..b91976c 100644
+--- a/node_modules/expo-router/build/link/linking.js
++++ b/node_modules/expo-router/build/link/linking.js
+@@ -76,9 +76,19 @@ function getInitialURL() {
+ let _rootURL;
+ function getRootURL() {
+     if (_rootURL === undefined) {
+-        _rootURL = Linking.createURL('/');
+-        if (isExpoGo) {
+-            _rootURL = (0, extractPathFromURL_1.parsePathFromExpoGoLink)(_rootURL);
++        try {
++            _rootURL = Linking.createURL('/');
++            if (isExpoGo) {
++                _rootURL = (0, extractPathFromURL_1.parsePathFromExpoGoLink)(_rootURL);
++            }
++        }
++        catch {
++            // expo-linking pode falhar bem no boot se o manifesto do
++            // expo-constants ainda nao foi entregue pelo dev client (corrida
++            // de inicializacao) - nao deixa cacheado como falho (_rootURL
++            // continua undefined) para uma chamada seguinte, ja com o
++            // manifesto disponivel, poder resolver a URL raiz de verdade.
++            return '';
+         }
+     }
+     return _rootURL;

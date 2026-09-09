@@ -11,6 +11,7 @@
     "@sentry/react-native": "~7.11.0",
     "expo": "~57.0.19",
     "expo-asset": "~57.0.16",
+    "expo-build-properties": "~57.0.17",
     "expo-clipboard": "~57.0.1",
     "expo-constants": "~57.0.17",
     "expo-file-system": "~57.0.6",
@@ -40,9 +41,11 @@
     "eslint-config-expo": "~57.0.2",
     "jest": "^29.7.0",
     "jest-expo": "^57.0.5",
+    "patch-package": "^8.0.1",
     "react-test-renderer": "19.2.3"
   },
   "scripts": {
+    "postinstall": "patch-package",
     "start": "expo start",
     "dev": "expo start",
     "android": "expo run:android",
@@ -53,9 +56,12 @@
     "test": "jest",
     "build:preview": "npx eas-cli build --profile preview --platform android --non-interactive",
     "build:preview:android": "npx eas-cli build --profile preview --platform android --non-interactive",
+    "build:preview:ios": "npx eas-cli build --profile preview --platform ios --non-interactive",
     "build:prod": "npx eas-cli build --profile production --platform android --non-interactive",
     "build:prod:device": "npx eas-cli build --profile production-device --platform android --non-interactive",
-    "build:dev:android": "npx eas-cli build --profile development --platform android"
+    "build:prod:ios": "npx eas-cli build --profile production --platform ios --non-interactive",
+    "build:dev:android": "npx eas-cli build --profile development --platform android",
+    "build:dev:ios": "npx eas-cli build --profile development --platform ios --non-interactive"
   },
   "private": true
 }

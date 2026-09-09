@@ -1,0 +1,93 @@
+diff --git a/node_modules/react-native/scripts/cocoapods/helpers.rb b/node_modules/react-native/scripts/cocoapods/helpers.rb
+index cdb1e14..fbd2539 100644
+--- a/node_modules/react-native/scripts/cocoapods/helpers.rb
++++ b/node_modules/react-native/scripts/cocoapods/helpers.rb
+@@ -31,7 +31,7 @@ class Finder
+     def self.find_codegen_file(path)
+         js_files = '-name "Native*.js" -or -name "*NativeComponent.js"'
+         ts_files = '-name "Native*.ts" -or -name "*NativeComponent.ts"'
+-        return `find #{path} -type f \\( #{js_files} -or #{ts_files} \\)`.split("\n").sort()
++        return `find "#{path}" -type f \\( #{js_files} -or #{ts_files} \\)`.split("\n").sort()
+     end
+ end
+ 
+diff --git a/node_modules/react-native/scripts/cocoapods/new_architecture.rb b/node_modules/react-native/scripts/cocoapods/new_architecture.rb
+index 3873632..f6e4cf0 100644
+--- a/node_modules/react-native/scripts/cocoapods/new_architecture.rb
++++ b/node_modules/react-native/scripts/cocoapods/new_architecture.rb
+@@ -171,7 +171,7 @@ class NewArchitectureHelper
+         excluded_info_plist = ["/Pods", "Tests", "metainternal", ".bundle", "build/", "DerivedData/", ".xcframework", ".framework", "watchkitapp", "today-extention"]
+         projectPaths.each do |projectPath|
+             projectFolderPath = File.dirname(projectPath)
+-            infoPlistFiles = `find #{projectFolderPath} -name "Info.plist"`
++            infoPlistFiles = `find "#{projectFolderPath}" -name "Info.plist"`
+             infoPlistFiles = infoPlistFiles.split("\n").map { |f| f.strip }
+ 
+             infoPlistFiles.each do |infoPlistFile|
+diff --git a/node_modules/react-native/scripts/codegen/generate-artifacts-executor/generateReactCodegenPodspec.js b/node_modules/react-native/scripts/codegen/generate-artifacts-executor/generateReactCodegenPodspec.js
+index 00e0da3..193a5dd 100644
+--- a/node_modules/react-native/scripts/codegen/generate-artifacts-executor/generateReactCodegenPodspec.js
++++ b/node_modules/react-native/scripts/codegen/generate-artifacts-executor/generateReactCodegenPodspec.js
+@@ -55,7 +55,7 @@ function getInputFiles(appPath /*: string */, appPkgJson /*: $FlowFixMe */) {
+   const resolvedAppPath = path.resolve(appPath);
+ 
+   const xcodeproj = String(
+-    execSync(`find ${resolvedAppPath} -type d -name "*.xcodeproj"`),
++    execSync(`find "${resolvedAppPath}" -type d -name "*.xcodeproj"`),
+   )
+     .trim()
+     .split('\n')
+@@ -71,7 +71,7 @@ function getInputFiles(appPath /*: string */, appPkgJson /*: $FlowFixMe */) {
+   }
+   const jsFiles = '-name "Native*.js" -or -name "*NativeComponent.js"';
+   const tsFiles = '-name "Native*.ts" -or -name "*NativeComponent.ts"';
+-  const findCommand = `find ${path.join(resolvedAppPath, jsSrcsDir)} -type f -not -path "*/__mocks__/*" -and \\( ${jsFiles} -or ${tsFiles} \\)`;
++  const findCommand = `find "${path.join(resolvedAppPath, jsSrcsDir)}" -type f -not -path "*/__mocks__/*" -and \\( ${jsFiles} -or ${tsFiles} \\)`;
+   const list = String(execSync(findCommand))
+     .trim()
+     .split('\n')
+diff --git a/node_modules/react-native/sdks/hermes-engine/hermes-engine.podspec b/node_modules/react-native/sdks/hermes-engine/hermes-engine.podspec
+index 66c399a..40a0487 100644
+--- a/node_modules/react-native/sdks/hermes-engine/hermes-engine.podspec
++++ b/node_modules/react-native/sdks/hermes-engine/hermes-engine.podspec
+@@ -185,7 +185,7 @@ Pod::Spec.new do |spec|
+           :script => <<-EOS
+           . "${REACT_NATIVE_PATH}/scripts/xcode/with-environment.sh"
+           export CMAKE_BINARY=${CMAKE_BINARY:-#{CMAKE_BINARY}}
+-          . ${REACT_NATIVE_PATH}/sdks/hermes-engine/utils/build-hermesc-xcode.sh #{hermesc_path} ${REACT_NATIVE_PATH}/ReactCommon/jsi
++          . "${REACT_NATIVE_PATH}/sdks/hermes-engine/utils/build-hermesc-xcode.sh" "#{hermesc_path}" "${REACT_NATIVE_PATH}/ReactCommon/jsi"
+           EOS
+         },
+         {
+@@ -197,7 +197,7 @@ Pod::Spec.new do |spec|
+           :script => <<-EOS
+           . "${REACT_NATIVE_PATH}/scripts/xcode/with-environment.sh"
+           export CMAKE_BINARY=${CMAKE_BINARY:-#{CMAKE_BINARY}}
+-          . ${REACT_NATIVE_PATH}/sdks/hermes-engine/utils/build-hermes-xcode.sh #{version} #{hermesc_path}/ImportHostCompilers.cmake ${REACT_NATIVE_PATH}/ReactCommon/jsi
++          . "${REACT_NATIVE_PATH}/sdks/hermes-engine/utils/build-hermes-xcode.sh" #{version} "#{hermesc_path}/ImportHostCompilers.cmake" "${REACT_NATIVE_PATH}/ReactCommon/jsi"
+           EOS
+         }
+       ]
+diff --git a/node_modules/react-native/sdks/hermes-engine/utils/build-hermes-xcode.sh b/node_modules/react-native/sdks/hermes-engine/utils/build-hermes-xcode.sh
+index 60506d1..1580003 100755
+--- a/node_modules/react-native/sdks/hermes-engine/utils/build-hermes-xcode.sh
++++ b/node_modules/react-native/sdks/hermes-engine/utils/build-hermes-xcode.sh
+@@ -96,7 +96,7 @@ echo "Build Apple framework"
+ "$CMAKE_BINARY" \
+   --build "${PODS_ROOT}/hermes-engine/build/${PLATFORM_NAME}" \
+   --target hermesvm \
+-  -j "$(sysctl -n hw.ncpu)"
++  -j "${HERMES_BUILD_JOBS:-2}"
+ 
+ echo "Copy Apple framework to destroot/Library/Frameworks"
+ 
+diff --git a/node_modules/react-native/sdks/hermes-engine/utils/build-hermesc-xcode.sh b/node_modules/react-native/sdks/hermes-engine/utils/build-hermesc-xcode.sh
+index 5c75e8e..c9f16f6 100755
+--- a/node_modules/react-native/sdks/hermes-engine/utils/build-hermesc-xcode.sh
++++ b/node_modules/react-native/sdks/hermes-engine/utils/build-hermesc-xcode.sh
+@@ -23,4 +23,4 @@ env -i \
+ env -i \
+   PATH="$PATH" \
+   SDKROOT="$SDKROOT" \
+-  "$CMAKE_BINARY" --build "$hermesc_dir_path" --target hermesc -j "$(sysctl -n hw.ncpu)"
++  "$CMAKE_BINARY" --build "$hermesc_dir_path" --target hermesc -j "${HERMES_BUILD_JOBS:-2}"

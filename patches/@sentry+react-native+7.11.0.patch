@@ -1,0 +1,2516 @@
+diff --git a/node_modules/@sentry/react-native/android/build/.transforms/afb049e298f55d374cc7b869b4192e4f/results.bin b/node_modules/@sentry/react-native/android/build/.transforms/afb049e298f55d374cc7b869b4192e4f/results.bin
+new file mode 100644
+index 0000000..0d259dd
+--- /dev/null
++++ b/node_modules/@sentry/react-native/android/build/.transforms/afb049e298f55d374cc7b869b4192e4f/results.bin
+@@ -0,0 +1 @@
++o/classes
+diff --git a/node_modules/@sentry/react-native/android/build/.transforms/afb049e298f55d374cc7b869b4192e4f/transformed/classes/classes_dex/classes.dex b/node_modules/@sentry/react-native/android/build/.transforms/afb049e298f55d374cc7b869b4192e4f/transformed/classes/classes_dex/classes.dex
+new file mode 100644
+index 0000000..bbcc443
+Binary files /dev/null and b/node_modules/@sentry/react-native/android/build/.transforms/afb049e298f55d374cc7b869b4192e4f/transformed/classes/classes_dex/classes.dex differ
+diff --git a/node_modules/@sentry/react-native/android/build/.transforms/fc6c558841548ae5e56df2833fa40efd/results.bin b/node_modules/@sentry/react-native/android/build/.transforms/fc6c558841548ae5e56df2833fa40efd/results.bin
+new file mode 100644
+index 0000000..7ed749e
+--- /dev/null
++++ b/node_modules/@sentry/react-native/android/build/.transforms/fc6c558841548ae5e56df2833fa40efd/results.bin
+@@ -0,0 +1 @@
++o/bundleLibRuntimeToDirDebug
+diff --git a/node_modules/@sentry/react-native/android/build/.transforms/fc6c558841548ae5e56df2833fa40efd/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/facebook/react/viewmanagers/RNSentryReplayMaskManagerDelegate.dex b/node_modules/@sentry/react-native/android/build/.transforms/fc6c558841548ae5e56df2833fa40efd/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/facebook/react/viewmanagers/RNSentryReplayMaskManagerDelegate.dex
+new file mode 100644
+index 0000000..fda7356
+Binary files /dev/null and b/node_modules/@sentry/react-native/android/build/.transforms/fc6c558841548ae5e56df2833fa40efd/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/facebook/react/viewmanagers/RNSentryReplayMaskManagerDelegate.dex differ
+diff --git a/node_modules/@sentry/react-native/android/build/.transforms/fc6c558841548ae5e56df2833fa40efd/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/facebook/react/viewmanagers/RNSentryReplayMaskManagerInterface.dex b/node_modules/@sentry/react-native/android/build/.transforms/fc6c558841548ae5e56df2833fa40efd/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/facebook/react/viewmanagers/RNSentryReplayMaskManagerInterface.dex
+new file mode 100644
+index 0000000..c90dd9c
+Binary files /dev/null and b/node_modules/@sentry/react-native/android/build/.transforms/fc6c558841548ae5e56df2833fa40efd/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/facebook/react/viewmanagers/RNSentryReplayMaskManagerInterface.dex differ
+diff --git a/node_modules/@sentry/react-native/android/build/.transforms/fc6c558841548ae5e56df2833fa40efd/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/facebook/react/viewmanagers/RNSentryReplayUnmaskManagerDelegate.dex b/node_modules/@sentry/react-native/android/build/.transforms/fc6c558841548ae5e56df2833fa40efd/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/facebook/react/viewmanagers/RNSentryReplayUnmaskManagerDelegate.dex
+new file mode 100644
+index 0000000..2f18291
+Binary files /dev/null and b/node_modules/@sentry/react-native/android/build/.transforms/fc6c558841548ae5e56df2833fa40efd/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/facebook/react/viewmanagers/RNSentryReplayUnmaskManagerDelegate.dex differ
+diff --git a/node_modules/@sentry/react-native/android/build/.transforms/fc6c558841548ae5e56df2833fa40efd/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/facebook/react/viewmanagers/RNSentryReplayUnmaskManagerInterface.dex b/node_modules/@sentry/react-native/android/build/.transforms/fc6c558841548ae5e56df2833fa40efd/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/facebook/react/viewmanagers/RNSentryReplayUnmaskManagerInterface.dex
+new file mode 100644
+index 0000000..e29eb02
+Binary files /dev/null and b/node_modules/@sentry/react-native/android/build/.transforms/fc6c558841548ae5e56df2833fa40efd/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/facebook/react/viewmanagers/RNSentryReplayUnmaskManagerInterface.dex differ
+diff --git a/node_modules/@sentry/react-native/android/build/.transforms/fc6c558841548ae5e56df2833fa40efd/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/io/sentry/react/BuildConfig.dex b/node_modules/@sentry/react-native/android/build/.transforms/fc6c558841548ae5e56df2833fa40efd/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/io/sentry/react/BuildConfig.dex
+new file mode 100644
+index 0000000..c3ec259
+Binary files /dev/null and b/node_modules/@sentry/react-native/android/build/.transforms/fc6c558841548ae5e56df2833fa40efd/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/io/sentry/react/BuildConfig.dex differ
+diff --git a/node_modules/@sentry/react-native/android/build/.transforms/fc6c558841548ae5e56df2833fa40efd/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/io/sentry/react/NativeRNSentrySpec.dex b/node_modules/@sentry/react-native/android/build/.transforms/fc6c558841548ae5e56df2833fa40efd/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/io/sentry/react/NativeRNSentrySpec.dex
+new file mode 100644
+index 0000000..8df9159
+Binary files /dev/null and b/node_modules/@sentry/react-native/android/build/.transforms/fc6c558841548ae5e56df2833fa40efd/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/io/sentry/react/NativeRNSentrySpec.dex differ
+diff --git a/node_modules/@sentry/react-native/android/build/.transforms/fc6c558841548ae5e56df2833fa40efd/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/io/sentry/react/RNSentryBreadcrumb.dex b/node_modules/@sentry/react-native/android/build/.transforms/fc6c558841548ae5e56df2833fa40efd/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/io/sentry/react/RNSentryBreadcrumb.dex
+new file mode 100644
+index 0000000..7cc41da
+Binary files /dev/null and b/node_modules/@sentry/react-native/android/build/.transforms/fc6c558841548ae5e56df2833fa40efd/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/io/sentry/react/RNSentryBreadcrumb.dex differ
+diff --git a/node_modules/@sentry/react-native/android/build/.transforms/fc6c558841548ae5e56df2833fa40efd/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/io/sentry/react/RNSentryMapConverter.dex b/node_modules/@sentry/react-native/android/build/.transforms/fc6c558841548ae5e56df2833fa40efd/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/io/sentry/react/RNSentryMapConverter.dex
+new file mode 100644
+index 0000000..c22d60a
+Binary files /dev/null and b/node_modules/@sentry/react-native/android/build/.transforms/fc6c558841548ae5e56df2833fa40efd/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/io/sentry/react/RNSentryMapConverter.dex differ
+diff --git a/node_modules/@sentry/react-native/android/build/.transforms/fc6c558841548ae5e56df2833fa40efd/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/io/sentry/react/RNSentryModule.dex b/node_modules/@sentry/react-native/android/build/.transforms/fc6c558841548ae5e56df2833fa40efd/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/io/sentry/react/RNSentryModule.dex
+new file mode 100644
+index 0000000..1e524d3
+Binary files /dev/null and b/node_modules/@sentry/react-native/android/build/.transforms/fc6c558841548ae5e56df2833fa40efd/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/io/sentry/react/RNSentryModule.dex differ
+diff --git a/node_modules/@sentry/react-native/android/build/.transforms/fc6c558841548ae5e56df2833fa40efd/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/io/sentry/react/RNSentryModuleImpl.dex b/node_modules/@sentry/react-native/android/build/.transforms/fc6c558841548ae5e56df2833fa40efd/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/io/sentry/react/RNSentryModuleImpl.dex
+new file mode 100644
+index 0000000..a992c70
+Binary files /dev/null and b/node_modules/@sentry/react-native/android/build/.transforms/fc6c558841548ae5e56df2833fa40efd/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/io/sentry/react/RNSentryModuleImpl.dex differ
+diff --git a/node_modules/@sentry/react-native/android/build/.transforms/fc6c558841548ae5e56df2833fa40efd/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/io/sentry/react/RNSentryOnDrawReporterManager$RNSentryOnDrawReporterView.dex b/node_modules/@sentry/react-native/android/build/.transforms/fc6c558841548ae5e56df2833fa40efd/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/io/sentry/react/RNSentryOnDrawReporterManager$RNSentryOnDrawReporterView.dex
+new file mode 100644
+index 0000000..f108626
+Binary files /dev/null and b/node_modules/@sentry/react-native/android/build/.transforms/fc6c558841548ae5e56df2833fa40efd/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/io/sentry/react/RNSentryOnDrawReporterManager$RNSentryOnDrawReporterView.dex differ
+diff --git a/node_modules/@sentry/react-native/android/build/.transforms/fc6c558841548ae5e56df2833fa40efd/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/io/sentry/react/RNSentryOnDrawReporterManager.dex b/node_modules/@sentry/react-native/android/build/.transforms/fc6c558841548ae5e56df2833fa40efd/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/io/sentry/react/RNSentryOnDrawReporterManager.dex
+new file mode 100644
+index 0000000..6734460
+Binary files /dev/null and b/node_modules/@sentry/react-native/android/build/.transforms/fc6c558841548ae5e56df2833fa40efd/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/io/sentry/react/RNSentryOnDrawReporterManager.dex differ
+diff --git a/node_modules/@sentry/react-native/android/build/.transforms/fc6c558841548ae5e56df2833fa40efd/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/io/sentry/react/RNSentryPackage.dex b/node_modules/@sentry/react-native/android/build/.transforms/fc6c558841548ae5e56df2833fa40efd/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/io/sentry/react/RNSentryPackage.dex
+new file mode 100644
+index 0000000..e495c2f
+Binary files /dev/null and b/node_modules/@sentry/react-native/android/build/.transforms/fc6c558841548ae5e56df2833fa40efd/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/io/sentry/react/RNSentryPackage.dex differ
+diff --git a/node_modules/@sentry/react-native/android/build/.transforms/fc6c558841548ae5e56df2833fa40efd/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/io/sentry/react/RNSentryReactFragmentLifecycleTracer$1.dex b/node_modules/@sentry/react-native/android/build/.transforms/fc6c558841548ae5e56df2833fa40efd/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/io/sentry/react/RNSentryReactFragmentLifecycleTracer$1.dex
+new file mode 100644
+index 0000000..e93abd4
+Binary files /dev/null and b/node_modules/@sentry/react-native/android/build/.transforms/fc6c558841548ae5e56df2833fa40efd/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/io/sentry/react/RNSentryReactFragmentLifecycleTracer$1.dex differ
+diff --git a/node_modules/@sentry/react-native/android/build/.transforms/fc6c558841548ae5e56df2833fa40efd/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/io/sentry/react/RNSentryReactFragmentLifecycleTracer.dex b/node_modules/@sentry/react-native/android/build/.transforms/fc6c558841548ae5e56df2833fa40efd/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/io/sentry/react/RNSentryReactFragmentLifecycleTracer.dex
+new file mode 100644
+index 0000000..0c30d91
+Binary files /dev/null and b/node_modules/@sentry/react-native/android/build/.transforms/fc6c558841548ae5e56df2833fa40efd/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/io/sentry/react/RNSentryReactFragmentLifecycleTracer.dex differ
+diff --git a/node_modules/@sentry/react-native/android/build/.transforms/fc6c558841548ae5e56df2833fa40efd/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/io/sentry/react/RNSentryReplayBreadcrumbConverter.dex b/node_modules/@sentry/react-native/android/build/.transforms/fc6c558841548ae5e56df2833fa40efd/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/io/sentry/react/RNSentryReplayBreadcrumbConverter.dex
+new file mode 100644
+index 0000000..69dc9fc
+Binary files /dev/null and b/node_modules/@sentry/react-native/android/build/.transforms/fc6c558841548ae5e56df2833fa40efd/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/io/sentry/react/RNSentryReplayBreadcrumbConverter.dex differ
+diff --git a/node_modules/@sentry/react-native/android/build/.transforms/fc6c558841548ae5e56df2833fa40efd/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/io/sentry/react/RNSentryTimeToDisplay$1.dex b/node_modules/@sentry/react-native/android/build/.transforms/fc6c558841548ae5e56df2833fa40efd/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/io/sentry/react/RNSentryTimeToDisplay$1.dex
+new file mode 100644
+index 0000000..543e050
+Binary files /dev/null and b/node_modules/@sentry/react-native/android/build/.transforms/fc6c558841548ae5e56df2833fa40efd/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/io/sentry/react/RNSentryTimeToDisplay$1.dex differ
+diff --git a/node_modules/@sentry/react-native/android/build/.transforms/fc6c558841548ae5e56df2833fa40efd/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/io/sentry/react/RNSentryTimeToDisplay.dex b/node_modules/@sentry/react-native/android/build/.transforms/fc6c558841548ae5e56df2833fa40efd/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/io/sentry/react/RNSentryTimeToDisplay.dex
+new file mode 100644
+index 0000000..14e48cc
+Binary files /dev/null and b/node_modules/@sentry/react-native/android/build/.transforms/fc6c558841548ae5e56df2833fa40efd/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/io/sentry/react/RNSentryTimeToDisplay.dex differ
+diff --git a/node_modules/@sentry/react-native/android/build/.transforms/fc6c558841548ae5e56df2833fa40efd/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/io/sentry/react/RNSentryVersion.dex b/node_modules/@sentry/react-native/android/build/.transforms/fc6c558841548ae5e56df2833fa40efd/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/io/sentry/react/RNSentryVersion.dex
+new file mode 100644
+index 0000000..256d2ac
+Binary files /dev/null and b/node_modules/@sentry/react-native/android/build/.transforms/fc6c558841548ae5e56df2833fa40efd/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/io/sentry/react/RNSentryVersion.dex differ
+diff --git a/node_modules/@sentry/react-native/android/build/.transforms/fc6c558841548ae5e56df2833fa40efd/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/io/sentry/react/replay/RNSentryReplayFragmentLifecycleTracer$1.dex b/node_modules/@sentry/react-native/android/build/.transforms/fc6c558841548ae5e56df2833fa40efd/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/io/sentry/react/replay/RNSentryReplayFragmentLifecycleTracer$1.dex
+new file mode 100644
+index 0000000..62c24b3
+Binary files /dev/null and b/node_modules/@sentry/react-native/android/build/.transforms/fc6c558841548ae5e56df2833fa40efd/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/io/sentry/react/replay/RNSentryReplayFragmentLifecycleTracer$1.dex differ
+diff --git a/node_modules/@sentry/react-native/android/build/.transforms/fc6c558841548ae5e56df2833fa40efd/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/io/sentry/react/replay/RNSentryReplayFragmentLifecycleTracer.dex b/node_modules/@sentry/react-native/android/build/.transforms/fc6c558841548ae5e56df2833fa40efd/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/io/sentry/react/replay/RNSentryReplayFragmentLifecycleTracer.dex
+new file mode 100644
+index 0000000..e29f356
+Binary files /dev/null and b/node_modules/@sentry/react-native/android/build/.transforms/fc6c558841548ae5e56df2833fa40efd/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/io/sentry/react/replay/RNSentryReplayFragmentLifecycleTracer.dex differ
+diff --git a/node_modules/@sentry/react-native/android/build/.transforms/fc6c558841548ae5e56df2833fa40efd/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/io/sentry/react/replay/RNSentryReplayMask.dex b/node_modules/@sentry/react-native/android/build/.transforms/fc6c558841548ae5e56df2833fa40efd/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/io/sentry/react/replay/RNSentryReplayMask.dex
+new file mode 100644
+index 0000000..ef72df6
+Binary files /dev/null and b/node_modules/@sentry/react-native/android/build/.transforms/fc6c558841548ae5e56df2833fa40efd/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/io/sentry/react/replay/RNSentryReplayMask.dex differ
+diff --git a/node_modules/@sentry/react-native/android/build/.transforms/fc6c558841548ae5e56df2833fa40efd/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/io/sentry/react/replay/RNSentryReplayMaskManager.dex b/node_modules/@sentry/react-native/android/build/.transforms/fc6c558841548ae5e56df2833fa40efd/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/io/sentry/react/replay/RNSentryReplayMaskManager.dex
+new file mode 100644
+index 0000000..b333ece
+Binary files /dev/null and b/node_modules/@sentry/react-native/android/build/.transforms/fc6c558841548ae5e56df2833fa40efd/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/io/sentry/react/replay/RNSentryReplayMaskManager.dex differ
+diff --git a/node_modules/@sentry/react-native/android/build/.transforms/fc6c558841548ae5e56df2833fa40efd/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/io/sentry/react/replay/RNSentryReplayMaskManagerImpl.dex b/node_modules/@sentry/react-native/android/build/.transforms/fc6c558841548ae5e56df2833fa40efd/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/io/sentry/react/replay/RNSentryReplayMaskManagerImpl.dex
+new file mode 100644
+index 0000000..7bee2f0
+Binary files /dev/null and b/node_modules/@sentry/react-native/android/build/.transforms/fc6c558841548ae5e56df2833fa40efd/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/io/sentry/react/replay/RNSentryReplayMaskManagerImpl.dex differ
+diff --git a/node_modules/@sentry/react-native/android/build/.transforms/fc6c558841548ae5e56df2833fa40efd/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/io/sentry/react/replay/RNSentryReplayUnmask.dex b/node_modules/@sentry/react-native/android/build/.transforms/fc6c558841548ae5e56df2833fa40efd/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/io/sentry/react/replay/RNSentryReplayUnmask.dex
+new file mode 100644
+index 0000000..e5bd007
+Binary files /dev/null and b/node_modules/@sentry/react-native/android/build/.transforms/fc6c558841548ae5e56df2833fa40efd/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/io/sentry/react/replay/RNSentryReplayUnmask.dex differ
+diff --git a/node_modules/@sentry/react-native/android/build/.transforms/fc6c558841548ae5e56df2833fa40efd/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/io/sentry/react/replay/RNSentryReplayUnmaskManager.dex b/node_modules/@sentry/react-native/android/build/.transforms/fc6c558841548ae5e56df2833fa40efd/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/io/sentry/react/replay/RNSentryReplayUnmaskManager.dex
+new file mode 100644
+index 0000000..2f03f4e
+Binary files /dev/null and b/node_modules/@sentry/react-native/android/build/.transforms/fc6c558841548ae5e56df2833fa40efd/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/io/sentry/react/replay/RNSentryReplayUnmaskManager.dex differ
+diff --git a/node_modules/@sentry/react-native/android/build/.transforms/fc6c558841548ae5e56df2833fa40efd/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/io/sentry/react/replay/RNSentryReplayUnmaskManagerImpl.dex b/node_modules/@sentry/react-native/android/build/.transforms/fc6c558841548ae5e56df2833fa40efd/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/io/sentry/react/replay/RNSentryReplayUnmaskManagerImpl.dex
+new file mode 100644
+index 0000000..8fd966a
+Binary files /dev/null and b/node_modules/@sentry/react-native/android/build/.transforms/fc6c558841548ae5e56df2833fa40efd/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/io/sentry/react/replay/RNSentryReplayUnmaskManagerImpl.dex differ
+diff --git a/node_modules/@sentry/react-native/android/build/.transforms/fc6c558841548ae5e56df2833fa40efd/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/io/sentry/react/utils/RNSentryActivityUtils.dex b/node_modules/@sentry/react-native/android/build/.transforms/fc6c558841548ae5e56df2833fa40efd/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/io/sentry/react/utils/RNSentryActivityUtils.dex
+new file mode 100644
+index 0000000..64a16ea
+Binary files /dev/null and b/node_modules/@sentry/react-native/android/build/.transforms/fc6c558841548ae5e56df2833fa40efd/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/io/sentry/react/utils/RNSentryActivityUtils.dex differ
+diff --git a/node_modules/@sentry/react-native/android/build/.transforms/fc6c558841548ae5e56df2833fa40efd/transformed/bundleLibRuntimeToDirDebug/desugar_graph.bin b/node_modules/@sentry/react-native/android/build/.transforms/fc6c558841548ae5e56df2833fa40efd/transformed/bundleLibRuntimeToDirDebug/desugar_graph.bin
+new file mode 100644
+index 0000000..57d6e79
+Binary files /dev/null and b/node_modules/@sentry/react-native/android/build/.transforms/fc6c558841548ae5e56df2833fa40efd/transformed/bundleLibRuntimeToDirDebug/desugar_graph.bin differ
+diff --git a/node_modules/@sentry/react-native/android/build/generated/source/buildConfig/debug/io/sentry/react/BuildConfig.java b/node_modules/@sentry/react-native/android/build/generated/source/buildConfig/debug/io/sentry/react/BuildConfig.java
+new file mode 100644
+index 0000000..9bc0fe6
+--- /dev/null
++++ b/node_modules/@sentry/react-native/android/build/generated/source/buildConfig/debug/io/sentry/react/BuildConfig.java
+@@ -0,0 +1,12 @@
++/**
++ * Automatically generated file. DO NOT MODIFY
++ */
++package io.sentry.react;
++
++public final class BuildConfig {
++  public static final boolean DEBUG = Boolean.parseBoolean("true");
++  public static final String LIBRARY_PACKAGE_NAME = "io.sentry.react";
++  public static final String BUILD_TYPE = "debug";
++  // Field from default config.
++  public static final boolean IS_NEW_ARCHITECTURE_ENABLED = true;
++}
+diff --git a/node_modules/@sentry/react-native/android/build/generated/source/codegen/java/com/facebook/react/viewmanagers/RNSentryReplayMaskManagerDelegate.java b/node_modules/@sentry/react-native/android/build/generated/source/codegen/java/com/facebook/react/viewmanagers/RNSentryReplayMaskManagerDelegate.java
+new file mode 100644
+index 0000000..cb462db
+--- /dev/null
++++ b/node_modules/@sentry/react-native/android/build/generated/source/codegen/java/com/facebook/react/viewmanagers/RNSentryReplayMaskManagerDelegate.java
+@@ -0,0 +1,27 @@
++/**
++* This code was generated by [react-native-codegen](https://www.npmjs.com/package/react-native-codegen).
++*
++* Do not edit this file as changes may cause incorrect behavior and will be lost
++* once the code is regenerated.
++*
++* @generated by codegen project: GeneratePropsJavaDelegate.js
++*/
++
++package com.facebook.react.viewmanagers;
++
++import android.view.View;
++import androidx.annotation.Nullable;
++import com.facebook.react.uimanager.BaseViewManager;
++import com.facebook.react.uimanager.BaseViewManagerDelegate;
++import com.facebook.react.uimanager.LayoutShadowNode;
++
++@SuppressWarnings("deprecation")
++public class RNSentryReplayMaskManagerDelegate<T extends View, U extends BaseViewManager<T, ? extends LayoutShadowNode> & RNSentryReplayMaskManagerInterface<T>> extends BaseViewManagerDelegate<T, U> {
++  public RNSentryReplayMaskManagerDelegate(U viewManager) {
++    super(viewManager);
++  }
++  @Override
++  public void setProperty(T view, String propName, @Nullable Object value) {
++    super.setProperty(view, propName, value);
++  }
++}
+diff --git a/node_modules/@sentry/react-native/android/build/generated/source/codegen/java/com/facebook/react/viewmanagers/RNSentryReplayMaskManagerInterface.java b/node_modules/@sentry/react-native/android/build/generated/source/codegen/java/com/facebook/react/viewmanagers/RNSentryReplayMaskManagerInterface.java
+new file mode 100644
+index 0000000..9dc2203
+--- /dev/null
++++ b/node_modules/@sentry/react-native/android/build/generated/source/codegen/java/com/facebook/react/viewmanagers/RNSentryReplayMaskManagerInterface.java
+@@ -0,0 +1,17 @@
++/**
++* This code was generated by [react-native-codegen](https://www.npmjs.com/package/react-native-codegen).
++*
++* Do not edit this file as changes may cause incorrect behavior and will be lost
++* once the code is regenerated.
++*
++* @generated by codegen project: GeneratePropsJavaInterface.js
++*/
++
++package com.facebook.react.viewmanagers;
++
++import android.view.View;
++import com.facebook.react.uimanager.ViewManagerWithGeneratedInterface;
++
++public interface RNSentryReplayMaskManagerInterface<T extends View> extends ViewManagerWithGeneratedInterface {
++  // No props
++}
+diff --git a/node_modules/@sentry/react-native/android/build/generated/source/codegen/java/com/facebook/react/viewmanagers/RNSentryReplayUnmaskManagerDelegate.java b/node_modules/@sentry/react-native/android/build/generated/source/codegen/java/com/facebook/react/viewmanagers/RNSentryReplayUnmaskManagerDelegate.java
+new file mode 100644
+index 0000000..718cd9b
+--- /dev/null
++++ b/node_modules/@sentry/react-native/android/build/generated/source/codegen/java/com/facebook/react/viewmanagers/RNSentryReplayUnmaskManagerDelegate.java
+@@ -0,0 +1,27 @@
++/**
++* This code was generated by [react-native-codegen](https://www.npmjs.com/package/react-native-codegen).
++*
++* Do not edit this file as changes may cause incorrect behavior and will be lost
++* once the code is regenerated.
++*
++* @generated by codegen project: GeneratePropsJavaDelegate.js
++*/
++
++package com.facebook.react.viewmanagers;
++
++import android.view.View;
++import androidx.annotation.Nullable;
++import com.facebook.react.uimanager.BaseViewManager;
++import com.facebook.react.uimanager.BaseViewManagerDelegate;
++import com.facebook.react.uimanager.LayoutShadowNode;
++
++@SuppressWarnings("deprecation")
++public class RNSentryReplayUnmaskManagerDelegate<T extends View, U extends BaseViewManager<T, ? extends LayoutShadowNode> & RNSentryReplayUnmaskManagerInterface<T>> extends BaseViewManagerDelegate<T, U> {
++  public RNSentryReplayUnmaskManagerDelegate(U viewManager) {
++    super(viewManager);
++  }
++  @Override
++  public void setProperty(T view, String propName, @Nullable Object value) {
++    super.setProperty(view, propName, value);
++  }
++}
+diff --git a/node_modules/@sentry/react-native/android/build/generated/source/codegen/java/com/facebook/react/viewmanagers/RNSentryReplayUnmaskManagerInterface.java b/node_modules/@sentry/react-native/android/build/generated/source/codegen/java/com/facebook/react/viewmanagers/RNSentryReplayUnmaskManagerInterface.java
+new file mode 100644
+index 0000000..df6e7bd
+--- /dev/null
++++ b/node_modules/@sentry/react-native/android/build/generated/source/codegen/java/com/facebook/react/viewmanagers/RNSentryReplayUnmaskManagerInterface.java
+@@ -0,0 +1,17 @@
++/**
++* This code was generated by [react-native-codegen](https://www.npmjs.com/package/react-native-codegen).
++*
++* Do not edit this file as changes may cause incorrect behavior and will be lost
++* once the code is regenerated.
++*
++* @generated by codegen project: GeneratePropsJavaInterface.js
++*/
++
++package com.facebook.react.viewmanagers;
++
++import android.view.View;
++import com.facebook.react.uimanager.ViewManagerWithGeneratedInterface;
++
++public interface RNSentryReplayUnmaskManagerInterface<T extends View> extends ViewManagerWithGeneratedInterface {
++  // No props
++}
+diff --git a/node_modules/@sentry/react-native/android/build/generated/source/codegen/java/io/sentry/react/NativeRNSentrySpec.java b/node_modules/@sentry/react-native/android/build/generated/source/codegen/java/io/sentry/react/NativeRNSentrySpec.java
+new file mode 100644
+index 0000000..b85167c
+--- /dev/null
++++ b/node_modules/@sentry/react-native/android/build/generated/source/codegen/java/io/sentry/react/NativeRNSentrySpec.java
+@@ -0,0 +1,190 @@
++
++/**
++ * This code was generated by [react-native-codegen](https://www.npmjs.com/package/react-native-codegen).
++ *
++ * Do not edit this file as changes may cause incorrect behavior and will be lost
++ * once the code is regenerated.
++ *
++ * @generated by codegen project: GenerateModuleJavaSpec.js
++ *
++ * @nolint
++ */
++
++package io.sentry.react;
++
++import com.facebook.proguard.annotations.DoNotStrip;
++import com.facebook.react.bridge.Promise;
++import com.facebook.react.bridge.ReactApplicationContext;
++import com.facebook.react.bridge.ReactContextBaseJavaModule;
++import com.facebook.react.bridge.ReactMethod;
++import com.facebook.react.bridge.ReadableArray;
++import com.facebook.react.bridge.ReadableMap;
++import com.facebook.react.bridge.WritableMap;
++import com.facebook.react.turbomodule.core.interfaces.TurboModule;
++import javax.annotation.Nonnull;
++import javax.annotation.Nullable;
++
++public abstract class NativeRNSentrySpec extends ReactContextBaseJavaModule implements TurboModule {
++  public static final String NAME = "RNSentry";
++
++  public NativeRNSentrySpec(ReactApplicationContext reactContext) {
++    super(reactContext);
++  }
++
++  @Override
++  public @Nonnull String getName() {
++    return NAME;
++  }
++
++  @ReactMethod
++  @DoNotStrip
++  public abstract void addListener(String eventType);
++
++  @ReactMethod
++  @DoNotStrip
++  public abstract void removeListeners(double id);
++
++  @ReactMethod
++  @DoNotStrip
++  public abstract void getNewScreenTimeToDisplay(Promise promise);
++
++  @ReactMethod
++  @DoNotStrip
++  public abstract void addBreadcrumb(ReadableMap breadcrumb);
++
++  @ReactMethod
++  @DoNotStrip
++  public abstract void captureEnvelope(String bytes, ReadableMap options, Promise promise);
++
++  @ReactMethod
++  @DoNotStrip
++  public abstract void captureScreenshot(Promise promise);
++
++  @ReactMethod
++  @DoNotStrip
++  public abstract void clearBreadcrumbs();
++
++  @ReactMethod
++  @DoNotStrip
++  public abstract void crash();
++
++  @ReactMethod
++  @DoNotStrip
++  public abstract void closeNativeSdk(Promise promise);
++
++  @ReactMethod
++  @DoNotStrip
++  public abstract void disableNativeFramesTracking();
++
++  @ReactMethod
++  @DoNotStrip
++  public abstract void fetchNativeRelease(Promise promise);
++
++  @ReactMethod
++  @DoNotStrip
++  public abstract void fetchNativeSdkInfo(Promise promise);
++
++  @ReactMethod
++  @DoNotStrip
++  public abstract void fetchNativeDeviceContexts(Promise promise);
++
++  @ReactMethod
++  @DoNotStrip
++  public abstract void fetchNativeLogAttributes(Promise promise);
++
++  @ReactMethod
++  @DoNotStrip
++  public abstract void fetchNativeAppStart(Promise promise);
++
++  @ReactMethod
++  @DoNotStrip
++  public abstract void fetchNativeFrames(Promise promise);
++
++  @ReactMethod
++  @DoNotStrip
++  public abstract void initNativeSdk(ReadableMap options, Promise promise);
++
++  @ReactMethod
++  @DoNotStrip
++  public abstract void setUser(@Nullable ReadableMap defaultUserKeys, @Nullable ReadableMap otherUserKeys);
++
++  @ReactMethod
++  @DoNotStrip
++  public abstract void setContext(String key, @Nullable ReadableMap value);
++
++  @ReactMethod
++  @DoNotStrip
++  public abstract void setExtra(String key, String value);
++
++  @ReactMethod
++  @DoNotStrip
++  public abstract void setTag(String key, String value);
++
++  @ReactMethod
++  @DoNotStrip
++  public abstract void setAttribute(String key, String value);
++
++  @ReactMethod
++  @DoNotStrip
++  public abstract void setAttributes(ReadableMap attributes);
++
++  @ReactMethod
++  @DoNotStrip
++  public abstract void enableNativeFramesTracking();
++
++  @ReactMethod
++  @DoNotStrip
++  public abstract void fetchModules(Promise promise);
++
++  @ReactMethod
++  @DoNotStrip
++  public abstract void fetchViewHierarchy(Promise promise);
++
++  @ReactMethod(isBlockingSynchronousMethod = true)
++  @DoNotStrip
++  public abstract WritableMap startProfiling(boolean platformProfilers);
++
++  @ReactMethod(isBlockingSynchronousMethod = true)
++  @DoNotStrip
++  public abstract WritableMap stopProfiling();
++
++  @ReactMethod(isBlockingSynchronousMethod = true)
++  @DoNotStrip
++  public abstract @Nullable String fetchNativePackageName();
++
++  @ReactMethod(isBlockingSynchronousMethod = true)
++  @DoNotStrip
++  public abstract @Nullable WritableMap fetchNativeStackFramesBy(ReadableArray instructionsAddr);
++
++  @ReactMethod
++  @DoNotStrip
++  public abstract void initNativeReactNavigationNewFrameTracking(Promise promise);
++
++  @ReactMethod
++  @DoNotStrip
++  public abstract void captureReplay(boolean isHardCrash, Promise promise);
++
++  @ReactMethod(isBlockingSynchronousMethod = true)
++  @DoNotStrip
++  public abstract @Nullable String getCurrentReplayId();
++
++  @ReactMethod
++  @DoNotStrip
++  public abstract void crashedLastRun(Promise promise);
++
++  @ReactMethod
++  @DoNotStrip
++  public abstract void getDataFromUri(String uri, Promise promise);
++
++  @ReactMethod
++  @DoNotStrip
++  public abstract void popTimeToDisplayFor(String key, Promise promise);
++
++  @ReactMethod(isBlockingSynchronousMethod = true)
++  @DoNotStrip
++  public abstract boolean setActiveSpanId(String spanId);
++
++  @ReactMethod
++  @DoNotStrip
++  public abstract void encodeToBase64(ReadableArray data, Promise promise);
++}
+diff --git a/node_modules/@sentry/react-native/android/build/generated/source/codegen/jni/CMakeLists.txt b/node_modules/@sentry/react-native/android/build/generated/source/codegen/jni/CMakeLists.txt
+new file mode 100644
+index 0000000..d03d7a2
+--- /dev/null
++++ b/node_modules/@sentry/react-native/android/build/generated/source/codegen/jni/CMakeLists.txt
+@@ -0,0 +1,28 @@
++# Copyright (c) Meta Platforms, Inc. and affiliates.
++#
++# This source code is licensed under the MIT license found in the
++# LICENSE file in the root directory of this source tree.
++
++cmake_minimum_required(VERSION 3.13)
++set(CMAKE_VERBOSE_MAKEFILE on)
++
++file(GLOB react_codegen_SRCS CONFIGURE_DEPENDS *.cpp react/renderer/components/RNSentrySpec/*.cpp)
++
++add_library(
++  react_codegen_RNSentrySpec
++  OBJECT
++  ${react_codegen_SRCS}
++)
++
++target_include_directories(react_codegen_RNSentrySpec PUBLIC . react/renderer/components/RNSentrySpec)
++
++target_link_libraries(
++  react_codegen_RNSentrySpec
++  fbjni
++  jsi
++  # We need to link different libraries based on whether we are building rncore or not, that's necessary
++  # because we want to break a circular dependency between react_codegen_rncore and reactnative
++  reactnative
++)
++
++target_compile_reactnative_options(react_codegen_RNSentrySpec PRIVATE)
+diff --git a/node_modules/@sentry/react-native/android/build/generated/source/codegen/jni/RNSentrySpec-generated.cpp b/node_modules/@sentry/react-native/android/build/generated/source/codegen/jni/RNSentrySpec-generated.cpp
+new file mode 100644
+index 0000000..591c5d1
+--- /dev/null
++++ b/node_modules/@sentry/react-native/android/build/generated/source/codegen/jni/RNSentrySpec-generated.cpp
+@@ -0,0 +1,254 @@
++
++/**
++ * This code was generated by [react-native-codegen](https://www.npmjs.com/package/react-native-codegen).
++ *
++ * Do not edit this file as changes may cause incorrect behavior and will be lost
++ * once the code is regenerated.
++ *
++ * @generated by codegen project: GenerateModuleJniCpp.js
++ */
++
++#include "RNSentrySpec.h"
++
++namespace facebook::react {
++
++static facebook::jsi::Value __hostFunction_NativeRNSentrySpecJSI_addListener(facebook::jsi::Runtime& rt, TurboModule &turboModule, const facebook::jsi::Value* args, size_t count) {
++  static jmethodID cachedMethodId = nullptr;
++  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, VoidKind, "addListener", "(Ljava/lang/String;)V", args, count, cachedMethodId);
++}
++
++static facebook::jsi::Value __hostFunction_NativeRNSentrySpecJSI_removeListeners(facebook::jsi::Runtime& rt, TurboModule &turboModule, const facebook::jsi::Value* args, size_t count) {
++  static jmethodID cachedMethodId = nullptr;
++  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, VoidKind, "removeListeners", "(D)V", args, count, cachedMethodId);
++}
++
++static facebook::jsi::Value __hostFunction_NativeRNSentrySpecJSI_getNewScreenTimeToDisplay(facebook::jsi::Runtime& rt, TurboModule &turboModule, const facebook::jsi::Value* args, size_t count) {
++  static jmethodID cachedMethodId = nullptr;
++  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, PromiseKind, "getNewScreenTimeToDisplay", "(Lcom/facebook/react/bridge/Promise;)V", args, count, cachedMethodId);
++}
++
++static facebook::jsi::Value __hostFunction_NativeRNSentrySpecJSI_addBreadcrumb(facebook::jsi::Runtime& rt, TurboModule &turboModule, const facebook::jsi::Value* args, size_t count) {
++  static jmethodID cachedMethodId = nullptr;
++  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, VoidKind, "addBreadcrumb", "(Lcom/facebook/react/bridge/ReadableMap;)V", args, count, cachedMethodId);
++}
++
++static facebook::jsi::Value __hostFunction_NativeRNSentrySpecJSI_captureEnvelope(facebook::jsi::Runtime& rt, TurboModule &turboModule, const facebook::jsi::Value* args, size_t count) {
++  static jmethodID cachedMethodId = nullptr;
++  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, PromiseKind, "captureEnvelope", "(Ljava/lang/String;Lcom/facebook/react/bridge/ReadableMap;Lcom/facebook/react/bridge/Promise;)V", args, count, cachedMethodId);
++}
++
++static facebook::jsi::Value __hostFunction_NativeRNSentrySpecJSI_captureScreenshot(facebook::jsi::Runtime& rt, TurboModule &turboModule, const facebook::jsi::Value* args, size_t count) {
++  static jmethodID cachedMethodId = nullptr;
++  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, PromiseKind, "captureScreenshot", "(Lcom/facebook/react/bridge/Promise;)V", args, count, cachedMethodId);
++}
++
++static facebook::jsi::Value __hostFunction_NativeRNSentrySpecJSI_clearBreadcrumbs(facebook::jsi::Runtime& rt, TurboModule &turboModule, const facebook::jsi::Value* args, size_t count) {
++  static jmethodID cachedMethodId = nullptr;
++  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, VoidKind, "clearBreadcrumbs", "()V", args, count, cachedMethodId);
++}
++
++static facebook::jsi::Value __hostFunction_NativeRNSentrySpecJSI_crash(facebook::jsi::Runtime& rt, TurboModule &turboModule, const facebook::jsi::Value* args, size_t count) {
++  static jmethodID cachedMethodId = nullptr;
++  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, VoidKind, "crash", "()V", args, count, cachedMethodId);
++}
++
++static facebook::jsi::Value __hostFunction_NativeRNSentrySpecJSI_closeNativeSdk(facebook::jsi::Runtime& rt, TurboModule &turboModule, const facebook::jsi::Value* args, size_t count) {
++  static jmethodID cachedMethodId = nullptr;
++  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, PromiseKind, "closeNativeSdk", "(Lcom/facebook/react/bridge/Promise;)V", args, count, cachedMethodId);
++}
++
++static facebook::jsi::Value __hostFunction_NativeRNSentrySpecJSI_disableNativeFramesTracking(facebook::jsi::Runtime& rt, TurboModule &turboModule, const facebook::jsi::Value* args, size_t count) {
++  static jmethodID cachedMethodId = nullptr;
++  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, VoidKind, "disableNativeFramesTracking", "()V", args, count, cachedMethodId);
++}
++
++static facebook::jsi::Value __hostFunction_NativeRNSentrySpecJSI_fetchNativeRelease(facebook::jsi::Runtime& rt, TurboModule &turboModule, const facebook::jsi::Value* args, size_t count) {
++  static jmethodID cachedMethodId = nullptr;
++  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, PromiseKind, "fetchNativeRelease", "(Lcom/facebook/react/bridge/Promise;)V", args, count, cachedMethodId);
++}
++
++static facebook::jsi::Value __hostFunction_NativeRNSentrySpecJSI_fetchNativeSdkInfo(facebook::jsi::Runtime& rt, TurboModule &turboModule, const facebook::jsi::Value* args, size_t count) {
++  static jmethodID cachedMethodId = nullptr;
++  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, PromiseKind, "fetchNativeSdkInfo", "(Lcom/facebook/react/bridge/Promise;)V", args, count, cachedMethodId);
++}
++
++static facebook::jsi::Value __hostFunction_NativeRNSentrySpecJSI_fetchNativeDeviceContexts(facebook::jsi::Runtime& rt, TurboModule &turboModule, const facebook::jsi::Value* args, size_t count) {
++  static jmethodID cachedMethodId = nullptr;
++  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, PromiseKind, "fetchNativeDeviceContexts", "(Lcom/facebook/react/bridge/Promise;)V", args, count, cachedMethodId);
++}
++
++static facebook::jsi::Value __hostFunction_NativeRNSentrySpecJSI_fetchNativeLogAttributes(facebook::jsi::Runtime& rt, TurboModule &turboModule, const facebook::jsi::Value* args, size_t count) {
++  static jmethodID cachedMethodId = nullptr;
++  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, PromiseKind, "fetchNativeLogAttributes", "(Lcom/facebook/react/bridge/Promise;)V", args, count, cachedMethodId);
++}
++
++static facebook::jsi::Value __hostFunction_NativeRNSentrySpecJSI_fetchNativeAppStart(facebook::jsi::Runtime& rt, TurboModule &turboModule, const facebook::jsi::Value* args, size_t count) {
++  static jmethodID cachedMethodId = nullptr;
++  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, PromiseKind, "fetchNativeAppStart", "(Lcom/facebook/react/bridge/Promise;)V", args, count, cachedMethodId);
++}
++
++static facebook::jsi::Value __hostFunction_NativeRNSentrySpecJSI_fetchNativeFrames(facebook::jsi::Runtime& rt, TurboModule &turboModule, const facebook::jsi::Value* args, size_t count) {
++  static jmethodID cachedMethodId = nullptr;
++  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, PromiseKind, "fetchNativeFrames", "(Lcom/facebook/react/bridge/Promise;)V", args, count, cachedMethodId);
++}
++
++static facebook::jsi::Value __hostFunction_NativeRNSentrySpecJSI_initNativeSdk(facebook::jsi::Runtime& rt, TurboModule &turboModule, const facebook::jsi::Value* args, size_t count) {
++  static jmethodID cachedMethodId = nullptr;
++  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, PromiseKind, "initNativeSdk", "(Lcom/facebook/react/bridge/ReadableMap;Lcom/facebook/react/bridge/Promise;)V", args, count, cachedMethodId);
++}
++
++static facebook::jsi::Value __hostFunction_NativeRNSentrySpecJSI_setUser(facebook::jsi::Runtime& rt, TurboModule &turboModule, const facebook::jsi::Value* args, size_t count) {
++  static jmethodID cachedMethodId = nullptr;
++  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, VoidKind, "setUser", "(Lcom/facebook/react/bridge/ReadableMap;Lcom/facebook/react/bridge/ReadableMap;)V", args, count, cachedMethodId);
++}
++
++static facebook::jsi::Value __hostFunction_NativeRNSentrySpecJSI_setContext(facebook::jsi::Runtime& rt, TurboModule &turboModule, const facebook::jsi::Value* args, size_t count) {
++  static jmethodID cachedMethodId = nullptr;
++  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, VoidKind, "setContext", "(Ljava/lang/String;Lcom/facebook/react/bridge/ReadableMap;)V", args, count, cachedMethodId);
++}
++
++static facebook::jsi::Value __hostFunction_NativeRNSentrySpecJSI_setExtra(facebook::jsi::Runtime& rt, TurboModule &turboModule, const facebook::jsi::Value* args, size_t count) {
++  static jmethodID cachedMethodId = nullptr;
++  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, VoidKind, "setExtra", "(Ljava/lang/String;Ljava/lang/String;)V", args, count, cachedMethodId);
++}
++
++static facebook::jsi::Value __hostFunction_NativeRNSentrySpecJSI_setTag(facebook::jsi::Runtime& rt, TurboModule &turboModule, const facebook::jsi::Value* args, size_t count) {
++  static jmethodID cachedMethodId = nullptr;
++  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, VoidKind, "setTag", "(Ljava/lang/String;Ljava/lang/String;)V", args, count, cachedMethodId);
++}
++
++static facebook::jsi::Value __hostFunction_NativeRNSentrySpecJSI_setAttribute(facebook::jsi::Runtime& rt, TurboModule &turboModule, const facebook::jsi::Value* args, size_t count) {
++  static jmethodID cachedMethodId = nullptr;
++  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, VoidKind, "setAttribute", "(Ljava/lang/String;Ljava/lang/String;)V", args, count, cachedMethodId);
++}
++
++static facebook::jsi::Value __hostFunction_NativeRNSentrySpecJSI_setAttributes(facebook::jsi::Runtime& rt, TurboModule &turboModule, const facebook::jsi::Value* args, size_t count) {
++  static jmethodID cachedMethodId = nullptr;
++  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, VoidKind, "setAttributes", "(Lcom/facebook/react/bridge/ReadableMap;)V", args, count, cachedMethodId);
++}
++
++static facebook::jsi::Value __hostFunction_NativeRNSentrySpecJSI_enableNativeFramesTracking(facebook::jsi::Runtime& rt, TurboModule &turboModule, const facebook::jsi::Value* args, size_t count) {
++  static jmethodID cachedMethodId = nullptr;
++  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, VoidKind, "enableNativeFramesTracking", "()V", args, count, cachedMethodId);
++}
++
++static facebook::jsi::Value __hostFunction_NativeRNSentrySpecJSI_fetchModules(facebook::jsi::Runtime& rt, TurboModule &turboModule, const facebook::jsi::Value* args, size_t count) {
++  static jmethodID cachedMethodId = nullptr;
++  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, PromiseKind, "fetchModules", "(Lcom/facebook/react/bridge/Promise;)V", args, count, cachedMethodId);
++}
++
++static facebook::jsi::Value __hostFunction_NativeRNSentrySpecJSI_fetchViewHierarchy(facebook::jsi::Runtime& rt, TurboModule &turboModule, const facebook::jsi::Value* args, size_t count) {
++  static jmethodID cachedMethodId = nullptr;
++  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, PromiseKind, "fetchViewHierarchy", "(Lcom/facebook/react/bridge/Promise;)V", args, count, cachedMethodId);
++}
++
++static facebook::jsi::Value __hostFunction_NativeRNSentrySpecJSI_startProfiling(facebook::jsi::Runtime& rt, TurboModule &turboModule, const facebook::jsi::Value* args, size_t count) {
++  static jmethodID cachedMethodId = nullptr;
++  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, ObjectKind, "startProfiling", "(Z)Lcom/facebook/react/bridge/WritableMap;", args, count, cachedMethodId);
++}
++
++static facebook::jsi::Value __hostFunction_NativeRNSentrySpecJSI_stopProfiling(facebook::jsi::Runtime& rt, TurboModule &turboModule, const facebook::jsi::Value* args, size_t count) {
++  static jmethodID cachedMethodId = nullptr;
++  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, ObjectKind, "stopProfiling", "()Lcom/facebook/react/bridge/WritableMap;", args, count, cachedMethodId);
++}
++
++static facebook::jsi::Value __hostFunction_NativeRNSentrySpecJSI_fetchNativePackageName(facebook::jsi::Runtime& rt, TurboModule &turboModule, const facebook::jsi::Value* args, size_t count) {
++  static jmethodID cachedMethodId = nullptr;
++  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, StringKind, "fetchNativePackageName", "()Ljava/lang/String;", args, count, cachedMethodId);
++}
++
++static facebook::jsi::Value __hostFunction_NativeRNSentrySpecJSI_fetchNativeStackFramesBy(facebook::jsi::Runtime& rt, TurboModule &turboModule, const facebook::jsi::Value* args, size_t count) {
++  static jmethodID cachedMethodId = nullptr;
++  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, ObjectKind, "fetchNativeStackFramesBy", "(Lcom/facebook/react/bridge/ReadableArray;)Lcom/facebook/react/bridge/WritableMap;", args, count, cachedMethodId);
++}
++
++static facebook::jsi::Value __hostFunction_NativeRNSentrySpecJSI_initNativeReactNavigationNewFrameTracking(facebook::jsi::Runtime& rt, TurboModule &turboModule, const facebook::jsi::Value* args, size_t count) {
++  static jmethodID cachedMethodId = nullptr;
++  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, PromiseKind, "initNativeReactNavigationNewFrameTracking", "(Lcom/facebook/react/bridge/Promise;)V", args, count, cachedMethodId);
++}
++
++static facebook::jsi::Value __hostFunction_NativeRNSentrySpecJSI_captureReplay(facebook::jsi::Runtime& rt, TurboModule &turboModule, const facebook::jsi::Value* args, size_t count) {
++  static jmethodID cachedMethodId = nullptr;
++  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, PromiseKind, "captureReplay", "(ZLcom/facebook/react/bridge/Promise;)V", args, count, cachedMethodId);
++}
++
++static facebook::jsi::Value __hostFunction_NativeRNSentrySpecJSI_getCurrentReplayId(facebook::jsi::Runtime& rt, TurboModule &turboModule, const facebook::jsi::Value* args, size_t count) {
++  static jmethodID cachedMethodId = nullptr;
++  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, StringKind, "getCurrentReplayId", "()Ljava/lang/String;", args, count, cachedMethodId);
++}
++
++static facebook::jsi::Value __hostFunction_NativeRNSentrySpecJSI_crashedLastRun(facebook::jsi::Runtime& rt, TurboModule &turboModule, const facebook::jsi::Value* args, size_t count) {
++  static jmethodID cachedMethodId = nullptr;
++  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, PromiseKind, "crashedLastRun", "(Lcom/facebook/react/bridge/Promise;)V", args, count, cachedMethodId);
++}
++
++static facebook::jsi::Value __hostFunction_NativeRNSentrySpecJSI_getDataFromUri(facebook::jsi::Runtime& rt, TurboModule &turboModule, const facebook::jsi::Value* args, size_t count) {
++  static jmethodID cachedMethodId = nullptr;
++  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, PromiseKind, "getDataFromUri", "(Ljava/lang/String;Lcom/facebook/react/bridge/Promise;)V", args, count, cachedMethodId);
++}
++
++static facebook::jsi::Value __hostFunction_NativeRNSentrySpecJSI_popTimeToDisplayFor(facebook::jsi::Runtime& rt, TurboModule &turboModule, const facebook::jsi::Value* args, size_t count) {
++  static jmethodID cachedMethodId = nullptr;
++  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, PromiseKind, "popTimeToDisplayFor", "(Ljava/lang/String;Lcom/facebook/react/bridge/Promise;)V", args, count, cachedMethodId);
++}
++
++static facebook::jsi::Value __hostFunction_NativeRNSentrySpecJSI_setActiveSpanId(facebook::jsi::Runtime& rt, TurboModule &turboModule, const facebook::jsi::Value* args, size_t count) {
++  static jmethodID cachedMethodId = nullptr;
++  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, BooleanKind, "setActiveSpanId", "(Ljava/lang/String;)Z", args, count, cachedMethodId);
++}
++
++static facebook::jsi::Value __hostFunction_NativeRNSentrySpecJSI_encodeToBase64(facebook::jsi::Runtime& rt, TurboModule &turboModule, const facebook::jsi::Value* args, size_t count) {
++  static jmethodID cachedMethodId = nullptr;
++  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, PromiseKind, "encodeToBase64", "(Lcom/facebook/react/bridge/ReadableArray;Lcom/facebook/react/bridge/Promise;)V", args, count, cachedMethodId);
++}
++
++NativeRNSentrySpecJSI::NativeRNSentrySpecJSI(const JavaTurboModule::InitParams &params)
++  : JavaTurboModule(params) {
++  methodMap_["addListener"] = MethodMetadata {1, __hostFunction_NativeRNSentrySpecJSI_addListener};
++  methodMap_["removeListeners"] = MethodMetadata {1, __hostFunction_NativeRNSentrySpecJSI_removeListeners};
++  methodMap_["getNewScreenTimeToDisplay"] = MethodMetadata {0, __hostFunction_NativeRNSentrySpecJSI_getNewScreenTimeToDisplay};
++  methodMap_["addBreadcrumb"] = MethodMetadata {1, __hostFunction_NativeRNSentrySpecJSI_addBreadcrumb};
++  methodMap_["captureEnvelope"] = MethodMetadata {2, __hostFunction_NativeRNSentrySpecJSI_captureEnvelope};
++  methodMap_["captureScreenshot"] = MethodMetadata {0, __hostFunction_NativeRNSentrySpecJSI_captureScreenshot};
++  methodMap_["clearBreadcrumbs"] = MethodMetadata {0, __hostFunction_NativeRNSentrySpecJSI_clearBreadcrumbs};
++  methodMap_["crash"] = MethodMetadata {0, __hostFunction_NativeRNSentrySpecJSI_crash};
++  methodMap_["closeNativeSdk"] = MethodMetadata {0, __hostFunction_NativeRNSentrySpecJSI_closeNativeSdk};
++  methodMap_["disableNativeFramesTracking"] = MethodMetadata {0, __hostFunction_NativeRNSentrySpecJSI_disableNativeFramesTracking};
++  methodMap_["fetchNativeRelease"] = MethodMetadata {0, __hostFunction_NativeRNSentrySpecJSI_fetchNativeRelease};
++  methodMap_["fetchNativeSdkInfo"] = MethodMetadata {0, __hostFunction_NativeRNSentrySpecJSI_fetchNativeSdkInfo};
++  methodMap_["fetchNativeDeviceContexts"] = MethodMetadata {0, __hostFunction_NativeRNSentrySpecJSI_fetchNativeDeviceContexts};
++  methodMap_["fetchNativeLogAttributes"] = MethodMetadata {0, __hostFunction_NativeRNSentrySpecJSI_fetchNativeLogAttributes};
++  methodMap_["fetchNativeAppStart"] = MethodMetadata {0, __hostFunction_NativeRNSentrySpecJSI_fetchNativeAppStart};
++  methodMap_["fetchNativeFrames"] = MethodMetadata {0, __hostFunction_NativeRNSentrySpecJSI_fetchNativeFrames};
++  methodMap_["initNativeSdk"] = MethodMetadata {1, __hostFunction_NativeRNSentrySpecJSI_initNativeSdk};
++  methodMap_["setUser"] = MethodMetadata {2, __hostFunction_NativeRNSentrySpecJSI_setUser};
++  methodMap_["setContext"] = MethodMetadata {2, __hostFunction_NativeRNSentrySpecJSI_setContext};
++  methodMap_["setExtra"] = MethodMetadata {2, __hostFunction_NativeRNSentrySpecJSI_setExtra};
++  methodMap_["setTag"] = MethodMetadata {2, __hostFunction_NativeRNSentrySpecJSI_setTag};
++  methodMap_["setAttribute"] = MethodMetadata {2, __hostFunction_NativeRNSentrySpecJSI_setAttribute};
++  methodMap_["setAttributes"] = MethodMetadata {1, __hostFunction_NativeRNSentrySpecJSI_setAttributes};
++  methodMap_["enableNativeFramesTracking"] = MethodMetadata {0, __hostFunction_NativeRNSentrySpecJSI_enableNativeFramesTracking};
++  methodMap_["fetchModules"] = MethodMetadata {0, __hostFunction_NativeRNSentrySpecJSI_fetchModules};
++  methodMap_["fetchViewHierarchy"] = MethodMetadata {0, __hostFunction_NativeRNSentrySpecJSI_fetchViewHierarchy};
++  methodMap_["startProfiling"] = MethodMetadata {1, __hostFunction_NativeRNSentrySpecJSI_startProfiling};
++  methodMap_["stopProfiling"] = MethodMetadata {0, __hostFunction_NativeRNSentrySpecJSI_stopProfiling};
++  methodMap_["fetchNativePackageName"] = MethodMetadata {0, __hostFunction_NativeRNSentrySpecJSI_fetchNativePackageName};
++  methodMap_["fetchNativeStackFramesBy"] = MethodMetadata {1, __hostFunction_NativeRNSentrySpecJSI_fetchNativeStackFramesBy};
++  methodMap_["initNativeReactNavigationNewFrameTracking"] = MethodMetadata {0, __hostFunction_NativeRNSentrySpecJSI_initNativeReactNavigationNewFrameTracking};
++  methodMap_["captureReplay"] = MethodMetadata {1, __hostFunction_NativeRNSentrySpecJSI_captureReplay};
++  methodMap_["getCurrentReplayId"] = MethodMetadata {0, __hostFunction_NativeRNSentrySpecJSI_getCurrentReplayId};
++  methodMap_["crashedLastRun"] = MethodMetadata {0, __hostFunction_NativeRNSentrySpecJSI_crashedLastRun};
++  methodMap_["getDataFromUri"] = MethodMetadata {1, __hostFunction_NativeRNSentrySpecJSI_getDataFromUri};
++  methodMap_["popTimeToDisplayFor"] = MethodMetadata {1, __hostFunction_NativeRNSentrySpecJSI_popTimeToDisplayFor};
++  methodMap_["setActiveSpanId"] = MethodMetadata {1, __hostFunction_NativeRNSentrySpecJSI_setActiveSpanId};
++  methodMap_["encodeToBase64"] = MethodMetadata {1, __hostFunction_NativeRNSentrySpecJSI_encodeToBase64};
++}
++
++std::shared_ptr<TurboModule> RNSentrySpec_ModuleProvider(const std::string &moduleName, const JavaTurboModule::InitParams &params) {
++  if (moduleName == "RNSentry") {
++    return std::make_shared<NativeRNSentrySpecJSI>(params);
++  }
++  return nullptr;
++}
++
++} // namespace facebook::react
+diff --git a/node_modules/@sentry/react-native/android/build/generated/source/codegen/jni/RNSentrySpec.h b/node_modules/@sentry/react-native/android/build/generated/source/codegen/jni/RNSentrySpec.h
+new file mode 100644
+index 0000000..1484133
+--- /dev/null
++++ b/node_modules/@sentry/react-native/android/build/generated/source/codegen/jni/RNSentrySpec.h
+@@ -0,0 +1,31 @@
++
++/**
++ * This code was generated by [react-native-codegen](https://www.npmjs.com/package/react-native-codegen).
++ *
++ * Do not edit this file as changes may cause incorrect behavior and will be lost
++ * once the code is regenerated.
++ *
++ * @generated by codegen project: GenerateModuleJniH.js
++ */
++
++#pragma once
++
++#include <ReactCommon/JavaTurboModule.h>
++#include <ReactCommon/TurboModule.h>
++#include <jsi/jsi.h>
++
++namespace facebook::react {
++
++/**
++ * JNI C++ class for module 'NativeRNSentry'
++ */
++class JSI_EXPORT NativeRNSentrySpecJSI : public JavaTurboModule {
++public:
++  NativeRNSentrySpecJSI(const JavaTurboModule::InitParams &params);
++};
++
++
++JSI_EXPORT
++std::shared_ptr<TurboModule> RNSentrySpec_ModuleProvider(const std::string &moduleName, const JavaTurboModule::InitParams &params);
++
++} // namespace facebook::react
+diff --git a/node_modules/@sentry/react-native/android/build/generated/source/codegen/jni/react/renderer/components/RNSentrySpec/ComponentDescriptors.cpp b/node_modules/@sentry/react-native/android/build/generated/source/codegen/jni/react/renderer/components/RNSentrySpec/ComponentDescriptors.cpp
+new file mode 100644
+index 0000000..27f57a5
+--- /dev/null
++++ b/node_modules/@sentry/react-native/android/build/generated/source/codegen/jni/react/renderer/components/RNSentrySpec/ComponentDescriptors.cpp
+@@ -0,0 +1,23 @@
++
++/**
++ * This code was generated by [react-native-codegen](https://www.npmjs.com/package/react-native-codegen).
++ *
++ * Do not edit this file as changes may cause incorrect behavior and will be lost
++ * once the code is regenerated.
++ *
++ * @generated by codegen project: GenerateComponentDescriptorCpp.js
++ */
++
++#include <react/renderer/components/RNSentrySpec/ComponentDescriptors.h>
++#include <react/renderer/core/ConcreteComponentDescriptor.h>
++#include <react/renderer/componentregistry/ComponentDescriptorProviderRegistry.h>
++
++namespace facebook::react {
++
++void RNSentrySpec_registerComponentDescriptorsFromCodegen(
++  std::shared_ptr<const ComponentDescriptorProviderRegistry> registry) {
++registry->add(concreteComponentDescriptorProvider<RNSentryReplayMaskComponentDescriptor>());
++registry->add(concreteComponentDescriptorProvider<RNSentryReplayUnmaskComponentDescriptor>());
++}
++
++} // namespace facebook::react
+diff --git a/node_modules/@sentry/react-native/android/build/generated/source/codegen/jni/react/renderer/components/RNSentrySpec/ComponentDescriptors.h b/node_modules/@sentry/react-native/android/build/generated/source/codegen/jni/react/renderer/components/RNSentrySpec/ComponentDescriptors.h
+new file mode 100644
+index 0000000..ac23680
+--- /dev/null
++++ b/node_modules/@sentry/react-native/android/build/generated/source/codegen/jni/react/renderer/components/RNSentrySpec/ComponentDescriptors.h
+@@ -0,0 +1,25 @@
++
++/**
++ * This code was generated by [react-native-codegen](https://www.npmjs.com/package/react-native-codegen).
++ *
++ * Do not edit this file as changes may cause incorrect behavior and will be lost
++ * once the code is regenerated.
++ *
++ * @generated by codegen project: GenerateComponentDescriptorH.js
++ */
++
++#pragma once
++
++#include <react/renderer/components/RNSentrySpec/ShadowNodes.h>
++#include <react/renderer/core/ConcreteComponentDescriptor.h>
++#include <react/renderer/componentregistry/ComponentDescriptorProviderRegistry.h>
++
++namespace facebook::react {
++
++using RNSentryReplayMaskComponentDescriptor = ConcreteComponentDescriptor<RNSentryReplayMaskShadowNode>;
++using RNSentryReplayUnmaskComponentDescriptor = ConcreteComponentDescriptor<RNSentryReplayUnmaskShadowNode>;
++
++void RNSentrySpec_registerComponentDescriptorsFromCodegen(
++  std::shared_ptr<const ComponentDescriptorProviderRegistry> registry);
++
++} // namespace facebook::react
+diff --git a/node_modules/@sentry/react-native/android/build/generated/source/codegen/jni/react/renderer/components/RNSentrySpec/EventEmitters.cpp b/node_modules/@sentry/react-native/android/build/generated/source/codegen/jni/react/renderer/components/RNSentrySpec/EventEmitters.cpp
+new file mode 100644
+index 0000000..f1d69b6
+--- /dev/null
++++ b/node_modules/@sentry/react-native/android/build/generated/source/codegen/jni/react/renderer/components/RNSentrySpec/EventEmitters.cpp
+@@ -0,0 +1,17 @@
++
++/**
++ * This code was generated by [react-native-codegen](https://www.npmjs.com/package/react-native-codegen).
++ *
++ * Do not edit this file as changes may cause incorrect behavior and will be lost
++ * once the code is regenerated.
++ *
++ * @generated by codegen project: GenerateEventEmitterCpp.js
++ */
++
++#include <react/renderer/components/RNSentrySpec/EventEmitters.h>
++
++
++namespace facebook::react {
++
++
++} // namespace facebook::react
+diff --git a/node_modules/@sentry/react-native/android/build/generated/source/codegen/jni/react/renderer/components/RNSentrySpec/EventEmitters.h b/node_modules/@sentry/react-native/android/build/generated/source/codegen/jni/react/renderer/components/RNSentrySpec/EventEmitters.h
+new file mode 100644
+index 0000000..9cb8d81
+--- /dev/null
++++ b/node_modules/@sentry/react-native/android/build/generated/source/codegen/jni/react/renderer/components/RNSentrySpec/EventEmitters.h
+@@ -0,0 +1,30 @@
++
++/**
++ * This code was generated by [react-native-codegen](https://www.npmjs.com/package/react-native-codegen).
++ *
++ * Do not edit this file as changes may cause incorrect behavior and will be lost
++ * once the code is regenerated.
++ *
++ * @generated by codegen project: GenerateEventEmitterH.js
++ */
++#pragma once
++
++#include <react/renderer/components/view/ViewEventEmitter.h>
++
++
++namespace facebook::react {
++class RNSentryReplayMaskEventEmitter : public ViewEventEmitter {
++ public:
++  using ViewEventEmitter::ViewEventEmitter;
++
++  
++  
++};
++class RNSentryReplayUnmaskEventEmitter : public ViewEventEmitter {
++ public:
++  using ViewEventEmitter::ViewEventEmitter;
++
++  
++  
++};
++} // namespace facebook::react
+diff --git a/node_modules/@sentry/react-native/android/build/generated/source/codegen/jni/react/renderer/components/RNSentrySpec/Props.cpp b/node_modules/@sentry/react-native/android/build/generated/source/codegen/jni/react/renderer/components/RNSentrySpec/Props.cpp
+new file mode 100644
+index 0000000..2123136
+--- /dev/null
++++ b/node_modules/@sentry/react-native/android/build/generated/source/codegen/jni/react/renderer/components/RNSentrySpec/Props.cpp
+@@ -0,0 +1,70 @@
++
++/**
++ * This code was generated by [react-native-codegen](https://www.npmjs.com/package/react-native-codegen).
++ *
++ * Do not edit this file as changes may cause incorrect behavior and will be lost
++ * once the code is regenerated.
++ *
++ * @generated by codegen project: GeneratePropsCpp.js
++ */
++
++#include <react/renderer/components/RNSentrySpec/Props.h>
++#include <react/renderer/core/PropsParserContext.h>
++#include <react/renderer/core/propsConversions.h>
++
++namespace facebook::react {
++
++RNSentryReplayMaskProps::RNSentryReplayMaskProps(
++    const PropsParserContext &context,
++    const RNSentryReplayMaskProps &sourceProps,
++    const RawProps &rawProps): ViewProps(context, sourceProps, rawProps)
++
++     {}
++    
++#ifdef RN_SERIALIZABLE_STATE
++ComponentName RNSentryReplayMaskProps::getDiffPropsImplementationTarget() const {
++  return "RNSentryReplayMask";
++}
++
++folly::dynamic RNSentryReplayMaskProps::getDiffProps(
++    const Props* prevProps) const {
++  static const auto defaultProps = RNSentryReplayMaskProps();
++  const RNSentryReplayMaskProps* oldProps = prevProps == nullptr
++      ? &defaultProps
++      : static_cast<const RNSentryReplayMaskProps*>(prevProps);
++  if (this == oldProps) {
++    return folly::dynamic::object();
++  }
++  folly::dynamic result = HostPlatformViewProps::getDiffProps(prevProps);
++  
++  return result;
++}
++#endif
++RNSentryReplayUnmaskProps::RNSentryReplayUnmaskProps(
++    const PropsParserContext &context,
++    const RNSentryReplayUnmaskProps &sourceProps,
++    const RawProps &rawProps): ViewProps(context, sourceProps, rawProps)
++
++     {}
++    
++#ifdef RN_SERIALIZABLE_STATE
++ComponentName RNSentryReplayUnmaskProps::getDiffPropsImplementationTarget() const {
++  return "RNSentryReplayUnmask";
++}
++
++folly::dynamic RNSentryReplayUnmaskProps::getDiffProps(
++    const Props* prevProps) const {
++  static const auto defaultProps = RNSentryReplayUnmaskProps();
++  const RNSentryReplayUnmaskProps* oldProps = prevProps == nullptr
++      ? &defaultProps
++      : static_cast<const RNSentryReplayUnmaskProps*>(prevProps);
++  if (this == oldProps) {
++    return folly::dynamic::object();
++  }
++  folly::dynamic result = HostPlatformViewProps::getDiffProps(prevProps);
++  
++  return result;
++}
++#endif
++
++} // namespace facebook::react
+diff --git a/node_modules/@sentry/react-native/android/build/generated/source/codegen/jni/react/renderer/components/RNSentrySpec/Props.h b/node_modules/@sentry/react-native/android/build/generated/source/codegen/jni/react/renderer/components/RNSentrySpec/Props.h
+new file mode 100644
+index 0000000..22a4a2f
+--- /dev/null
++++ b/node_modules/@sentry/react-native/android/build/generated/source/codegen/jni/react/renderer/components/RNSentrySpec/Props.h
+@@ -0,0 +1,54 @@
++
++/**
++ * This code was generated by [react-native-codegen](https://www.npmjs.com/package/react-native-codegen).
++ *
++ * Do not edit this file as changes may cause incorrect behavior and will be lost
++ * once the code is regenerated.
++ *
++ * @generated by codegen project: GeneratePropsH.js
++ */
++#pragma once
++
++#include <react/renderer/components/view/ViewProps.h>
++#include <react/renderer/core/PropsParserContext.h>
++#include <react/renderer/debug/DebugStringConvertible.h>
++
++namespace facebook::react {
++
++class RNSentryReplayMaskProps final : public ViewProps {
++ public:
++  RNSentryReplayMaskProps() = default;
++  RNSentryReplayMaskProps(const PropsParserContext& context, const RNSentryReplayMaskProps &sourceProps, const RawProps &rawProps);
++
++#pragma mark - Props
++
++  
++
++  #ifdef RN_SERIALIZABLE_STATE
++  ComponentName getDiffPropsImplementationTarget() const override;
++
++  folly::dynamic getDiffProps(const Props* prevProps) const override;
++  #endif
++
++  
++};
++
++class RNSentryReplayUnmaskProps final : public ViewProps {
++ public:
++  RNSentryReplayUnmaskProps() = default;
++  RNSentryReplayUnmaskProps(const PropsParserContext& context, const RNSentryReplayUnmaskProps &sourceProps, const RawProps &rawProps);
++
++#pragma mark - Props
++
++  
++
++  #ifdef RN_SERIALIZABLE_STATE
++  ComponentName getDiffPropsImplementationTarget() const override;
++
++  folly::dynamic getDiffProps(const Props* prevProps) const override;
++  #endif
++
++  
++};
++
++} // namespace facebook::react
+diff --git a/node_modules/@sentry/react-native/android/build/generated/source/codegen/jni/react/renderer/components/RNSentrySpec/RNSentrySpecJSI.h b/node_modules/@sentry/react-native/android/build/generated/source/codegen/jni/react/renderer/components/RNSentrySpec/RNSentrySpecJSI.h
+new file mode 100644
+index 0000000..04d9c1d
+--- /dev/null
++++ b/node_modules/@sentry/react-native/android/build/generated/source/codegen/jni/react/renderer/components/RNSentrySpec/RNSentrySpecJSI.h
+@@ -0,0 +1,811 @@
++/**
++ * This code was generated by [react-native-codegen](https://www.npmjs.com/package/react-native-codegen).
++ *
++ * Do not edit this file as changes may cause incorrect behavior and will be lost
++ * once the code is regenerated.
++ *
++ * @generated by codegen project: GenerateModuleH.js
++ */
++
++#pragma once
++
++#include <ReactCommon/TurboModule.h>
++#include <react/bridging/Bridging.h>
++
++namespace facebook::react {
++
++
++#pragma mark - NativeRNSentryNativeAppStartResponse
++
++template <typename P0, typename P1, typename P2, typename P3>
++struct NativeRNSentryNativeAppStartResponse {
++  P0 type{};
++  P1 has_fetched{};
++  P2 app_start_timestamp_ms{};
++  P3 spans;
++  bool operator==(const NativeRNSentryNativeAppStartResponse &other) const {
++    return type == other.type && has_fetched == other.has_fetched && app_start_timestamp_ms == other.app_start_timestamp_ms && spans == other.spans;
++  }
++};
++
++template <typename T>
++struct NativeRNSentryNativeAppStartResponseBridging {
++  static T types;
++
++  static T fromJs(
++      jsi::Runtime &rt,
++      const jsi::Object &value,
++      const std::shared_ptr<CallInvoker> &jsInvoker) {
++    T result{
++      bridging::fromJs<decltype(types.type)>(rt, value.getProperty(rt, "type"), jsInvoker),
++      bridging::fromJs<decltype(types.has_fetched)>(rt, value.getProperty(rt, "has_fetched"), jsInvoker),
++      bridging::fromJs<decltype(types.app_start_timestamp_ms)>(rt, value.getProperty(rt, "app_start_timestamp_ms"), jsInvoker),
++      bridging::fromJs<decltype(types.spans)>(rt, value.getProperty(rt, "spans"), jsInvoker)};
++    return result;
++  }
++
++#ifdef DEBUG
++  static jsi::String typeToJs(jsi::Runtime &rt, decltype(types.type) value) {
++    return bridging::toJs(rt, value);
++  }
++  static bool has_fetchedToJs(jsi::Runtime &rt, decltype(types.has_fetched) value) {
++    return bridging::toJs(rt, value);
++  }
++  static double app_start_timestamp_msToJs(jsi::Runtime &rt, decltype(types.app_start_timestamp_ms) value) {
++    return bridging::toJs(rt, value);
++  }
++  static jsi::Array spansToJs(jsi::Runtime &rt, decltype(types.spans) value) {
++    return bridging::toJs(rt, value);
++  }
++#endif
++
++  static jsi::Object toJs(
++      jsi::Runtime &rt,
++      const T &value,
++      const std::shared_ptr<CallInvoker> &jsInvoker) {
++    auto result = facebook::jsi::Object(rt);
++    result.setProperty(rt, "type", bridging::toJs(rt, value.type, jsInvoker));
++    result.setProperty(rt, "has_fetched", bridging::toJs(rt, value.has_fetched, jsInvoker));
++    if (value.app_start_timestamp_ms) {
++      result.setProperty(rt, "app_start_timestamp_ms", bridging::toJs(rt, value.app_start_timestamp_ms.value(), jsInvoker));
++    }
++    result.setProperty(rt, "spans", bridging::toJs(rt, value.spans, jsInvoker));
++    return result;
++  }
++};
++
++
++
++#pragma mark - NativeRNSentryNativeDebugImage
++
++template <typename P0, typename P1, typename P2, typename P3, typename P4, typename P5, typename P6, typename P7>
++struct NativeRNSentryNativeDebugImage {
++  P0 name{};
++  P1 type{};
++  P2 uuid{};
++  P3 debug_id{};
++  P4 image_addr{};
++  P5 image_size{};
++  P6 code_file{};
++  P7 image_vmaddr;
++  bool operator==(const NativeRNSentryNativeDebugImage &other) const {
++    return name == other.name && type == other.type && uuid == other.uuid && debug_id == other.debug_id && image_addr == other.image_addr && image_size == other.image_size && code_file == other.code_file && image_vmaddr == other.image_vmaddr;
++  }
++};
++
++template <typename T>
++struct NativeRNSentryNativeDebugImageBridging {
++  static T types;
++
++  static T fromJs(
++      jsi::Runtime &rt,
++      const jsi::Object &value,
++      const std::shared_ptr<CallInvoker> &jsInvoker) {
++    T result{
++      bridging::fromJs<decltype(types.name)>(rt, value.getProperty(rt, "name"), jsInvoker),
++      bridging::fromJs<decltype(types.type)>(rt, value.getProperty(rt, "type"), jsInvoker),
++      bridging::fromJs<decltype(types.uuid)>(rt, value.getProperty(rt, "uuid"), jsInvoker),
++      bridging::fromJs<decltype(types.debug_id)>(rt, value.getProperty(rt, "debug_id"), jsInvoker),
++      bridging::fromJs<decltype(types.image_addr)>(rt, value.getProperty(rt, "image_addr"), jsInvoker),
++      bridging::fromJs<decltype(types.image_size)>(rt, value.getProperty(rt, "image_size"), jsInvoker),
++      bridging::fromJs<decltype(types.code_file)>(rt, value.getProperty(rt, "code_file"), jsInvoker),
++      bridging::fromJs<decltype(types.image_vmaddr)>(rt, value.getProperty(rt, "image_vmaddr"), jsInvoker)};
++    return result;
++  }
++
++#ifdef DEBUG
++  static jsi::String nameToJs(jsi::Runtime &rt, decltype(types.name) value) {
++    return bridging::toJs(rt, value);
++  }
++  static jsi::String typeToJs(jsi::Runtime &rt, decltype(types.type) value) {
++    return bridging::toJs(rt, value);
++  }
++  static jsi::String uuidToJs(jsi::Runtime &rt, decltype(types.uuid) value) {
++    return bridging::toJs(rt, value);
++  }
++  static jsi::String debug_idToJs(jsi::Runtime &rt, decltype(types.debug_id) value) {
++    return bridging::toJs(rt, value);
++  }
++  static jsi::String image_addrToJs(jsi::Runtime &rt, decltype(types.image_addr) value) {
++    return bridging::toJs(rt, value);
++  }
++  static double image_sizeToJs(jsi::Runtime &rt, decltype(types.image_size) value) {
++    return bridging::toJs(rt, value);
++  }
++  static jsi::String code_fileToJs(jsi::Runtime &rt, decltype(types.code_file) value) {
++    return bridging::toJs(rt, value);
++  }
++  static jsi::String image_vmaddrToJs(jsi::Runtime &rt, decltype(types.image_vmaddr) value) {
++    return bridging::toJs(rt, value);
++  }
++#endif
++
++  static jsi::Object toJs(
++      jsi::Runtime &rt,
++      const T &value,
++      const std::shared_ptr<CallInvoker> &jsInvoker) {
++    auto result = facebook::jsi::Object(rt);
++    if (value.name) {
++      result.setProperty(rt, "name", bridging::toJs(rt, value.name.value(), jsInvoker));
++    }
++    if (value.type) {
++      result.setProperty(rt, "type", bridging::toJs(rt, value.type.value(), jsInvoker));
++    }
++    if (value.uuid) {
++      result.setProperty(rt, "uuid", bridging::toJs(rt, value.uuid.value(), jsInvoker));
++    }
++    if (value.debug_id) {
++      result.setProperty(rt, "debug_id", bridging::toJs(rt, value.debug_id.value(), jsInvoker));
++    }
++    if (value.image_addr) {
++      result.setProperty(rt, "image_addr", bridging::toJs(rt, value.image_addr.value(), jsInvoker));
++    }
++    if (value.image_size) {
++      result.setProperty(rt, "image_size", bridging::toJs(rt, value.image_size.value(), jsInvoker));
++    }
++    if (value.code_file) {
++      result.setProperty(rt, "code_file", bridging::toJs(rt, value.code_file.value(), jsInvoker));
++    }
++    if (value.image_vmaddr) {
++      result.setProperty(rt, "image_vmaddr", bridging::toJs(rt, value.image_vmaddr.value(), jsInvoker));
++    }
++    return result;
++  }
++};
++
++
++
++#pragma mark - NativeRNSentryNativeFramesResponse
++
++template <typename P0, typename P1, typename P2>
++struct NativeRNSentryNativeFramesResponse {
++  P0 totalFrames{};
++  P1 slowFrames{};
++  P2 frozenFrames;
++  bool operator==(const NativeRNSentryNativeFramesResponse &other) const {
++    return totalFrames == other.totalFrames && slowFrames == other.slowFrames && frozenFrames == other.frozenFrames;
++  }
++};
++
++template <typename T>
++struct NativeRNSentryNativeFramesResponseBridging {
++  static T types;
++
++  static T fromJs(
++      jsi::Runtime &rt,
++      const jsi::Object &value,
++      const std::shared_ptr<CallInvoker> &jsInvoker) {
++    T result{
++      bridging::fromJs<decltype(types.totalFrames)>(rt, value.getProperty(rt, "totalFrames"), jsInvoker),
++      bridging::fromJs<decltype(types.slowFrames)>(rt, value.getProperty(rt, "slowFrames"), jsInvoker),
++      bridging::fromJs<decltype(types.frozenFrames)>(rt, value.getProperty(rt, "frozenFrames"), jsInvoker)};
++    return result;
++  }
++
++#ifdef DEBUG
++  static double totalFramesToJs(jsi::Runtime &rt, decltype(types.totalFrames) value) {
++    return bridging::toJs(rt, value);
++  }
++  static double slowFramesToJs(jsi::Runtime &rt, decltype(types.slowFrames) value) {
++    return bridging::toJs(rt, value);
++  }
++  static double frozenFramesToJs(jsi::Runtime &rt, decltype(types.frozenFrames) value) {
++    return bridging::toJs(rt, value);
++  }
++#endif
++
++  static jsi::Object toJs(
++      jsi::Runtime &rt,
++      const T &value,
++      const std::shared_ptr<CallInvoker> &jsInvoker) {
++    auto result = facebook::jsi::Object(rt);
++    result.setProperty(rt, "totalFrames", bridging::toJs(rt, value.totalFrames, jsInvoker));
++    result.setProperty(rt, "slowFrames", bridging::toJs(rt, value.slowFrames, jsInvoker));
++    result.setProperty(rt, "frozenFrames", bridging::toJs(rt, value.frozenFrames, jsInvoker));
++    return result;
++  }
++};
++
++
++
++#pragma mark - NativeRNSentryNativeReleaseResponse
++
++template <typename P0, typename P1, typename P2>
++struct NativeRNSentryNativeReleaseResponse {
++  P0 build{};
++  P1 id{};
++  P2 version;
++  bool operator==(const NativeRNSentryNativeReleaseResponse &other) const {
++    return build == other.build && id == other.id && version == other.version;
++  }
++};
++
++template <typename T>
++struct NativeRNSentryNativeReleaseResponseBridging {
++  static T types;
++
++  static T fromJs(
++      jsi::Runtime &rt,
++      const jsi::Object &value,
++      const std::shared_ptr<CallInvoker> &jsInvoker) {
++    T result{
++      bridging::fromJs<decltype(types.build)>(rt, value.getProperty(rt, "build"), jsInvoker),
++      bridging::fromJs<decltype(types.id)>(rt, value.getProperty(rt, "id"), jsInvoker),
++      bridging::fromJs<decltype(types.version)>(rt, value.getProperty(rt, "version"), jsInvoker)};
++    return result;
++  }
++
++#ifdef DEBUG
++  static jsi::String buildToJs(jsi::Runtime &rt, decltype(types.build) value) {
++    return bridging::toJs(rt, value);
++  }
++  static jsi::String idToJs(jsi::Runtime &rt, decltype(types.id) value) {
++    return bridging::toJs(rt, value);
++  }
++  static jsi::String versionToJs(jsi::Runtime &rt, decltype(types.version) value) {
++    return bridging::toJs(rt, value);
++  }
++#endif
++
++  static jsi::Object toJs(
++      jsi::Runtime &rt,
++      const T &value,
++      const std::shared_ptr<CallInvoker> &jsInvoker) {
++    auto result = facebook::jsi::Object(rt);
++    result.setProperty(rt, "build", bridging::toJs(rt, value.build, jsInvoker));
++    result.setProperty(rt, "id", bridging::toJs(rt, value.id, jsInvoker));
++    result.setProperty(rt, "version", bridging::toJs(rt, value.version, jsInvoker));
++    return result;
++  }
++};
++
++
++
++#pragma mark - NativeRNSentryNativeScreenshot
++
++template <typename P0, typename P1, typename P2>
++struct NativeRNSentryNativeScreenshot {
++  P0 data{};
++  P1 contentType{};
++  P2 filename;
++  bool operator==(const NativeRNSentryNativeScreenshot &other) const {
++    return data == other.data && contentType == other.contentType && filename == other.filename;
++  }
++};
++
++template <typename T>
++struct NativeRNSentryNativeScreenshotBridging {
++  static T types;
++
++  static T fromJs(
++      jsi::Runtime &rt,
++      const jsi::Object &value,
++      const std::shared_ptr<CallInvoker> &jsInvoker) {
++    T result{
++      bridging::fromJs<decltype(types.data)>(rt, value.getProperty(rt, "data"), jsInvoker),
++      bridging::fromJs<decltype(types.contentType)>(rt, value.getProperty(rt, "contentType"), jsInvoker),
++      bridging::fromJs<decltype(types.filename)>(rt, value.getProperty(rt, "filename"), jsInvoker)};
++    return result;
++  }
++
++#ifdef DEBUG
++  static jsi::Array dataToJs(jsi::Runtime &rt, decltype(types.data) value) {
++    return bridging::toJs(rt, value);
++  }
++  static jsi::String contentTypeToJs(jsi::Runtime &rt, decltype(types.contentType) value) {
++    return bridging::toJs(rt, value);
++  }
++  static jsi::String filenameToJs(jsi::Runtime &rt, decltype(types.filename) value) {
++    return bridging::toJs(rt, value);
++  }
++#endif
++
++  static jsi::Object toJs(
++      jsi::Runtime &rt,
++      const T &value,
++      const std::shared_ptr<CallInvoker> &jsInvoker) {
++    auto result = facebook::jsi::Object(rt);
++    result.setProperty(rt, "data", bridging::toJs(rt, value.data, jsInvoker));
++    result.setProperty(rt, "contentType", bridging::toJs(rt, value.contentType, jsInvoker));
++    result.setProperty(rt, "filename", bridging::toJs(rt, value.filename, jsInvoker));
++    return result;
++  }
++};
++
++
++
++#pragma mark - NativeRNSentryNativeStackFrame
++
++template <typename P0, typename P1, typename P2, typename P3, typename P4, typename P5, typename P6>
++struct NativeRNSentryNativeStackFrame {
++  P0 platform{};
++  P1 instruction_addr{};
++  P2 package{};
++  P3 image_addr{};
++  P4 in_app{};
++  P5 function{};
++  P6 symbol_addr;
++  bool operator==(const NativeRNSentryNativeStackFrame &other) const {
++    return platform == other.platform && instruction_addr == other.instruction_addr && package == other.package && image_addr == other.image_addr && in_app == other.in_app && function == other.function && symbol_addr == other.symbol_addr;
++  }
++};
++
++template <typename T>
++struct NativeRNSentryNativeStackFrameBridging {
++  static T types;
++
++  static T fromJs(
++      jsi::Runtime &rt,
++      const jsi::Object &value,
++      const std::shared_ptr<CallInvoker> &jsInvoker) {
++    T result{
++      bridging::fromJs<decltype(types.platform)>(rt, value.getProperty(rt, "platform"), jsInvoker),
++      bridging::fromJs<decltype(types.instruction_addr)>(rt, value.getProperty(rt, "instruction_addr"), jsInvoker),
++      bridging::fromJs<decltype(types.package)>(rt, value.getProperty(rt, "package"), jsInvoker),
++      bridging::fromJs<decltype(types.image_addr)>(rt, value.getProperty(rt, "image_addr"), jsInvoker),
++      bridging::fromJs<decltype(types.in_app)>(rt, value.getProperty(rt, "in_app"), jsInvoker),
++      bridging::fromJs<decltype(types.function)>(rt, value.getProperty(rt, "function"), jsInvoker),
++      bridging::fromJs<decltype(types.symbol_addr)>(rt, value.getProperty(rt, "symbol_addr"), jsInvoker)};
++    return result;
++  }
++
++#ifdef DEBUG
++  static jsi::String platformToJs(jsi::Runtime &rt, decltype(types.platform) value) {
++    return bridging::toJs(rt, value);
++  }
++  static jsi::String instruction_addrToJs(jsi::Runtime &rt, decltype(types.instruction_addr) value) {
++    return bridging::toJs(rt, value);
++  }
++  static jsi::String packageToJs(jsi::Runtime &rt, decltype(types.package) value) {
++    return bridging::toJs(rt, value);
++  }
++  static jsi::String image_addrToJs(jsi::Runtime &rt, decltype(types.image_addr) value) {
++    return bridging::toJs(rt, value);
++  }
++  static bool in_appToJs(jsi::Runtime &rt, decltype(types.in_app) value) {
++    return bridging::toJs(rt, value);
++  }
++  static jsi::String functionToJs(jsi::Runtime &rt, decltype(types.function) value) {
++    return bridging::toJs(rt, value);
++  }
++  static jsi::String symbol_addrToJs(jsi::Runtime &rt, decltype(types.symbol_addr) value) {
++    return bridging::toJs(rt, value);
++  }
++#endif
++
++  static jsi::Object toJs(
++      jsi::Runtime &rt,
++      const T &value,
++      const std::shared_ptr<CallInvoker> &jsInvoker) {
++    auto result = facebook::jsi::Object(rt);
++    result.setProperty(rt, "platform", bridging::toJs(rt, value.platform, jsInvoker));
++    result.setProperty(rt, "instruction_addr", bridging::toJs(rt, value.instruction_addr, jsInvoker));
++    if (value.package) {
++      result.setProperty(rt, "package", bridging::toJs(rt, value.package.value(), jsInvoker));
++    }
++    if (value.image_addr) {
++      result.setProperty(rt, "image_addr", bridging::toJs(rt, value.image_addr.value(), jsInvoker));
++    }
++    if (value.in_app) {
++      result.setProperty(rt, "in_app", bridging::toJs(rt, value.in_app.value(), jsInvoker));
++    }
++    if (value.function) {
++      result.setProperty(rt, "function", bridging::toJs(rt, value.function.value(), jsInvoker));
++    }
++    if (value.symbol_addr) {
++      result.setProperty(rt, "symbol_addr", bridging::toJs(rt, value.symbol_addr.value(), jsInvoker));
++    }
++    return result;
++  }
++};
++
++
++
++#pragma mark - NativeRNSentryNativeStackFrames
++
++template <typename P0, typename P1>
++struct NativeRNSentryNativeStackFrames {
++  P0 frames{};
++  P1 debugMetaImages;
++  bool operator==(const NativeRNSentryNativeStackFrames &other) const {
++    return frames == other.frames && debugMetaImages == other.debugMetaImages;
++  }
++};
++
++template <typename T>
++struct NativeRNSentryNativeStackFramesBridging {
++  static T types;
++
++  static T fromJs(
++      jsi::Runtime &rt,
++      const jsi::Object &value,
++      const std::shared_ptr<CallInvoker> &jsInvoker) {
++    T result{
++      bridging::fromJs<decltype(types.frames)>(rt, value.getProperty(rt, "frames"), jsInvoker),
++      bridging::fromJs<decltype(types.debugMetaImages)>(rt, value.getProperty(rt, "debugMetaImages"), jsInvoker)};
++    return result;
++  }
++
++#ifdef DEBUG
++  static jsi::Array framesToJs(jsi::Runtime &rt, decltype(types.frames) value) {
++    return bridging::toJs(rt, value);
++  }
++  static jsi::Array debugMetaImagesToJs(jsi::Runtime &rt, decltype(types.debugMetaImages) value) {
++    return bridging::toJs(rt, value);
++  }
++#endif
++
++  static jsi::Object toJs(
++      jsi::Runtime &rt,
++      const T &value,
++      const std::shared_ptr<CallInvoker> &jsInvoker) {
++    auto result = facebook::jsi::Object(rt);
++    result.setProperty(rt, "frames", bridging::toJs(rt, value.frames, jsInvoker));
++    if (value.debugMetaImages) {
++      result.setProperty(rt, "debugMetaImages", bridging::toJs(rt, value.debugMetaImages.value(), jsInvoker));
++    }
++    return result;
++  }
++};
++
++
++template <typename T>
++class JSI_EXPORT NativeRNSentryCxxSpec : public TurboModule {
++public:
++  static constexpr std::string_view kModuleName = "RNSentry";
++
++protected:
++  NativeRNSentryCxxSpec(std::shared_ptr<CallInvoker> jsInvoker) : TurboModule(std::string{NativeRNSentryCxxSpec::kModuleName}, jsInvoker) {
++    methodMap_["addListener"] = MethodMetadata {.argCount = 1, .invoker = __addListener};
++    methodMap_["removeListeners"] = MethodMetadata {.argCount = 1, .invoker = __removeListeners};
++    methodMap_["getNewScreenTimeToDisplay"] = MethodMetadata {.argCount = 0, .invoker = __getNewScreenTimeToDisplay};
++    methodMap_["addBreadcrumb"] = MethodMetadata {.argCount = 1, .invoker = __addBreadcrumb};
++    methodMap_["captureEnvelope"] = MethodMetadata {.argCount = 2, .invoker = __captureEnvelope};
++    methodMap_["captureScreenshot"] = MethodMetadata {.argCount = 0, .invoker = __captureScreenshot};
++    methodMap_["clearBreadcrumbs"] = MethodMetadata {.argCount = 0, .invoker = __clearBreadcrumbs};
++    methodMap_["crash"] = MethodMetadata {.argCount = 0, .invoker = __crash};
++    methodMap_["closeNativeSdk"] = MethodMetadata {.argCount = 0, .invoker = __closeNativeSdk};
++    methodMap_["disableNativeFramesTracking"] = MethodMetadata {.argCount = 0, .invoker = __disableNativeFramesTracking};
++    methodMap_["fetchNativeRelease"] = MethodMetadata {.argCount = 0, .invoker = __fetchNativeRelease};
++    methodMap_["fetchNativeSdkInfo"] = MethodMetadata {.argCount = 0, .invoker = __fetchNativeSdkInfo};
++    methodMap_["fetchNativeDeviceContexts"] = MethodMetadata {.argCount = 0, .invoker = __fetchNativeDeviceContexts};
++    methodMap_["fetchNativeLogAttributes"] = MethodMetadata {.argCount = 0, .invoker = __fetchNativeLogAttributes};
++    methodMap_["fetchNativeAppStart"] = MethodMetadata {.argCount = 0, .invoker = __fetchNativeAppStart};
++    methodMap_["fetchNativeFrames"] = MethodMetadata {.argCount = 0, .invoker = __fetchNativeFrames};
++    methodMap_["initNativeSdk"] = MethodMetadata {.argCount = 1, .invoker = __initNativeSdk};
++    methodMap_["setUser"] = MethodMetadata {.argCount = 2, .invoker = __setUser};
++    methodMap_["setContext"] = MethodMetadata {.argCount = 2, .invoker = __setContext};
++    methodMap_["setExtra"] = MethodMetadata {.argCount = 2, .invoker = __setExtra};
++    methodMap_["setTag"] = MethodMetadata {.argCount = 2, .invoker = __setTag};
++    methodMap_["setAttribute"] = MethodMetadata {.argCount = 2, .invoker = __setAttribute};
++    methodMap_["setAttributes"] = MethodMetadata {.argCount = 1, .invoker = __setAttributes};
++    methodMap_["enableNativeFramesTracking"] = MethodMetadata {.argCount = 0, .invoker = __enableNativeFramesTracking};
++    methodMap_["fetchModules"] = MethodMetadata {.argCount = 0, .invoker = __fetchModules};
++    methodMap_["fetchViewHierarchy"] = MethodMetadata {.argCount = 0, .invoker = __fetchViewHierarchy};
++    methodMap_["startProfiling"] = MethodMetadata {.argCount = 1, .invoker = __startProfiling};
++    methodMap_["stopProfiling"] = MethodMetadata {.argCount = 0, .invoker = __stopProfiling};
++    methodMap_["fetchNativePackageName"] = MethodMetadata {.argCount = 0, .invoker = __fetchNativePackageName};
++    methodMap_["fetchNativeStackFramesBy"] = MethodMetadata {.argCount = 1, .invoker = __fetchNativeStackFramesBy};
++    methodMap_["initNativeReactNavigationNewFrameTracking"] = MethodMetadata {.argCount = 0, .invoker = __initNativeReactNavigationNewFrameTracking};
++    methodMap_["captureReplay"] = MethodMetadata {.argCount = 1, .invoker = __captureReplay};
++    methodMap_["getCurrentReplayId"] = MethodMetadata {.argCount = 0, .invoker = __getCurrentReplayId};
++    methodMap_["crashedLastRun"] = MethodMetadata {.argCount = 0, .invoker = __crashedLastRun};
++    methodMap_["getDataFromUri"] = MethodMetadata {.argCount = 1, .invoker = __getDataFromUri};
++    methodMap_["popTimeToDisplayFor"] = MethodMetadata {.argCount = 1, .invoker = __popTimeToDisplayFor};
++    methodMap_["setActiveSpanId"] = MethodMetadata {.argCount = 1, .invoker = __setActiveSpanId};
++    methodMap_["encodeToBase64"] = MethodMetadata {.argCount = 1, .invoker = __encodeToBase64};
++  }
++  
++private:
++  static jsi::Value __addListener(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
++    static_assert(
++      bridging::getParameterCount(&T::addListener) == 2,
++      "Expected addListener(...) to have 2 parameters");
++    bridging::callFromJs<void>(rt, &T::addListener,  static_cast<NativeRNSentryCxxSpec*>(&turboModule)->jsInvoker_, static_cast<T*>(&turboModule),
++      count <= 0 ? throw jsi::JSError(rt, "Expected argument in position 0 to be passed") : args[0].asString(rt));return jsi::Value::undefined();
++  }
++
++  static jsi::Value __removeListeners(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
++    static_assert(
++      bridging::getParameterCount(&T::removeListeners) == 2,
++      "Expected removeListeners(...) to have 2 parameters");
++    bridging::callFromJs<void>(rt, &T::removeListeners,  static_cast<NativeRNSentryCxxSpec*>(&turboModule)->jsInvoker_, static_cast<T*>(&turboModule),
++      count <= 0 ? throw jsi::JSError(rt, "Expected argument in position 0 to be passed") : args[0].asNumber());return jsi::Value::undefined();
++  }
++
++  static jsi::Value __getNewScreenTimeToDisplay(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* /*args*/, size_t /*count*/) {
++    static_assert(
++      bridging::getParameterCount(&T::getNewScreenTimeToDisplay) == 1,
++      "Expected getNewScreenTimeToDisplay(...) to have 1 parameters");
++    return bridging::callFromJs<jsi::Value>(rt, &T::getNewScreenTimeToDisplay,  static_cast<NativeRNSentryCxxSpec*>(&turboModule)->jsInvoker_, static_cast<T*>(&turboModule));
++  }
++
++  static jsi::Value __addBreadcrumb(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
++    static_assert(
++      bridging::getParameterCount(&T::addBreadcrumb) == 2,
++      "Expected addBreadcrumb(...) to have 2 parameters");
++    bridging::callFromJs<void>(rt, &T::addBreadcrumb,  static_cast<NativeRNSentryCxxSpec*>(&turboModule)->jsInvoker_, static_cast<T*>(&turboModule),
++      count <= 0 ? throw jsi::JSError(rt, "Expected argument in position 0 to be passed") : args[0].asObject(rt));return jsi::Value::undefined();
++  }
++
++  static jsi::Value __captureEnvelope(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
++    static_assert(
++      bridging::getParameterCount(&T::captureEnvelope) == 3,
++      "Expected captureEnvelope(...) to have 3 parameters");
++    return bridging::callFromJs<jsi::Value>(rt, &T::captureEnvelope,  static_cast<NativeRNSentryCxxSpec*>(&turboModule)->jsInvoker_, static_cast<T*>(&turboModule),
++      count <= 0 ? throw jsi::JSError(rt, "Expected argument in position 0 to be passed") : args[0].asString(rt),
++      count <= 1 ? throw jsi::JSError(rt, "Expected argument in position 1 to be passed") : args[1].asObject(rt));
++  }
++
++  static jsi::Value __captureScreenshot(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* /*args*/, size_t /*count*/) {
++    static_assert(
++      bridging::getParameterCount(&T::captureScreenshot) == 1,
++      "Expected captureScreenshot(...) to have 1 parameters");
++    return bridging::callFromJs<jsi::Value>(rt, &T::captureScreenshot,  static_cast<NativeRNSentryCxxSpec*>(&turboModule)->jsInvoker_, static_cast<T*>(&turboModule));
++  }
++
++  static jsi::Value __clearBreadcrumbs(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* /*args*/, size_t /*count*/) {
++    static_assert(
++      bridging::getParameterCount(&T::clearBreadcrumbs) == 1,
++      "Expected clearBreadcrumbs(...) to have 1 parameters");
++    bridging::callFromJs<void>(rt, &T::clearBreadcrumbs,  static_cast<NativeRNSentryCxxSpec*>(&turboModule)->jsInvoker_, static_cast<T*>(&turboModule));return jsi::Value::undefined();
++  }
++
++  static jsi::Value __crash(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* /*args*/, size_t /*count*/) {
++    static_assert(
++      bridging::getParameterCount(&T::crash) == 1,
++      "Expected crash(...) to have 1 parameters");
++    bridging::callFromJs<void>(rt, &T::crash,  static_cast<NativeRNSentryCxxSpec*>(&turboModule)->jsInvoker_, static_cast<T*>(&turboModule));return jsi::Value::undefined();
++  }
++
++  static jsi::Value __closeNativeSdk(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* /*args*/, size_t /*count*/) {
++    static_assert(
++      bridging::getParameterCount(&T::closeNativeSdk) == 1,
++      "Expected closeNativeSdk(...) to have 1 parameters");
++    return bridging::callFromJs<jsi::Value>(rt, &T::closeNativeSdk,  static_cast<NativeRNSentryCxxSpec*>(&turboModule)->jsInvoker_, static_cast<T*>(&turboModule));
++  }
++
++  static jsi::Value __disableNativeFramesTracking(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* /*args*/, size_t /*count*/) {
++    static_assert(
++      bridging::getParameterCount(&T::disableNativeFramesTracking) == 1,
++      "Expected disableNativeFramesTracking(...) to have 1 parameters");
++    bridging::callFromJs<void>(rt, &T::disableNativeFramesTracking,  static_cast<NativeRNSentryCxxSpec*>(&turboModule)->jsInvoker_, static_cast<T*>(&turboModule));return jsi::Value::undefined();
++  }
++
++  static jsi::Value __fetchNativeRelease(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* /*args*/, size_t /*count*/) {
++    static_assert(
++      bridging::getParameterCount(&T::fetchNativeRelease) == 1,
++      "Expected fetchNativeRelease(...) to have 1 parameters");
++    return bridging::callFromJs<jsi::Value>(rt, &T::fetchNativeRelease,  static_cast<NativeRNSentryCxxSpec*>(&turboModule)->jsInvoker_, static_cast<T*>(&turboModule));
++  }
++
++  static jsi::Value __fetchNativeSdkInfo(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* /*args*/, size_t /*count*/) {
++    static_assert(
++      bridging::getParameterCount(&T::fetchNativeSdkInfo) == 1,
++      "Expected fetchNativeSdkInfo(...) to have 1 parameters");
++    return bridging::callFromJs<jsi::Value>(rt, &T::fetchNativeSdkInfo,  static_cast<NativeRNSentryCxxSpec*>(&turboModule)->jsInvoker_, static_cast<T*>(&turboModule));
++  }
++
++  static jsi::Value __fetchNativeDeviceContexts(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* /*args*/, size_t /*count*/) {
++    static_assert(
++      bridging::getParameterCount(&T::fetchNativeDeviceContexts) == 1,
++      "Expected fetchNativeDeviceContexts(...) to have 1 parameters");
++    return bridging::callFromJs<jsi::Value>(rt, &T::fetchNativeDeviceContexts,  static_cast<NativeRNSentryCxxSpec*>(&turboModule)->jsInvoker_, static_cast<T*>(&turboModule));
++  }
++
++  static jsi::Value __fetchNativeLogAttributes(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* /*args*/, size_t /*count*/) {
++    static_assert(
++      bridging::getParameterCount(&T::fetchNativeLogAttributes) == 1,
++      "Expected fetchNativeLogAttributes(...) to have 1 parameters");
++    return bridging::callFromJs<jsi::Value>(rt, &T::fetchNativeLogAttributes,  static_cast<NativeRNSentryCxxSpec*>(&turboModule)->jsInvoker_, static_cast<T*>(&turboModule));
++  }
++
++  static jsi::Value __fetchNativeAppStart(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* /*args*/, size_t /*count*/) {
++    static_assert(
++      bridging::getParameterCount(&T::fetchNativeAppStart) == 1,
++      "Expected fetchNativeAppStart(...) to have 1 parameters");
++    return bridging::callFromJs<jsi::Value>(rt, &T::fetchNativeAppStart,  static_cast<NativeRNSentryCxxSpec*>(&turboModule)->jsInvoker_, static_cast<T*>(&turboModule));
++  }
++
++  static jsi::Value __fetchNativeFrames(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* /*args*/, size_t /*count*/) {
++    static_assert(
++      bridging::getParameterCount(&T::fetchNativeFrames) == 1,
++      "Expected fetchNativeFrames(...) to have 1 parameters");
++    return bridging::callFromJs<jsi::Value>(rt, &T::fetchNativeFrames,  static_cast<NativeRNSentryCxxSpec*>(&turboModule)->jsInvoker_, static_cast<T*>(&turboModule));
++  }
++
++  static jsi::Value __initNativeSdk(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
++    static_assert(
++      bridging::getParameterCount(&T::initNativeSdk) == 2,
++      "Expected initNativeSdk(...) to have 2 parameters");
++    return bridging::callFromJs<jsi::Value>(rt, &T::initNativeSdk,  static_cast<NativeRNSentryCxxSpec*>(&turboModule)->jsInvoker_, static_cast<T*>(&turboModule),
++      count <= 0 ? throw jsi::JSError(rt, "Expected argument in position 0 to be passed") : args[0].asObject(rt));
++  }
++
++  static jsi::Value __setUser(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
++    static_assert(
++      bridging::getParameterCount(&T::setUser) == 3,
++      "Expected setUser(...) to have 3 parameters");
++    bridging::callFromJs<void>(rt, &T::setUser,  static_cast<NativeRNSentryCxxSpec*>(&turboModule)->jsInvoker_, static_cast<T*>(&turboModule),
++      count <= 0 || args[0].isNull() || args[0].isUndefined() ? std::nullopt : std::make_optional(args[0].asObject(rt)),
++      count <= 1 || args[1].isNull() || args[1].isUndefined() ? std::nullopt : std::make_optional(args[1].asObject(rt)));return jsi::Value::undefined();
++  }
++
++  static jsi::Value __setContext(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
++    static_assert(
++      bridging::getParameterCount(&T::setContext) == 3,
++      "Expected setContext(...) to have 3 parameters");
++    bridging::callFromJs<void>(rt, &T::setContext,  static_cast<NativeRNSentryCxxSpec*>(&turboModule)->jsInvoker_, static_cast<T*>(&turboModule),
++      count <= 0 ? throw jsi::JSError(rt, "Expected argument in position 0 to be passed") : args[0].asString(rt),
++      count <= 1 || args[1].isNull() || args[1].isUndefined() ? std::nullopt : std::make_optional(args[1].asObject(rt)));return jsi::Value::undefined();
++  }
++
++  static jsi::Value __setExtra(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
++    static_assert(
++      bridging::getParameterCount(&T::setExtra) == 3,
++      "Expected setExtra(...) to have 3 parameters");
++    bridging::callFromJs<void>(rt, &T::setExtra,  static_cast<NativeRNSentryCxxSpec*>(&turboModule)->jsInvoker_, static_cast<T*>(&turboModule),
++      count <= 0 ? throw jsi::JSError(rt, "Expected argument in position 0 to be passed") : args[0].asString(rt),
++      count <= 1 ? throw jsi::JSError(rt, "Expected argument in position 1 to be passed") : args[1].asString(rt));return jsi::Value::undefined();
++  }
++
++  static jsi::Value __setTag(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
++    static_assert(
++      bridging::getParameterCount(&T::setTag) == 3,
++      "Expected setTag(...) to have 3 parameters");
++    bridging::callFromJs<void>(rt, &T::setTag,  static_cast<NativeRNSentryCxxSpec*>(&turboModule)->jsInvoker_, static_cast<T*>(&turboModule),
++      count <= 0 ? throw jsi::JSError(rt, "Expected argument in position 0 to be passed") : args[0].asString(rt),
++      count <= 1 ? throw jsi::JSError(rt, "Expected argument in position 1 to be passed") : args[1].asString(rt));return jsi::Value::undefined();
++  }
++
++  static jsi::Value __setAttribute(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
++    static_assert(
++      bridging::getParameterCount(&T::setAttribute) == 3,
++      "Expected setAttribute(...) to have 3 parameters");
++    bridging::callFromJs<void>(rt, &T::setAttribute,  static_cast<NativeRNSentryCxxSpec*>(&turboModule)->jsInvoker_, static_cast<T*>(&turboModule),
++      count <= 0 ? throw jsi::JSError(rt, "Expected argument in position 0 to be passed") : args[0].asString(rt),
++      count <= 1 ? throw jsi::JSError(rt, "Expected argument in position 1 to be passed") : args[1].asString(rt));return jsi::Value::undefined();
++  }
++
++  static jsi::Value __setAttributes(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
++    static_assert(
++      bridging::getParameterCount(&T::setAttributes) == 2,
++      "Expected setAttributes(...) to have 2 parameters");
++    bridging::callFromJs<void>(rt, &T::setAttributes,  static_cast<NativeRNSentryCxxSpec*>(&turboModule)->jsInvoker_, static_cast<T*>(&turboModule),
++      count <= 0 ? throw jsi::JSError(rt, "Expected argument in position 0 to be passed") : args[0].asObject(rt));return jsi::Value::undefined();
++  }
++
++  static jsi::Value __enableNativeFramesTracking(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* /*args*/, size_t /*count*/) {
++    static_assert(
++      bridging::getParameterCount(&T::enableNativeFramesTracking) == 1,
++      "Expected enableNativeFramesTracking(...) to have 1 parameters");
++    bridging::callFromJs<void>(rt, &T::enableNativeFramesTracking,  static_cast<NativeRNSentryCxxSpec*>(&turboModule)->jsInvoker_, static_cast<T*>(&turboModule));return jsi::Value::undefined();
++  }
++
++  static jsi::Value __fetchModules(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* /*args*/, size_t /*count*/) {
++    static_assert(
++      bridging::getParameterCount(&T::fetchModules) == 1,
++      "Expected fetchModules(...) to have 1 parameters");
++    return bridging::callFromJs<jsi::Value>(rt, &T::fetchModules,  static_cast<NativeRNSentryCxxSpec*>(&turboModule)->jsInvoker_, static_cast<T*>(&turboModule));
++  }
++
++  static jsi::Value __fetchViewHierarchy(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* /*args*/, size_t /*count*/) {
++    static_assert(
++      bridging::getParameterCount(&T::fetchViewHierarchy) == 1,
++      "Expected fetchViewHierarchy(...) to have 1 parameters");
++    return bridging::callFromJs<jsi::Value>(rt, &T::fetchViewHierarchy,  static_cast<NativeRNSentryCxxSpec*>(&turboModule)->jsInvoker_, static_cast<T*>(&turboModule));
++  }
++
++  static jsi::Value __startProfiling(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
++    static_assert(
++      bridging::getParameterCount(&T::startProfiling) == 2,
++      "Expected startProfiling(...) to have 2 parameters");
++    return bridging::callFromJs<jsi::Object>(rt, &T::startProfiling,  static_cast<NativeRNSentryCxxSpec*>(&turboModule)->jsInvoker_, static_cast<T*>(&turboModule),
++      count <= 0 ? throw jsi::JSError(rt, "Expected argument in position 0 to be passed") : args[0].asBool());
++  }
++
++  static jsi::Value __stopProfiling(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* /*args*/, size_t /*count*/) {
++    static_assert(
++      bridging::getParameterCount(&T::stopProfiling) == 1,
++      "Expected stopProfiling(...) to have 1 parameters");
++    return bridging::callFromJs<jsi::Object>(rt, &T::stopProfiling,  static_cast<NativeRNSentryCxxSpec*>(&turboModule)->jsInvoker_, static_cast<T*>(&turboModule));
++  }
++
++  static jsi::Value __fetchNativePackageName(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* /*args*/, size_t /*count*/) {
++    static_assert(
++      bridging::getParameterCount(&T::fetchNativePackageName) == 1,
++      "Expected fetchNativePackageName(...) to have 1 parameters");
++    auto result = bridging::callFromJs<std::optional<jsi::String>>(rt, &T::fetchNativePackageName,  static_cast<NativeRNSentryCxxSpec*>(&turboModule)->jsInvoker_, static_cast<T*>(&turboModule));return result ? jsi::Value(std::move(*result)) : jsi::Value::null();
++  }
++
++  static jsi::Value __fetchNativeStackFramesBy(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
++    static_assert(
++      bridging::getParameterCount(&T::fetchNativeStackFramesBy) == 2,
++      "Expected fetchNativeStackFramesBy(...) to have 2 parameters");
++    auto result = bridging::callFromJs<std::optional<jsi::Object>>(rt, &T::fetchNativeStackFramesBy,  static_cast<NativeRNSentryCxxSpec*>(&turboModule)->jsInvoker_, static_cast<T*>(&turboModule),
++      count <= 0 ? throw jsi::JSError(rt, "Expected argument in position 0 to be passed") : args[0].asObject(rt).asArray(rt));return result ? jsi::Value(std::move(*result)) : jsi::Value::null();
++  }
++
++  static jsi::Value __initNativeReactNavigationNewFrameTracking(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* /*args*/, size_t /*count*/) {
++    static_assert(
++      bridging::getParameterCount(&T::initNativeReactNavigationNewFrameTracking) == 1,
++      "Expected initNativeReactNavigationNewFrameTracking(...) to have 1 parameters");
++    return bridging::callFromJs<jsi::Value>(rt, &T::initNativeReactNavigationNewFrameTracking,  static_cast<NativeRNSentryCxxSpec*>(&turboModule)->jsInvoker_, static_cast<T*>(&turboModule));
++  }
++
++  static jsi::Value __captureReplay(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
++    static_assert(
++      bridging::getParameterCount(&T::captureReplay) == 2,
++      "Expected captureReplay(...) to have 2 parameters");
++    return bridging::callFromJs<jsi::Value>(rt, &T::captureReplay,  static_cast<NativeRNSentryCxxSpec*>(&turboModule)->jsInvoker_, static_cast<T*>(&turboModule),
++      count <= 0 ? throw jsi::JSError(rt, "Expected argument in position 0 to be passed") : args[0].asBool());
++  }
++
++  static jsi::Value __getCurrentReplayId(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* /*args*/, size_t /*count*/) {
++    static_assert(
++      bridging::getParameterCount(&T::getCurrentReplayId) == 1,
++      "Expected getCurrentReplayId(...) to have 1 parameters");
++    auto result = bridging::callFromJs<std::optional<jsi::String>>(rt, &T::getCurrentReplayId,  static_cast<NativeRNSentryCxxSpec*>(&turboModule)->jsInvoker_, static_cast<T*>(&turboModule));return result ? jsi::Value(std::move(*result)) : jsi::Value::null();
++  }
++
++  static jsi::Value __crashedLastRun(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* /*args*/, size_t /*count*/) {
++    static_assert(
++      bridging::getParameterCount(&T::crashedLastRun) == 1,
++      "Expected crashedLastRun(...) to have 1 parameters");
++    return bridging::callFromJs<jsi::Value>(rt, &T::crashedLastRun,  static_cast<NativeRNSentryCxxSpec*>(&turboModule)->jsInvoker_, static_cast<T*>(&turboModule));
++  }
++
++  static jsi::Value __getDataFromUri(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
++    static_assert(
++      bridging::getParameterCount(&T::getDataFromUri) == 2,
++      "Expected getDataFromUri(...) to have 2 parameters");
++    return bridging::callFromJs<jsi::Value>(rt, &T::getDataFromUri,  static_cast<NativeRNSentryCxxSpec*>(&turboModule)->jsInvoker_, static_cast<T*>(&turboModule),
++      count <= 0 ? throw jsi::JSError(rt, "Expected argument in position 0 to be passed") : args[0].asString(rt));
++  }
++
++  static jsi::Value __popTimeToDisplayFor(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
++    static_assert(
++      bridging::getParameterCount(&T::popTimeToDisplayFor) == 2,
++      "Expected popTimeToDisplayFor(...) to have 2 parameters");
++    return bridging::callFromJs<jsi::Value>(rt, &T::popTimeToDisplayFor,  static_cast<NativeRNSentryCxxSpec*>(&turboModule)->jsInvoker_, static_cast<T*>(&turboModule),
++      count <= 0 ? throw jsi::JSError(rt, "Expected argument in position 0 to be passed") : args[0].asString(rt));
++  }
++
++  static jsi::Value __setActiveSpanId(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
++    static_assert(
++      bridging::getParameterCount(&T::setActiveSpanId) == 2,
++      "Expected setActiveSpanId(...) to have 2 parameters");
++    return bridging::callFromJs<bool>(rt, &T::setActiveSpanId,  static_cast<NativeRNSentryCxxSpec*>(&turboModule)->jsInvoker_, static_cast<T*>(&turboModule),
++      count <= 0 ? throw jsi::JSError(rt, "Expected argument in position 0 to be passed") : args[0].asString(rt));
++  }
++
++  static jsi::Value __encodeToBase64(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
++    static_assert(
++      bridging::getParameterCount(&T::encodeToBase64) == 2,
++      "Expected encodeToBase64(...) to have 2 parameters");
++    return bridging::callFromJs<jsi::Value>(rt, &T::encodeToBase64,  static_cast<NativeRNSentryCxxSpec*>(&turboModule)->jsInvoker_, static_cast<T*>(&turboModule),
++      count <= 0 ? throw jsi::JSError(rt, "Expected argument in position 0 to be passed") : args[0].asObject(rt).asArray(rt));
++  }
++};
++
++} // namespace facebook::react
+diff --git a/node_modules/@sentry/react-native/android/build/generated/source/codegen/jni/react/renderer/components/RNSentrySpec/ShadowNodes.cpp b/node_modules/@sentry/react-native/android/build/generated/source/codegen/jni/react/renderer/components/RNSentrySpec/ShadowNodes.cpp
+new file mode 100644
+index 0000000..8c0d045
+--- /dev/null
++++ b/node_modules/@sentry/react-native/android/build/generated/source/codegen/jni/react/renderer/components/RNSentrySpec/ShadowNodes.cpp
+@@ -0,0 +1,18 @@
++
++/**
++ * This code was generated by [react-native-codegen](https://www.npmjs.com/package/react-native-codegen).
++ *
++ * Do not edit this file as changes may cause incorrect behavior and will be lost
++ * once the code is regenerated.
++ *
++ * @generated by codegen project: GenerateShadowNodeCpp.js
++ */
++
++#include <react/renderer/components/RNSentrySpec/ShadowNodes.h>
++
++namespace facebook::react {
++
++extern const char RNSentryReplayMaskComponentName[] = "RNSentryReplayMask";
++extern const char RNSentryReplayUnmaskComponentName[] = "RNSentryReplayUnmask";
++
++} // namespace facebook::react
+diff --git a/node_modules/@sentry/react-native/android/build/generated/source/codegen/jni/react/renderer/components/RNSentrySpec/ShadowNodes.h b/node_modules/@sentry/react-native/android/build/generated/source/codegen/jni/react/renderer/components/RNSentrySpec/ShadowNodes.h
+new file mode 100644
+index 0000000..ed97768
+--- /dev/null
++++ b/node_modules/@sentry/react-native/android/build/generated/source/codegen/jni/react/renderer/components/RNSentrySpec/ShadowNodes.h
+@@ -0,0 +1,43 @@
++
++/**
++ * This code was generated by [react-native-codegen](https://www.npmjs.com/package/react-native-codegen).
++ *
++ * Do not edit this file as changes may cause incorrect behavior and will be lost
++ * once the code is regenerated.
++ *
++ * @generated by codegen project: GenerateShadowNodeH.js
++ */
++
++#pragma once
++
++#include <react/renderer/components/RNSentrySpec/EventEmitters.h>
++#include <react/renderer/components/RNSentrySpec/Props.h>
++#include <react/renderer/components/RNSentrySpec/States.h>
++#include <react/renderer/components/view/ConcreteViewShadowNode.h>
++#include <jsi/jsi.h>
++
++namespace facebook::react {
++
++JSI_EXPORT extern const char RNSentryReplayMaskComponentName[];
++
++/*
++ * `ShadowNode` for <RNSentryReplayMask> component.
++ */
++using RNSentryReplayMaskShadowNode = ConcreteViewShadowNode<
++    RNSentryReplayMaskComponentName,
++    RNSentryReplayMaskProps,
++    RNSentryReplayMaskEventEmitter,
++    RNSentryReplayMaskState>;
++
++JSI_EXPORT extern const char RNSentryReplayUnmaskComponentName[];
++
++/*
++ * `ShadowNode` for <RNSentryReplayUnmask> component.
++ */
++using RNSentryReplayUnmaskShadowNode = ConcreteViewShadowNode<
++    RNSentryReplayUnmaskComponentName,
++    RNSentryReplayUnmaskProps,
++    RNSentryReplayUnmaskEventEmitter,
++    RNSentryReplayUnmaskState>;
++
++} // namespace facebook::react
+diff --git a/node_modules/@sentry/react-native/android/build/generated/source/codegen/jni/react/renderer/components/RNSentrySpec/States.cpp b/node_modules/@sentry/react-native/android/build/generated/source/codegen/jni/react/renderer/components/RNSentrySpec/States.cpp
+new file mode 100644
+index 0000000..9feccc2
+--- /dev/null
++++ b/node_modules/@sentry/react-native/android/build/generated/source/codegen/jni/react/renderer/components/RNSentrySpec/States.cpp
+@@ -0,0 +1,16 @@
++
++/**
++ * This code was generated by [react-native-codegen](https://www.npmjs.com/package/react-native-codegen).
++ *
++ * Do not edit this file as changes may cause incorrect behavior and will be lost
++ * once the code is regenerated.
++ *
++ * @generated by codegen project: GenerateStateCpp.js
++ */
++#include <react/renderer/components/RNSentrySpec/States.h>
++
++namespace facebook::react {
++
++
++
++} // namespace facebook::react
+diff --git a/node_modules/@sentry/react-native/android/build/generated/source/codegen/jni/react/renderer/components/RNSentrySpec/States.h b/node_modules/@sentry/react-native/android/build/generated/source/codegen/jni/react/renderer/components/RNSentrySpec/States.h
+new file mode 100644
+index 0000000..3e6545a
+--- /dev/null
++++ b/node_modules/@sentry/react-native/android/build/generated/source/codegen/jni/react/renderer/components/RNSentrySpec/States.h
+@@ -0,0 +1,22 @@
++/**
++ * This code was generated by [react-native-codegen](https://www.npmjs.com/package/react-native-codegen).
++ *
++ * Do not edit this file as changes may cause incorrect behavior and will be lost
++ * once the code is regenerated.
++ *
++ * @generated by codegen project: GenerateStateH.js
++ */
++#pragma once
++
++#include <react/renderer/core/StateData.h>
++#ifdef RN_SERIALIZABLE_STATE
++#include <folly/dynamic.h>
++#endif
++
++namespace facebook::react {
++
++using RNSentryReplayMaskState = StateData;
++
++using RNSentryReplayUnmaskState = StateData;
++
++} // namespace facebook::react
+\ No newline at end of file
+diff --git a/node_modules/@sentry/react-native/android/build/generated/source/codegen/schema.json b/node_modules/@sentry/react-native/android/build/generated/source/codegen/schema.json
+new file mode 100644
+index 0000000..26d8043
+--- /dev/null
++++ b/node_modules/@sentry/react-native/android/build/generated/source/codegen/schema.json
+@@ -0,0 +1 @@
++{"libraryName":"","modules":{"NativeRNSentry":{"type":"NativeModule","aliasMap":{"NativeAppStartResponse":{"type":"ObjectTypeAnnotation","properties":[{"name":"type","optional":false,"typeAnnotation":{"type":"UnionTypeAnnotation","types":[{"type":"StringLiteralTypeAnnotation","value":"cold"},{"type":"StringLiteralTypeAnnotation","value":"warm"},{"type":"StringLiteralTypeAnnotation","value":"unknown"}]}},{"name":"has_fetched","optional":false,"typeAnnotation":{"type":"BooleanTypeAnnotation"}},{"name":"app_start_timestamp_ms","optional":true,"typeAnnotation":{"type":"NumberTypeAnnotation"}},{"name":"spans","optional":false,"typeAnnotation":{"type":"ArrayTypeAnnotation","elementType":{"type":"ObjectTypeAnnotation","properties":[{"name":"description","optional":false,"typeAnnotation":{"type":"StringTypeAnnotation"}},{"name":"start_timestamp_ms","optional":false,"typeAnnotation":{"type":"NumberTypeAnnotation"}},{"name":"end_timestamp_ms","optional":false,"typeAnnotation":{"type":"NumberTypeAnnotation"}}]}}}]},"NativeDebugImage":{"type":"ObjectTypeAnnotation","properties":[{"name":"name","optional":true,"typeAnnotation":{"type":"StringTypeAnnotation"}},{"name":"type","optional":true,"typeAnnotation":{"type":"StringTypeAnnotation"}},{"name":"uuid","optional":true,"typeAnnotation":{"type":"StringTypeAnnotation"}},{"name":"debug_id","optional":true,"typeAnnotation":{"type":"StringTypeAnnotation"}},{"name":"image_addr","optional":true,"typeAnnotation":{"type":"StringTypeAnnotation"}},{"name":"image_size","optional":true,"typeAnnotation":{"type":"NumberTypeAnnotation"}},{"name":"code_file","optional":true,"typeAnnotation":{"type":"StringTypeAnnotation"}},{"name":"image_vmaddr","optional":true,"typeAnnotation":{"type":"StringTypeAnnotation"}}]},"NativeFramesResponse":{"type":"ObjectTypeAnnotation","properties":[{"name":"totalFrames","optional":false,"typeAnnotation":{"type":"NumberTypeAnnotation"}},{"name":"slowFrames","optional":false,"typeAnnotation":{"type":"NumberTypeAnnotation"}},{"name":"frozenFrames","optional":false,"typeAnnotation":{"type":"NumberTypeAnnotation"}}]},"NativeReleaseResponse":{"type":"ObjectTypeAnnotation","properties":[{"name":"build","optional":false,"typeAnnotation":{"type":"StringTypeAnnotation"}},{"name":"id","optional":false,"typeAnnotation":{"type":"StringTypeAnnotation"}},{"name":"version","optional":false,"typeAnnotation":{"type":"StringTypeAnnotation"}}]},"NativeScreenshot":{"type":"ObjectTypeAnnotation","properties":[{"name":"data","optional":false,"typeAnnotation":{"type":"ArrayTypeAnnotation","elementType":{"type":"NumberTypeAnnotation"}}},{"name":"contentType","optional":false,"typeAnnotation":{"type":"StringTypeAnnotation"}},{"name":"filename","optional":false,"typeAnnotation":{"type":"StringTypeAnnotation"}}]},"NativeStackFrame":{"type":"ObjectTypeAnnotation","properties":[{"name":"platform","optional":false,"typeAnnotation":{"type":"StringTypeAnnotation"}},{"name":"instruction_addr","optional":false,"typeAnnotation":{"type":"StringTypeAnnotation"}},{"name":"package","optional":true,"typeAnnotation":{"type":"StringTypeAnnotation"}},{"name":"image_addr","optional":true,"typeAnnotation":{"type":"StringTypeAnnotation"}},{"name":"in_app","optional":true,"typeAnnotation":{"type":"BooleanTypeAnnotation"}},{"name":"function","optional":true,"typeAnnotation":{"type":"StringTypeAnnotation"}},{"name":"symbol_addr","optional":true,"typeAnnotation":{"type":"StringTypeAnnotation"}}]},"NativeStackFrames":{"type":"ObjectTypeAnnotation","properties":[{"name":"frames","optional":false,"typeAnnotation":{"type":"ArrayTypeAnnotation","elementType":{"type":"TypeAliasTypeAnnotation","name":"NativeStackFrame"}}},{"name":"debugMetaImages","optional":true,"typeAnnotation":{"type":"ArrayTypeAnnotation","elementType":{"type":"TypeAliasTypeAnnotation","name":"NativeDebugImage"}}}]}},"enumMap":{},"spec":{"eventEmitters":[],"methods":[{"name":"addListener","optional":false,"typeAnnotation":{"type":"FunctionTypeAnnotation","returnTypeAnnotation":{"type":"VoidTypeAnnotation"},"params":[{"name":"eventType","optional":false,"typeAnnotation":{"type":"StringTypeAnnotation"}}]}},{"name":"removeListeners","optional":false,"typeAnnotation":{"type":"FunctionTypeAnnotation","returnTypeAnnotation":{"type":"VoidTypeAnnotation"},"params":[{"name":"id","optional":false,"typeAnnotation":{"type":"NumberTypeAnnotation"}}]}},{"name":"getNewScreenTimeToDisplay","optional":false,"typeAnnotation":{"type":"FunctionTypeAnnotation","returnTypeAnnotation":{"type":"PromiseTypeAnnotation","elementType":{"type":"NullableTypeAnnotation","typeAnnotation":{"type":"NumberTypeAnnotation"}}},"params":[]}},{"name":"addBreadcrumb","optional":false,"typeAnnotation":{"type":"FunctionTypeAnnotation","returnTypeAnnotation":{"type":"VoidTypeAnnotation"},"params":[{"name":"breadcrumb","optional":false,"typeAnnotation":{"type":"GenericObjectTypeAnnotation"}}]}},{"name":"captureEnvelope","optional":false,"typeAnnotation":{"type":"FunctionTypeAnnotation","returnTypeAnnotation":{"type":"PromiseTypeAnnotation","elementType":{"type":"BooleanTypeAnnotation"}},"params":[{"name":"bytes","optional":false,"typeAnnotation":{"type":"StringTypeAnnotation"}},{"name":"options","optional":false,"typeAnnotation":{"type":"ObjectTypeAnnotation","properties":[{"name":"hardCrashed","optional":false,"typeAnnotation":{"type":"BooleanTypeAnnotation"}}]}}]}},{"name":"captureScreenshot","optional":false,"typeAnnotation":{"type":"FunctionTypeAnnotation","returnTypeAnnotation":{"type":"PromiseTypeAnnotation","elementType":{"type":"NullableTypeAnnotation","typeAnnotation":{"type":"ArrayTypeAnnotation","elementType":{"type":"TypeAliasTypeAnnotation","name":"NativeScreenshot"}}}},"params":[]}},{"name":"clearBreadcrumbs","optional":false,"typeAnnotation":{"type":"FunctionTypeAnnotation","returnTypeAnnotation":{"type":"VoidTypeAnnotation"},"params":[]}},{"name":"crash","optional":false,"typeAnnotation":{"type":"FunctionTypeAnnotation","returnTypeAnnotation":{"type":"VoidTypeAnnotation"},"params":[]}},{"name":"closeNativeSdk","optional":false,"typeAnnotation":{"type":"FunctionTypeAnnotation","returnTypeAnnotation":{"type":"PromiseTypeAnnotation","elementType":{"type":"VoidTypeAnnotation"}},"params":[]}},{"name":"disableNativeFramesTracking","optional":false,"typeAnnotation":{"type":"FunctionTypeAnnotation","returnTypeAnnotation":{"type":"VoidTypeAnnotation"},"params":[]}},{"name":"fetchNativeRelease","optional":false,"typeAnnotation":{"type":"FunctionTypeAnnotation","returnTypeAnnotation":{"type":"PromiseTypeAnnotation","elementType":{"type":"TypeAliasTypeAnnotation","name":"NativeReleaseResponse"}},"params":[]}},{"name":"fetchNativeSdkInfo","optional":false,"typeAnnotation":{"type":"FunctionTypeAnnotation","returnTypeAnnotation":{"type":"PromiseTypeAnnotation","elementType":{"type":"VoidTypeAnnotation"}},"params":[]}},{"name":"fetchNativeDeviceContexts","optional":false,"typeAnnotation":{"type":"FunctionTypeAnnotation","returnTypeAnnotation":{"type":"PromiseTypeAnnotation","elementType":{"type":"VoidTypeAnnotation"}},"params":[]}},{"name":"fetchNativeLogAttributes","optional":false,"typeAnnotation":{"type":"FunctionTypeAnnotation","returnTypeAnnotation":{"type":"PromiseTypeAnnotation","elementType":{"type":"VoidTypeAnnotation"}},"params":[]}},{"name":"fetchNativeAppStart","optional":false,"typeAnnotation":{"type":"FunctionTypeAnnotation","returnTypeAnnotation":{"type":"PromiseTypeAnnotation","elementType":{"type":"NullableTypeAnnotation","typeAnnotation":{"type":"TypeAliasTypeAnnotation","name":"NativeAppStartResponse"}}},"params":[]}},{"name":"fetchNativeFrames","optional":false,"typeAnnotation":{"type":"FunctionTypeAnnotation","returnTypeAnnotation":{"type":"PromiseTypeAnnotation","elementType":{"type":"NullableTypeAnnotation","typeAnnotation":{"type":"TypeAliasTypeAnnotation","name":"NativeFramesResponse"}}},"params":[]}},{"name":"initNativeSdk","optional":false,"typeAnnotation":{"type":"FunctionTypeAnnotation","returnTypeAnnotation":{"type":"PromiseTypeAnnotation","elementType":{"type":"BooleanTypeAnnotation"}},"params":[{"name":"options","optional":false,"typeAnnotation":{"type":"GenericObjectTypeAnnotation"}}]}},{"name":"setUser","optional":false,"typeAnnotation":{"type":"FunctionTypeAnnotation","returnTypeAnnotation":{"type":"VoidTypeAnnotation"},"params":[{"name":"defaultUserKeys","optional":false,"typeAnnotation":{"type":"NullableTypeAnnotation","typeAnnotation":{"type":"GenericObjectTypeAnnotation"}}},{"name":"otherUserKeys","optional":false,"typeAnnotation":{"type":"NullableTypeAnnotation","typeAnnotation":{"type":"GenericObjectTypeAnnotation"}}}]}},{"name":"setContext","optional":false,"typeAnnotation":{"type":"FunctionTypeAnnotation","returnTypeAnnotation":{"type":"VoidTypeAnnotation"},"params":[{"name":"key","optional":false,"typeAnnotation":{"type":"StringTypeAnnotation"}},{"name":"value","optional":false,"typeAnnotation":{"type":"NullableTypeAnnotation","typeAnnotation":{"type":"GenericObjectTypeAnnotation"}}}]}},{"name":"setExtra","optional":false,"typeAnnotation":{"type":"FunctionTypeAnnotation","returnTypeAnnotation":{"type":"VoidTypeAnnotation"},"params":[{"name":"key","optional":false,"typeAnnotation":{"type":"StringTypeAnnotation"}},{"name":"value","optional":false,"typeAnnotation":{"type":"StringTypeAnnotation"}}]}},{"name":"setTag","optional":false,"typeAnnotation":{"type":"FunctionTypeAnnotation","returnTypeAnnotation":{"type":"VoidTypeAnnotation"},"params":[{"name":"key","optional":false,"typeAnnotation":{"type":"StringTypeAnnotation"}},{"name":"value","optional":false,"typeAnnotation":{"type":"StringTypeAnnotation"}}]}},{"name":"setAttribute","optional":false,"typeAnnotation":{"type":"FunctionTypeAnnotation","returnTypeAnnotation":{"type":"VoidTypeAnnotation"},"params":[{"name":"key","optional":false,"typeAnnotation":{"type":"StringTypeAnnotation"}},{"name":"value","optional":false,"typeAnnotation":{"type":"StringTypeAnnotation"}}]}},{"name":"setAttributes","optional":false,"typeAnnotation":{"type":"FunctionTypeAnnotation","returnTypeAnnotation":{"type":"VoidTypeAnnotation"},"params":[{"name":"attributes","optional":false,"typeAnnotation":{"type":"GenericObjectTypeAnnotation"}}]}},{"name":"enableNativeFramesTracking","optional":false,"typeAnnotation":{"type":"FunctionTypeAnnotation","returnTypeAnnotation":{"type":"VoidTypeAnnotation"},"params":[]}},{"name":"fetchModules","optional":false,"typeAnnotation":{"type":"FunctionTypeAnnotation","returnTypeAnnotation":{"type":"PromiseTypeAnnotation","elementType":{"type":"NullableTypeAnnotation","typeAnnotation":{"type":"StringTypeAnnotation"}}},"params":[]}},{"name":"fetchViewHierarchy","optional":false,"typeAnnotation":{"type":"FunctionTypeAnnotation","returnTypeAnnotation":{"type":"PromiseTypeAnnotation","elementType":{"type":"NullableTypeAnnotation","typeAnnotation":{"type":"ArrayTypeAnnotation","elementType":{"type":"NumberTypeAnnotation"}}}},"params":[]}},{"name":"startProfiling","optional":false,"typeAnnotation":{"type":"FunctionTypeAnnotation","returnTypeAnnotation":{"type":"ObjectTypeAnnotation","properties":[{"name":"started","optional":true,"typeAnnotation":{"type":"BooleanTypeAnnotation"}},{"name":"error","optional":true,"typeAnnotation":{"type":"StringTypeAnnotation"}}]},"params":[{"name":"platformProfilers","optional":false,"typeAnnotation":{"type":"BooleanTypeAnnotation"}}]}},{"name":"stopProfiling","optional":false,"typeAnnotation":{"type":"FunctionTypeAnnotation","returnTypeAnnotation":{"type":"ObjectTypeAnnotation","properties":[{"name":"profile","optional":true,"typeAnnotation":{"type":"StringTypeAnnotation"}},{"name":"nativeProfile","optional":true,"typeAnnotation":{"type":"GenericObjectTypeAnnotation"}},{"name":"androidProfile","optional":true,"typeAnnotation":{"type":"GenericObjectTypeAnnotation"}},{"name":"error","optional":true,"typeAnnotation":{"type":"StringTypeAnnotation"}}]},"params":[]}},{"name":"fetchNativePackageName","optional":false,"typeAnnotation":{"type":"FunctionTypeAnnotation","returnTypeAnnotation":{"type":"NullableTypeAnnotation","typeAnnotation":{"type":"StringTypeAnnotation"}},"params":[]}},{"name":"fetchNativeStackFramesBy","optional":false,"typeAnnotation":{"type":"FunctionTypeAnnotation","returnTypeAnnotation":{"type":"NullableTypeAnnotation","typeAnnotation":{"type":"TypeAliasTypeAnnotation","name":"NativeStackFrames"}},"params":[{"name":"instructionsAddr","optional":false,"typeAnnotation":{"type":"ArrayTypeAnnotation","elementType":{"type":"NumberTypeAnnotation"}}}]}},{"name":"initNativeReactNavigationNewFrameTracking","optional":false,"typeAnnotation":{"type":"FunctionTypeAnnotation","returnTypeAnnotation":{"type":"PromiseTypeAnnotation","elementType":{"type":"VoidTypeAnnotation"}},"params":[]}},{"name":"captureReplay","optional":false,"typeAnnotation":{"type":"FunctionTypeAnnotation","returnTypeAnnotation":{"type":"PromiseTypeAnnotation","elementType":{"type":"NullableTypeAnnotation","typeAnnotation":{"type":"StringTypeAnnotation"}}},"params":[{"name":"isHardCrash","optional":false,"typeAnnotation":{"type":"BooleanTypeAnnotation"}}]}},{"name":"getCurrentReplayId","optional":false,"typeAnnotation":{"type":"FunctionTypeAnnotation","returnTypeAnnotation":{"type":"NullableTypeAnnotation","typeAnnotation":{"type":"StringTypeAnnotation"}},"params":[]}},{"name":"crashedLastRun","optional":false,"typeAnnotation":{"type":"FunctionTypeAnnotation","returnTypeAnnotation":{"type":"PromiseTypeAnnotation","elementType":{"type":"NullableTypeAnnotation","typeAnnotation":{"type":"BooleanTypeAnnotation"}}},"params":[]}},{"name":"getDataFromUri","optional":false,"typeAnnotation":{"type":"FunctionTypeAnnotation","returnTypeAnnotation":{"type":"PromiseTypeAnnotation","elementType":{"type":"ArrayTypeAnnotation","elementType":{"type":"NumberTypeAnnotation"}}},"params":[{"name":"uri","optional":false,"typeAnnotation":{"type":"StringTypeAnnotation"}}]}},{"name":"popTimeToDisplayFor","optional":false,"typeAnnotation":{"type":"FunctionTypeAnnotation","returnTypeAnnotation":{"type":"PromiseTypeAnnotation","elementType":{"type":"NullableTypeAnnotation","typeAnnotation":{"type":"NumberTypeAnnotation"}}},"params":[{"name":"key","optional":false,"typeAnnotation":{"type":"StringTypeAnnotation"}}]}},{"name":"setActiveSpanId","optional":false,"typeAnnotation":{"type":"FunctionTypeAnnotation","returnTypeAnnotation":{"type":"BooleanTypeAnnotation"},"params":[{"name":"spanId","optional":false,"typeAnnotation":{"type":"StringTypeAnnotation"}}]}},{"name":"encodeToBase64","optional":false,"typeAnnotation":{"type":"FunctionTypeAnnotation","returnTypeAnnotation":{"type":"PromiseTypeAnnotation","elementType":{"type":"NullableTypeAnnotation","typeAnnotation":{"type":"StringTypeAnnotation"}}},"params":[{"name":"data","optional":false,"typeAnnotation":{"type":"ArrayTypeAnnotation","elementType":{"type":"NumberTypeAnnotation"}}}]}}]},"moduleName":"RNSentry"},"RNSentryReplayMask":{"type":"Component","components":{"RNSentryReplayMask":{"extendsProps":[{"type":"ReactNativeBuiltInType","knownTypeName":"ReactNativeCoreViewProps"}],"events":[],"props":[],"commands":[]}}},"RNSentryReplayUnmask":{"type":"Component","components":{"RNSentryReplayUnmask":{"extendsProps":[{"type":"ReactNativeBuiltInType","knownTypeName":"ReactNativeCoreViewProps"}],"events":[],"props":[],"commands":[]}}}}}
+\ No newline at end of file
+diff --git a/node_modules/@sentry/react-native/android/build/intermediates/aapt_friendly_merged_manifests/debug/processDebugManifest/aapt/AndroidManifest.xml b/node_modules/@sentry/react-native/android/build/intermediates/aapt_friendly_merged_manifests/debug/processDebugManifest/aapt/AndroidManifest.xml
+new file mode 100644
+index 0000000..457f19b
+--- /dev/null
++++ b/node_modules/@sentry/react-native/android/build/intermediates/aapt_friendly_merged_manifests/debug/processDebugManifest/aapt/AndroidManifest.xml
+@@ -0,0 +1,16 @@
++<?xml version="1.0" encoding="utf-8"?>
++<manifest xmlns:android="http://schemas.android.com/apk/res/android"
++    package="io.sentry.react" >
++
++    <uses-sdk android:minSdkVersion="24" />
++
++    <uses-permission android:name="android.permission.INTERNET" />
++    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
++
++    <application>
++        <meta-data
++            android:name="io.sentry.auto-init"
++            android:value="false" />
++    </application>
++
++</manifest>
+\ No newline at end of file
+diff --git a/node_modules/@sentry/react-native/android/build/intermediates/aapt_friendly_merged_manifests/debug/processDebugManifest/aapt/output-metadata.json b/node_modules/@sentry/react-native/android/build/intermediates/aapt_friendly_merged_manifests/debug/processDebugManifest/aapt/output-metadata.json
+new file mode 100644
+index 0000000..726b953
+--- /dev/null
++++ b/node_modules/@sentry/react-native/android/build/intermediates/aapt_friendly_merged_manifests/debug/processDebugManifest/aapt/output-metadata.json
+@@ -0,0 +1,18 @@
++{
++  "version": 3,
++  "artifactType": {
++    "type": "AAPT_FRIENDLY_MERGED_MANIFESTS",
++    "kind": "Directory"
++  },
++  "applicationId": "io.sentry.react",
++  "variantName": "release",
++  "elements": [
++    {
++      "type": "SINGLE",
++      "filters": [],
++      "attributes": [],
++      "outputFile": "AndroidManifest.xml"
++    }
++  ],
++  "elementType": "File"
++}
+\ No newline at end of file
+diff --git a/node_modules/@sentry/react-native/android/build/intermediates/aar_main_jar/debug/syncDebugLibJars/classes.jar b/node_modules/@sentry/react-native/android/build/intermediates/aar_main_jar/debug/syncDebugLibJars/classes.jar
+new file mode 100644
+index 0000000..7504178
+Binary files /dev/null and b/node_modules/@sentry/react-native/android/build/intermediates/aar_main_jar/debug/syncDebugLibJars/classes.jar differ
+diff --git a/node_modules/@sentry/react-native/android/build/intermediates/aar_metadata/debug/writeDebugAarMetadata/aar-metadata.properties b/node_modules/@sentry/react-native/android/build/intermediates/aar_metadata/debug/writeDebugAarMetadata/aar-metadata.properties
+new file mode 100644
+index 0000000..1211b1e
+--- /dev/null
++++ b/node_modules/@sentry/react-native/android/build/intermediates/aar_metadata/debug/writeDebugAarMetadata/aar-metadata.properties
+@@ -0,0 +1,6 @@
++aarFormatVersion=1.0
++aarMetadataVersion=1.0
++minCompileSdk=1
++minCompileSdkExtension=0
++minAndroidGradlePluginVersion=1.0.0
++coreLibraryDesugaringEnabled=false
+diff --git a/node_modules/@sentry/react-native/android/build/intermediates/annotation_processor_list/debug/javaPreCompileDebug/annotationProcessors.json b/node_modules/@sentry/react-native/android/build/intermediates/annotation_processor_list/debug/javaPreCompileDebug/annotationProcessors.json
+new file mode 100644
+index 0000000..9e26dfe
+--- /dev/null
++++ b/node_modules/@sentry/react-native/android/build/intermediates/annotation_processor_list/debug/javaPreCompileDebug/annotationProcessors.json
+@@ -0,0 +1 @@
++{}
+\ No newline at end of file
+diff --git a/node_modules/@sentry/react-native/android/build/intermediates/annotations_typedef_file/debug/extractDebugAnnotations/typedefs.txt b/node_modules/@sentry/react-native/android/build/intermediates/annotations_typedef_file/debug/extractDebugAnnotations/typedefs.txt
+new file mode 100644
+index 0000000..e69de29
+diff --git a/node_modules/@sentry/react-native/android/build/intermediates/compile_library_classes_jar/debug/bundleLibCompileToJarDebug/classes.jar b/node_modules/@sentry/react-native/android/build/intermediates/compile_library_classes_jar/debug/bundleLibCompileToJarDebug/classes.jar
+new file mode 100644
+index 0000000..0cb8c0f
+Binary files /dev/null and b/node_modules/@sentry/react-native/android/build/intermediates/compile_library_classes_jar/debug/bundleLibCompileToJarDebug/classes.jar differ
+diff --git a/node_modules/@sentry/react-native/android/build/intermediates/compile_r_class_jar/debug/generateDebugRFile/R.jar b/node_modules/@sentry/react-native/android/build/intermediates/compile_r_class_jar/debug/generateDebugRFile/R.jar
+new file mode 100644
+index 0000000..c19084d
+Binary files /dev/null and b/node_modules/@sentry/react-native/android/build/intermediates/compile_r_class_jar/debug/generateDebugRFile/R.jar differ
+diff --git a/node_modules/@sentry/react-native/android/build/intermediates/compile_symbol_list/debug/generateDebugRFile/R.txt b/node_modules/@sentry/react-native/android/build/intermediates/compile_symbol_list/debug/generateDebugRFile/R.txt
+new file mode 100644
+index 0000000..e69de29
+diff --git a/node_modules/@sentry/react-native/android/build/intermediates/incremental/debug-mergeJavaRes/merge-state b/node_modules/@sentry/react-native/android/build/intermediates/incremental/debug-mergeJavaRes/merge-state
+new file mode 100644
+index 0000000..1c983fc
+Binary files /dev/null and b/node_modules/@sentry/react-native/android/build/intermediates/incremental/debug-mergeJavaRes/merge-state differ
+diff --git a/node_modules/@sentry/react-native/android/build/intermediates/incremental/debug/packageDebugResources/compile-file-map.properties b/node_modules/@sentry/react-native/android/build/intermediates/incremental/debug/packageDebugResources/compile-file-map.properties
+new file mode 100644
+index 0000000..2224fe7
+--- /dev/null
++++ b/node_modules/@sentry/react-native/android/build/intermediates/incremental/debug/packageDebugResources/compile-file-map.properties
+@@ -0,0 +1 @@
++#Fri Sep 04 16:45:12 WEST 2026
+diff --git a/node_modules/@sentry/react-native/android/build/intermediates/incremental/debug/packageDebugResources/merger.xml b/node_modules/@sentry/react-native/android/build/intermediates/incremental/debug/packageDebugResources/merger.xml
+new file mode 100644
+index 0000000..f4aed4f
+--- /dev/null
++++ b/node_modules/@sentry/react-native/android/build/intermediates/incremental/debug/packageDebugResources/merger.xml
+@@ -0,0 +1,2 @@
++<?xml version="1.0" encoding="utf-8"?>
++<merger version="3"><dataSet aapt-namespace="http://schemas.android.com/apk/res-auto" config="main$Generated" generated="true" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="/Users/clemiltonsilva/Library/CloudStorage/GoogleDrive-clemiltonsilva@gmail.com/O meu disco/dev/secPass/password-manager/node_modules/@sentry/react-native/android/src/main/res"/></dataSet><dataSet aapt-namespace="http://schemas.android.com/apk/res-auto" config="main" generated-set="main$Generated" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="/Users/clemiltonsilva/Library/CloudStorage/GoogleDrive-clemiltonsilva@gmail.com/O meu disco/dev/secPass/password-manager/node_modules/@sentry/react-native/android/src/main/res"/></dataSet><dataSet aapt-namespace="http://schemas.android.com/apk/res-auto" config="debug$Generated" generated="true" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="/Users/clemiltonsilva/Library/CloudStorage/GoogleDrive-clemiltonsilva@gmail.com/O meu disco/dev/secPass/password-manager/node_modules/@sentry/react-native/android/src/debug/res"/></dataSet><dataSet aapt-namespace="http://schemas.android.com/apk/res-auto" config="debug" generated-set="debug$Generated" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="/Users/clemiltonsilva/Library/CloudStorage/GoogleDrive-clemiltonsilva@gmail.com/O meu disco/dev/secPass/password-manager/node_modules/@sentry/react-native/android/src/debug/res"/></dataSet><dataSet aapt-namespace="http://schemas.android.com/apk/res-auto" config="generated$Generated" generated="true" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="/Users/clemiltonsilva/Library/CloudStorage/GoogleDrive-clemiltonsilva@gmail.com/O meu disco/dev/secPass/password-manager/node_modules/@sentry/react-native/android/build/generated/res/resValues/debug"/></dataSet><dataSet aapt-namespace="http://schemas.android.com/apk/res-auto" config="generated" generated-set="generated$Generated" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="/Users/clemiltonsilva/Library/CloudStorage/GoogleDrive-clemiltonsilva@gmail.com/O meu disco/dev/secPass/password-manager/node_modules/@sentry/react-native/android/build/generated/res/resValues/debug"/></dataSet><mergedItems/></merger>
+\ No newline at end of file
+diff --git a/node_modules/@sentry/react-native/android/build/intermediates/incremental/mergeDebugAssets/merger.xml b/node_modules/@sentry/react-native/android/build/intermediates/incremental/mergeDebugAssets/merger.xml
+new file mode 100644
+index 0000000..12b8bb6
+--- /dev/null
++++ b/node_modules/@sentry/react-native/android/build/intermediates/incremental/mergeDebugAssets/merger.xml
+@@ -0,0 +1,2 @@
++<?xml version="1.0" encoding="utf-8"?>
++<merger version="3"><dataSet config="main" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="/Users/clemiltonsilva/Library/CloudStorage/GoogleDrive-clemiltonsilva@gmail.com/O meu disco/dev/secPass/password-manager/node_modules/@sentry/react-native/android/src/main/assets"/></dataSet><dataSet config="debug" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="/Users/clemiltonsilva/Library/CloudStorage/GoogleDrive-clemiltonsilva@gmail.com/O meu disco/dev/secPass/password-manager/node_modules/@sentry/react-native/android/src/debug/assets"/></dataSet><dataSet config="generated" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="/Users/clemiltonsilva/Library/CloudStorage/GoogleDrive-clemiltonsilva@gmail.com/O meu disco/dev/secPass/password-manager/node_modules/@sentry/react-native/android/build/intermediates/shader_assets/debug/compileDebugShaders/out"/></dataSet></merger>
+\ No newline at end of file
+diff --git a/node_modules/@sentry/react-native/android/build/intermediates/incremental/mergeDebugJniLibFolders/merger.xml b/node_modules/@sentry/react-native/android/build/intermediates/incremental/mergeDebugJniLibFolders/merger.xml
+new file mode 100644
+index 0000000..fc36be7
+--- /dev/null
++++ b/node_modules/@sentry/react-native/android/build/intermediates/incremental/mergeDebugJniLibFolders/merger.xml
+@@ -0,0 +1,2 @@
++<?xml version="1.0" encoding="utf-8"?>
++<merger version="3"><dataSet config="main" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="/Users/clemiltonsilva/Library/CloudStorage/GoogleDrive-clemiltonsilva@gmail.com/O meu disco/dev/secPass/password-manager/node_modules/@sentry/react-native/android/src/main/jniLibs"/></dataSet><dataSet config="debug" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="/Users/clemiltonsilva/Library/CloudStorage/GoogleDrive-clemiltonsilva@gmail.com/O meu disco/dev/secPass/password-manager/node_modules/@sentry/react-native/android/src/debug/jniLibs"/></dataSet></merger>
+\ No newline at end of file
+diff --git a/node_modules/@sentry/react-native/android/build/intermediates/incremental/mergeDebugShaders/merger.xml b/node_modules/@sentry/react-native/android/build/intermediates/incremental/mergeDebugShaders/merger.xml
+new file mode 100644
+index 0000000..bae67c6
+--- /dev/null
++++ b/node_modules/@sentry/react-native/android/build/intermediates/incremental/mergeDebugShaders/merger.xml
+@@ -0,0 +1,2 @@
++<?xml version="1.0" encoding="utf-8"?>
++<merger version="3"><dataSet config="main" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="/Users/clemiltonsilva/Library/CloudStorage/GoogleDrive-clemiltonsilva@gmail.com/O meu disco/dev/secPass/password-manager/node_modules/@sentry/react-native/android/src/main/shaders"/></dataSet><dataSet config="debug" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="/Users/clemiltonsilva/Library/CloudStorage/GoogleDrive-clemiltonsilva@gmail.com/O meu disco/dev/secPass/password-manager/node_modules/@sentry/react-native/android/src/debug/shaders"/></dataSet></merger>
+\ No newline at end of file
+diff --git a/node_modules/@sentry/react-native/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/facebook/react/viewmanagers/RNSentryReplayMaskManagerDelegate.class b/node_modules/@sentry/react-native/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/facebook/react/viewmanagers/RNSentryReplayMaskManagerDelegate.class
+new file mode 100644
+index 0000000..946f9f5
+Binary files /dev/null and b/node_modules/@sentry/react-native/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/facebook/react/viewmanagers/RNSentryReplayMaskManagerDelegate.class differ
+diff --git a/node_modules/@sentry/react-native/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/facebook/react/viewmanagers/RNSentryReplayMaskManagerInterface.class b/node_modules/@sentry/react-native/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/facebook/react/viewmanagers/RNSentryReplayMaskManagerInterface.class
+new file mode 100644
+index 0000000..d248413
+Binary files /dev/null and b/node_modules/@sentry/react-native/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/facebook/react/viewmanagers/RNSentryReplayMaskManagerInterface.class differ
+diff --git a/node_modules/@sentry/react-native/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/facebook/react/viewmanagers/RNSentryReplayUnmaskManagerDelegate.class b/node_modules/@sentry/react-native/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/facebook/react/viewmanagers/RNSentryReplayUnmaskManagerDelegate.class
+new file mode 100644
+index 0000000..820b3b5
+Binary files /dev/null and b/node_modules/@sentry/react-native/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/facebook/react/viewmanagers/RNSentryReplayUnmaskManagerDelegate.class differ
+diff --git a/node_modules/@sentry/react-native/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/facebook/react/viewmanagers/RNSentryReplayUnmaskManagerInterface.class b/node_modules/@sentry/react-native/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/facebook/react/viewmanagers/RNSentryReplayUnmaskManagerInterface.class
+new file mode 100644
+index 0000000..7402804
+Binary files /dev/null and b/node_modules/@sentry/react-native/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/facebook/react/viewmanagers/RNSentryReplayUnmaskManagerInterface.class differ
+diff --git a/node_modules/@sentry/react-native/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/io/sentry/react/BuildConfig.class b/node_modules/@sentry/react-native/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/io/sentry/react/BuildConfig.class
+new file mode 100644
+index 0000000..953f966
+Binary files /dev/null and b/node_modules/@sentry/react-native/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/io/sentry/react/BuildConfig.class differ
+diff --git a/node_modules/@sentry/react-native/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/io/sentry/react/NativeRNSentrySpec.class b/node_modules/@sentry/react-native/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/io/sentry/react/NativeRNSentrySpec.class
+new file mode 100644
+index 0000000..62fd38b
+Binary files /dev/null and b/node_modules/@sentry/react-native/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/io/sentry/react/NativeRNSentrySpec.class differ
+diff --git a/node_modules/@sentry/react-native/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/io/sentry/react/RNSentryBreadcrumb.class b/node_modules/@sentry/react-native/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/io/sentry/react/RNSentryBreadcrumb.class
+new file mode 100644
+index 0000000..6a464b5
+Binary files /dev/null and b/node_modules/@sentry/react-native/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/io/sentry/react/RNSentryBreadcrumb.class differ
+diff --git a/node_modules/@sentry/react-native/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/io/sentry/react/RNSentryMapConverter.class b/node_modules/@sentry/react-native/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/io/sentry/react/RNSentryMapConverter.class
+new file mode 100644
+index 0000000..1109d93
+Binary files /dev/null and b/node_modules/@sentry/react-native/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/io/sentry/react/RNSentryMapConverter.class differ
+diff --git a/node_modules/@sentry/react-native/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/io/sentry/react/RNSentryModule.class b/node_modules/@sentry/react-native/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/io/sentry/react/RNSentryModule.class
+new file mode 100644
+index 0000000..36fb508
+Binary files /dev/null and b/node_modules/@sentry/react-native/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/io/sentry/react/RNSentryModule.class differ
+diff --git a/node_modules/@sentry/react-native/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/io/sentry/react/RNSentryModuleImpl.class b/node_modules/@sentry/react-native/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/io/sentry/react/RNSentryModuleImpl.class
+new file mode 100644
+index 0000000..7cb8528
+Binary files /dev/null and b/node_modules/@sentry/react-native/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/io/sentry/react/RNSentryModuleImpl.class differ
+diff --git a/node_modules/@sentry/react-native/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/io/sentry/react/RNSentryOnDrawReporterManager$RNSentryOnDrawReporterView.class b/node_modules/@sentry/react-native/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/io/sentry/react/RNSentryOnDrawReporterManager$RNSentryOnDrawReporterView.class
+new file mode 100644
+index 0000000..aa4a9a1
+Binary files /dev/null and b/node_modules/@sentry/react-native/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/io/sentry/react/RNSentryOnDrawReporterManager$RNSentryOnDrawReporterView.class differ
+diff --git a/node_modules/@sentry/react-native/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/io/sentry/react/RNSentryOnDrawReporterManager.class b/node_modules/@sentry/react-native/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/io/sentry/react/RNSentryOnDrawReporterManager.class
+new file mode 100644
+index 0000000..9387d63
+Binary files /dev/null and b/node_modules/@sentry/react-native/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/io/sentry/react/RNSentryOnDrawReporterManager.class differ
+diff --git a/node_modules/@sentry/react-native/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/io/sentry/react/RNSentryPackage.class b/node_modules/@sentry/react-native/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/io/sentry/react/RNSentryPackage.class
+new file mode 100644
+index 0000000..eeb80a4
+Binary files /dev/null and b/node_modules/@sentry/react-native/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/io/sentry/react/RNSentryPackage.class differ
+diff --git a/node_modules/@sentry/react-native/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/io/sentry/react/RNSentryReactFragmentLifecycleTracer$1.class b/node_modules/@sentry/react-native/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/io/sentry/react/RNSentryReactFragmentLifecycleTracer$1.class
+new file mode 100644
+index 0000000..ad13ff8
+Binary files /dev/null and b/node_modules/@sentry/react-native/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/io/sentry/react/RNSentryReactFragmentLifecycleTracer$1.class differ
+diff --git a/node_modules/@sentry/react-native/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/io/sentry/react/RNSentryReactFragmentLifecycleTracer.class b/node_modules/@sentry/react-native/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/io/sentry/react/RNSentryReactFragmentLifecycleTracer.class
+new file mode 100644
+index 0000000..da2b390
+Binary files /dev/null and b/node_modules/@sentry/react-native/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/io/sentry/react/RNSentryReactFragmentLifecycleTracer.class differ
+diff --git a/node_modules/@sentry/react-native/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/io/sentry/react/RNSentryReplayBreadcrumbConverter.class b/node_modules/@sentry/react-native/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/io/sentry/react/RNSentryReplayBreadcrumbConverter.class
+new file mode 100644
+index 0000000..60c6cd4
+Binary files /dev/null and b/node_modules/@sentry/react-native/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/io/sentry/react/RNSentryReplayBreadcrumbConverter.class differ
+diff --git a/node_modules/@sentry/react-native/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/io/sentry/react/RNSentryTimeToDisplay$1.class b/node_modules/@sentry/react-native/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/io/sentry/react/RNSentryTimeToDisplay$1.class
+new file mode 100644
+index 0000000..0302bd2
+Binary files /dev/null and b/node_modules/@sentry/react-native/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/io/sentry/react/RNSentryTimeToDisplay$1.class differ
+diff --git a/node_modules/@sentry/react-native/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/io/sentry/react/RNSentryTimeToDisplay.class b/node_modules/@sentry/react-native/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/io/sentry/react/RNSentryTimeToDisplay.class
+new file mode 100644
+index 0000000..731da2a
+Binary files /dev/null and b/node_modules/@sentry/react-native/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/io/sentry/react/RNSentryTimeToDisplay.class differ
+diff --git a/node_modules/@sentry/react-native/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/io/sentry/react/RNSentryVersion.class b/node_modules/@sentry/react-native/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/io/sentry/react/RNSentryVersion.class
+new file mode 100644
+index 0000000..e087b49
+Binary files /dev/null and b/node_modules/@sentry/react-native/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/io/sentry/react/RNSentryVersion.class differ
+diff --git a/node_modules/@sentry/react-native/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/io/sentry/react/replay/RNSentryReplayFragmentLifecycleTracer$1.class b/node_modules/@sentry/react-native/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/io/sentry/react/replay/RNSentryReplayFragmentLifecycleTracer$1.class
+new file mode 100644
+index 0000000..0f25235
+Binary files /dev/null and b/node_modules/@sentry/react-native/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/io/sentry/react/replay/RNSentryReplayFragmentLifecycleTracer$1.class differ
+diff --git a/node_modules/@sentry/react-native/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/io/sentry/react/replay/RNSentryReplayFragmentLifecycleTracer.class b/node_modules/@sentry/react-native/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/io/sentry/react/replay/RNSentryReplayFragmentLifecycleTracer.class
+new file mode 100644
+index 0000000..fb05389
+Binary files /dev/null and b/node_modules/@sentry/react-native/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/io/sentry/react/replay/RNSentryReplayFragmentLifecycleTracer.class differ
+diff --git a/node_modules/@sentry/react-native/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/io/sentry/react/replay/RNSentryReplayMask.class b/node_modules/@sentry/react-native/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/io/sentry/react/replay/RNSentryReplayMask.class
+new file mode 100644
+index 0000000..8ddc3ce
+Binary files /dev/null and b/node_modules/@sentry/react-native/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/io/sentry/react/replay/RNSentryReplayMask.class differ
+diff --git a/node_modules/@sentry/react-native/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/io/sentry/react/replay/RNSentryReplayMaskManager.class b/node_modules/@sentry/react-native/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/io/sentry/react/replay/RNSentryReplayMaskManager.class
+new file mode 100644
+index 0000000..c1b5ac0
+Binary files /dev/null and b/node_modules/@sentry/react-native/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/io/sentry/react/replay/RNSentryReplayMaskManager.class differ
+diff --git a/node_modules/@sentry/react-native/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/io/sentry/react/replay/RNSentryReplayMaskManagerImpl.class b/node_modules/@sentry/react-native/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/io/sentry/react/replay/RNSentryReplayMaskManagerImpl.class
+new file mode 100644
+index 0000000..7c70c93
+Binary files /dev/null and b/node_modules/@sentry/react-native/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/io/sentry/react/replay/RNSentryReplayMaskManagerImpl.class differ
+diff --git a/node_modules/@sentry/react-native/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/io/sentry/react/replay/RNSentryReplayUnmask.class b/node_modules/@sentry/react-native/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/io/sentry/react/replay/RNSentryReplayUnmask.class
+new file mode 100644
+index 0000000..0a304aa
+Binary files /dev/null and b/node_modules/@sentry/react-native/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/io/sentry/react/replay/RNSentryReplayUnmask.class differ
+diff --git a/node_modules/@sentry/react-native/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/io/sentry/react/replay/RNSentryReplayUnmaskManager.class b/node_modules/@sentry/react-native/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/io/sentry/react/replay/RNSentryReplayUnmaskManager.class
+new file mode 100644
+index 0000000..3b391e5
+Binary files /dev/null and b/node_modules/@sentry/react-native/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/io/sentry/react/replay/RNSentryReplayUnmaskManager.class differ
+diff --git a/node_modules/@sentry/react-native/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/io/sentry/react/replay/RNSentryReplayUnmaskManagerImpl.class b/node_modules/@sentry/react-native/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/io/sentry/react/replay/RNSentryReplayUnmaskManagerImpl.class
+new file mode 100644
+index 0000000..b4a2446
+Binary files /dev/null and b/node_modules/@sentry/react-native/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/io/sentry/react/replay/RNSentryReplayUnmaskManagerImpl.class differ
+diff --git a/node_modules/@sentry/react-native/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/io/sentry/react/utils/RNSentryActivityUtils.class b/node_modules/@sentry/react-native/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/io/sentry/react/utils/RNSentryActivityUtils.class
+new file mode 100644
+index 0000000..d0f4ffc
+Binary files /dev/null and b/node_modules/@sentry/react-native/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/io/sentry/react/utils/RNSentryActivityUtils.class differ
+diff --git a/node_modules/@sentry/react-native/android/build/intermediates/local_only_symbol_list/debug/parseDebugLocalResources/R-def.txt b/node_modules/@sentry/react-native/android/build/intermediates/local_only_symbol_list/debug/parseDebugLocalResources/R-def.txt
+new file mode 100644
+index 0000000..78ac5b8
+--- /dev/null
++++ b/node_modules/@sentry/react-native/android/build/intermediates/local_only_symbol_list/debug/parseDebugLocalResources/R-def.txt
+@@ -0,0 +1,2 @@
++R_DEF: Internal format may change without notice
++local
+diff --git a/node_modules/@sentry/react-native/android/build/intermediates/manifest_merge_blame_file/debug/processDebugManifest/manifest-merger-blame-debug-report.txt b/node_modules/@sentry/react-native/android/build/intermediates/manifest_merge_blame_file/debug/processDebugManifest/manifest-merger-blame-debug-report.txt
+new file mode 100644
+index 0000000..93585e2
+--- /dev/null
++++ b/node_modules/@sentry/react-native/android/build/intermediates/manifest_merge_blame_file/debug/processDebugManifest/manifest-merger-blame-debug-report.txt
+@@ -0,0 +1,24 @@
++1<?xml version="1.0" encoding="utf-8"?>
++2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
++3    package="io.sentry.react" >
++4
++5    <uses-sdk android:minSdkVersion="24" />
++6
++7    <uses-permission android:name="android.permission.INTERNET" />
++7-->/Users/clemiltonsilva/Library/CloudStorage/GoogleDrive-clemiltonsilva@gmail.com/O meu disco/dev/secPass/password-manager/node_modules/@sentry/react-native/android/src/main/AndroidManifest.xml:3:5-67
++7-->/Users/clemiltonsilva/Library/CloudStorage/GoogleDrive-clemiltonsilva@gmail.com/O meu disco/dev/secPass/password-manager/node_modules/@sentry/react-native/android/src/main/AndroidManifest.xml:3:22-64
++8    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
++8-->/Users/clemiltonsilva/Library/CloudStorage/GoogleDrive-clemiltonsilva@gmail.com/O meu disco/dev/secPass/password-manager/node_modules/@sentry/react-native/android/src/main/AndroidManifest.xml:4:5-79
++8-->/Users/clemiltonsilva/Library/CloudStorage/GoogleDrive-clemiltonsilva@gmail.com/O meu disco/dev/secPass/password-manager/node_modules/@sentry/react-native/android/src/main/AndroidManifest.xml:4:22-76
++9
++10    <application>
++10-->/Users/clemiltonsilva/Library/CloudStorage/GoogleDrive-clemiltonsilva@gmail.com/O meu disco/dev/secPass/password-manager/node_modules/@sentry/react-native/android/src/main/AndroidManifest.xml:5:5-7:19
++11        <meta-data
++11-->/Users/clemiltonsilva/Library/CloudStorage/GoogleDrive-clemiltonsilva@gmail.com/O meu disco/dev/secPass/password-manager/node_modules/@sentry/react-native/android/src/main/AndroidManifest.xml:6:9-79
++12            android:name="io.sentry.auto-init"
++12-->/Users/clemiltonsilva/Library/CloudStorage/GoogleDrive-clemiltonsilva@gmail.com/O meu disco/dev/secPass/password-manager/node_modules/@sentry/react-native/android/src/main/AndroidManifest.xml:6:20-54
++13            android:value="false" />
++13-->/Users/clemiltonsilva/Library/CloudStorage/GoogleDrive-clemiltonsilva@gmail.com/O meu disco/dev/secPass/password-manager/node_modules/@sentry/react-native/android/src/main/AndroidManifest.xml:6:55-76
++14    </application>
++15
++16</manifest>
+diff --git a/node_modules/@sentry/react-native/android/build/intermediates/merged_java_res/debug/mergeDebugJavaResource/feature-sentry_react-native.jar b/node_modules/@sentry/react-native/android/build/intermediates/merged_java_res/debug/mergeDebugJavaResource/feature-sentry_react-native.jar
+new file mode 100644
+index 0000000..15cb0ec
+Binary files /dev/null and b/node_modules/@sentry/react-native/android/build/intermediates/merged_java_res/debug/mergeDebugJavaResource/feature-sentry_react-native.jar differ
+diff --git a/node_modules/@sentry/react-native/android/build/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml b/node_modules/@sentry/react-native/android/build/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml
+new file mode 100644
+index 0000000..457f19b
+--- /dev/null
++++ b/node_modules/@sentry/react-native/android/build/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml
+@@ -0,0 +1,16 @@
++<?xml version="1.0" encoding="utf-8"?>
++<manifest xmlns:android="http://schemas.android.com/apk/res/android"
++    package="io.sentry.react" >
++
++    <uses-sdk android:minSdkVersion="24" />
++
++    <uses-permission android:name="android.permission.INTERNET" />
++    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
++
++    <application>
++        <meta-data
++            android:name="io.sentry.auto-init"
++            android:value="false" />
++    </application>
++
++</manifest>
+\ No newline at end of file
+diff --git a/node_modules/@sentry/react-native/android/build/intermediates/navigation_json/debug/extractDeepLinksDebug/navigation.json b/node_modules/@sentry/react-native/android/build/intermediates/navigation_json/debug/extractDeepLinksDebug/navigation.json
+new file mode 100644
+index 0000000..0637a08
+--- /dev/null
++++ b/node_modules/@sentry/react-native/android/build/intermediates/navigation_json/debug/extractDeepLinksDebug/navigation.json
+@@ -0,0 +1 @@
++[]
+\ No newline at end of file
+diff --git a/node_modules/@sentry/react-native/android/build/intermediates/nested_resources_validation_report/debug/generateDebugResources/nestedResourcesValidationReport.txt b/node_modules/@sentry/react-native/android/build/intermediates/nested_resources_validation_report/debug/generateDebugResources/nestedResourcesValidationReport.txt
+new file mode 100644
+index 0000000..08f4ebe
+--- /dev/null
++++ b/node_modules/@sentry/react-native/android/build/intermediates/nested_resources_validation_report/debug/generateDebugResources/nestedResourcesValidationReport.txt
+@@ -0,0 +1 @@
++0 Warning/Error
+\ No newline at end of file
+diff --git a/node_modules/@sentry/react-native/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/facebook/react/viewmanagers/RNSentryReplayMaskManagerDelegate.class b/node_modules/@sentry/react-native/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/facebook/react/viewmanagers/RNSentryReplayMaskManagerDelegate.class
+new file mode 100644
+index 0000000..946f9f5
+Binary files /dev/null and b/node_modules/@sentry/react-native/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/facebook/react/viewmanagers/RNSentryReplayMaskManagerDelegate.class differ
+diff --git a/node_modules/@sentry/react-native/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/facebook/react/viewmanagers/RNSentryReplayMaskManagerInterface.class b/node_modules/@sentry/react-native/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/facebook/react/viewmanagers/RNSentryReplayMaskManagerInterface.class
+new file mode 100644
+index 0000000..d248413
+Binary files /dev/null and b/node_modules/@sentry/react-native/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/facebook/react/viewmanagers/RNSentryReplayMaskManagerInterface.class differ
+diff --git a/node_modules/@sentry/react-native/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/facebook/react/viewmanagers/RNSentryReplayUnmaskManagerDelegate.class b/node_modules/@sentry/react-native/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/facebook/react/viewmanagers/RNSentryReplayUnmaskManagerDelegate.class
+new file mode 100644
+index 0000000..820b3b5
+Binary files /dev/null and b/node_modules/@sentry/react-native/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/facebook/react/viewmanagers/RNSentryReplayUnmaskManagerDelegate.class differ
+diff --git a/node_modules/@sentry/react-native/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/facebook/react/viewmanagers/RNSentryReplayUnmaskManagerInterface.class b/node_modules/@sentry/react-native/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/facebook/react/viewmanagers/RNSentryReplayUnmaskManagerInterface.class
+new file mode 100644
+index 0000000..7402804
+Binary files /dev/null and b/node_modules/@sentry/react-native/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/facebook/react/viewmanagers/RNSentryReplayUnmaskManagerInterface.class differ
+diff --git a/node_modules/@sentry/react-native/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/io/sentry/react/BuildConfig.class b/node_modules/@sentry/react-native/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/io/sentry/react/BuildConfig.class
+new file mode 100644
+index 0000000..953f966
+Binary files /dev/null and b/node_modules/@sentry/react-native/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/io/sentry/react/BuildConfig.class differ
+diff --git a/node_modules/@sentry/react-native/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/io/sentry/react/NativeRNSentrySpec.class b/node_modules/@sentry/react-native/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/io/sentry/react/NativeRNSentrySpec.class
+new file mode 100644
+index 0000000..62fd38b
+Binary files /dev/null and b/node_modules/@sentry/react-native/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/io/sentry/react/NativeRNSentrySpec.class differ
+diff --git a/node_modules/@sentry/react-native/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/io/sentry/react/RNSentryBreadcrumb.class b/node_modules/@sentry/react-native/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/io/sentry/react/RNSentryBreadcrumb.class
+new file mode 100644
+index 0000000..6a464b5
+Binary files /dev/null and b/node_modules/@sentry/react-native/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/io/sentry/react/RNSentryBreadcrumb.class differ
+diff --git a/node_modules/@sentry/react-native/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/io/sentry/react/RNSentryMapConverter.class b/node_modules/@sentry/react-native/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/io/sentry/react/RNSentryMapConverter.class
+new file mode 100644
+index 0000000..1109d93
+Binary files /dev/null and b/node_modules/@sentry/react-native/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/io/sentry/react/RNSentryMapConverter.class differ
+diff --git a/node_modules/@sentry/react-native/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/io/sentry/react/RNSentryModule.class b/node_modules/@sentry/react-native/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/io/sentry/react/RNSentryModule.class
+new file mode 100644
+index 0000000..36fb508
+Binary files /dev/null and b/node_modules/@sentry/react-native/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/io/sentry/react/RNSentryModule.class differ
+diff --git a/node_modules/@sentry/react-native/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/io/sentry/react/RNSentryModuleImpl.class b/node_modules/@sentry/react-native/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/io/sentry/react/RNSentryModuleImpl.class
+new file mode 100644
+index 0000000..7cb8528
+Binary files /dev/null and b/node_modules/@sentry/react-native/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/io/sentry/react/RNSentryModuleImpl.class differ
+diff --git a/node_modules/@sentry/react-native/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/io/sentry/react/RNSentryOnDrawReporterManager$RNSentryOnDrawReporterView.class b/node_modules/@sentry/react-native/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/io/sentry/react/RNSentryOnDrawReporterManager$RNSentryOnDrawReporterView.class
+new file mode 100644
+index 0000000..aa4a9a1
+Binary files /dev/null and b/node_modules/@sentry/react-native/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/io/sentry/react/RNSentryOnDrawReporterManager$RNSentryOnDrawReporterView.class differ
+diff --git a/node_modules/@sentry/react-native/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/io/sentry/react/RNSentryOnDrawReporterManager.class b/node_modules/@sentry/react-native/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/io/sentry/react/RNSentryOnDrawReporterManager.class
+new file mode 100644
+index 0000000..9387d63
+Binary files /dev/null and b/node_modules/@sentry/react-native/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/io/sentry/react/RNSentryOnDrawReporterManager.class differ
+diff --git a/node_modules/@sentry/react-native/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/io/sentry/react/RNSentryPackage.class b/node_modules/@sentry/react-native/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/io/sentry/react/RNSentryPackage.class
+new file mode 100644
+index 0000000..eeb80a4
+Binary files /dev/null and b/node_modules/@sentry/react-native/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/io/sentry/react/RNSentryPackage.class differ
+diff --git a/node_modules/@sentry/react-native/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/io/sentry/react/RNSentryReactFragmentLifecycleTracer$1.class b/node_modules/@sentry/react-native/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/io/sentry/react/RNSentryReactFragmentLifecycleTracer$1.class
+new file mode 100644
+index 0000000..ad13ff8
+Binary files /dev/null and b/node_modules/@sentry/react-native/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/io/sentry/react/RNSentryReactFragmentLifecycleTracer$1.class differ
+diff --git a/node_modules/@sentry/react-native/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/io/sentry/react/RNSentryReactFragmentLifecycleTracer.class b/node_modules/@sentry/react-native/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/io/sentry/react/RNSentryReactFragmentLifecycleTracer.class
+new file mode 100644
+index 0000000..da2b390
+Binary files /dev/null and b/node_modules/@sentry/react-native/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/io/sentry/react/RNSentryReactFragmentLifecycleTracer.class differ
+diff --git a/node_modules/@sentry/react-native/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/io/sentry/react/RNSentryReplayBreadcrumbConverter.class b/node_modules/@sentry/react-native/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/io/sentry/react/RNSentryReplayBreadcrumbConverter.class
+new file mode 100644
+index 0000000..60c6cd4
+Binary files /dev/null and b/node_modules/@sentry/react-native/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/io/sentry/react/RNSentryReplayBreadcrumbConverter.class differ
+diff --git a/node_modules/@sentry/react-native/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/io/sentry/react/RNSentryTimeToDisplay$1.class b/node_modules/@sentry/react-native/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/io/sentry/react/RNSentryTimeToDisplay$1.class
+new file mode 100644
+index 0000000..0302bd2
+Binary files /dev/null and b/node_modules/@sentry/react-native/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/io/sentry/react/RNSentryTimeToDisplay$1.class differ
+diff --git a/node_modules/@sentry/react-native/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/io/sentry/react/RNSentryTimeToDisplay.class b/node_modules/@sentry/react-native/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/io/sentry/react/RNSentryTimeToDisplay.class
+new file mode 100644
+index 0000000..731da2a
+Binary files /dev/null and b/node_modules/@sentry/react-native/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/io/sentry/react/RNSentryTimeToDisplay.class differ
+diff --git a/node_modules/@sentry/react-native/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/io/sentry/react/RNSentryVersion.class b/node_modules/@sentry/react-native/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/io/sentry/react/RNSentryVersion.class
+new file mode 100644
+index 0000000..e087b49
+Binary files /dev/null and b/node_modules/@sentry/react-native/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/io/sentry/react/RNSentryVersion.class differ
+diff --git a/node_modules/@sentry/react-native/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/io/sentry/react/replay/RNSentryReplayFragmentLifecycleTracer$1.class b/node_modules/@sentry/react-native/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/io/sentry/react/replay/RNSentryReplayFragmentLifecycleTracer$1.class
+new file mode 100644
+index 0000000..0f25235
+Binary files /dev/null and b/node_modules/@sentry/react-native/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/io/sentry/react/replay/RNSentryReplayFragmentLifecycleTracer$1.class differ
+diff --git a/node_modules/@sentry/react-native/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/io/sentry/react/replay/RNSentryReplayFragmentLifecycleTracer.class b/node_modules/@sentry/react-native/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/io/sentry/react/replay/RNSentryReplayFragmentLifecycleTracer.class
+new file mode 100644
+index 0000000..fb05389
+Binary files /dev/null and b/node_modules/@sentry/react-native/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/io/sentry/react/replay/RNSentryReplayFragmentLifecycleTracer.class differ
+diff --git a/node_modules/@sentry/react-native/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/io/sentry/react/replay/RNSentryReplayMask.class b/node_modules/@sentry/react-native/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/io/sentry/react/replay/RNSentryReplayMask.class
+new file mode 100644
+index 0000000..8ddc3ce
+Binary files /dev/null and b/node_modules/@sentry/react-native/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/io/sentry/react/replay/RNSentryReplayMask.class differ
+diff --git a/node_modules/@sentry/react-native/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/io/sentry/react/replay/RNSentryReplayMaskManager.class b/node_modules/@sentry/react-native/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/io/sentry/react/replay/RNSentryReplayMaskManager.class
+new file mode 100644
+index 0000000..c1b5ac0
+Binary files /dev/null and b/node_modules/@sentry/react-native/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/io/sentry/react/replay/RNSentryReplayMaskManager.class differ
+diff --git a/node_modules/@sentry/react-native/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/io/sentry/react/replay/RNSentryReplayMaskManagerImpl.class b/node_modules/@sentry/react-native/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/io/sentry/react/replay/RNSentryReplayMaskManagerImpl.class
+new file mode 100644
+index 0000000..7c70c93
+Binary files /dev/null and b/node_modules/@sentry/react-native/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/io/sentry/react/replay/RNSentryReplayMaskManagerImpl.class differ
+diff --git a/node_modules/@sentry/react-native/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/io/sentry/react/replay/RNSentryReplayUnmask.class b/node_modules/@sentry/react-native/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/io/sentry/react/replay/RNSentryReplayUnmask.class
+new file mode 100644
+index 0000000..0a304aa
+Binary files /dev/null and b/node_modules/@sentry/react-native/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/io/sentry/react/replay/RNSentryReplayUnmask.class differ
+diff --git a/node_modules/@sentry/react-native/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/io/sentry/react/replay/RNSentryReplayUnmaskManager.class b/node_modules/@sentry/react-native/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/io/sentry/react/replay/RNSentryReplayUnmaskManager.class
+new file mode 100644
+index 0000000..3b391e5
+Binary files /dev/null and b/node_modules/@sentry/react-native/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/io/sentry/react/replay/RNSentryReplayUnmaskManager.class differ
+diff --git a/node_modules/@sentry/react-native/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/io/sentry/react/replay/RNSentryReplayUnmaskManagerImpl.class b/node_modules/@sentry/react-native/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/io/sentry/react/replay/RNSentryReplayUnmaskManagerImpl.class
+new file mode 100644
+index 0000000..b4a2446
+Binary files /dev/null and b/node_modules/@sentry/react-native/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/io/sentry/react/replay/RNSentryReplayUnmaskManagerImpl.class differ
+diff --git a/node_modules/@sentry/react-native/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/io/sentry/react/utils/RNSentryActivityUtils.class b/node_modules/@sentry/react-native/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/io/sentry/react/utils/RNSentryActivityUtils.class
+new file mode 100644
+index 0000000..d0f4ffc
+Binary files /dev/null and b/node_modules/@sentry/react-native/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/io/sentry/react/utils/RNSentryActivityUtils.class differ
+diff --git a/node_modules/@sentry/react-native/android/build/intermediates/runtime_library_classes_jar/debug/bundleLibRuntimeToJarDebug/classes.jar b/node_modules/@sentry/react-native/android/build/intermediates/runtime_library_classes_jar/debug/bundleLibRuntimeToJarDebug/classes.jar
+new file mode 100644
+index 0000000..7ca66d9
+Binary files /dev/null and b/node_modules/@sentry/react-native/android/build/intermediates/runtime_library_classes_jar/debug/bundleLibRuntimeToJarDebug/classes.jar differ
+diff --git a/node_modules/@sentry/react-native/android/build/intermediates/symbol_list_with_package_name/debug/generateDebugRFile/package-aware-r.txt b/node_modules/@sentry/react-native/android/build/intermediates/symbol_list_with_package_name/debug/generateDebugRFile/package-aware-r.txt
+new file mode 100644
+index 0000000..664769a
+--- /dev/null
++++ b/node_modules/@sentry/react-native/android/build/intermediates/symbol_list_with_package_name/debug/generateDebugRFile/package-aware-r.txt
+@@ -0,0 +1 @@
++io.sentry.react
+diff --git a/node_modules/@sentry/react-native/android/build/outputs/aar/sentry_react-native-debug.aar b/node_modules/@sentry/react-native/android/build/outputs/aar/sentry_react-native-debug.aar
+new file mode 100644
+index 0000000..98d62a6
+Binary files /dev/null and b/node_modules/@sentry/react-native/android/build/outputs/aar/sentry_react-native-debug.aar differ
+diff --git a/node_modules/@sentry/react-native/android/build/outputs/logs/manifest-merger-debug-report.txt b/node_modules/@sentry/react-native/android/build/outputs/logs/manifest-merger-debug-report.txt
+new file mode 100644
+index 0000000..0404ef6
+--- /dev/null
++++ b/node_modules/@sentry/react-native/android/build/outputs/logs/manifest-merger-debug-report.txt
+@@ -0,0 +1,33 @@
++-- Merging decision tree log ---
++manifest
++ADDED from /Users/clemiltonsilva/Library/CloudStorage/GoogleDrive-clemiltonsilva@gmail.com/O meu disco/dev/secPass/password-manager/node_modules/@sentry/react-native/android/src/main/AndroidManifest.xml:1:1-8:12
++INJECTED from /Users/clemiltonsilva/Library/CloudStorage/GoogleDrive-clemiltonsilva@gmail.com/O meu disco/dev/secPass/password-manager/node_modules/@sentry/react-native/android/src/main/AndroidManifest.xml:1:1-8:12
++	package
++		ADDED from /Users/clemiltonsilva/Library/CloudStorage/GoogleDrive-clemiltonsilva@gmail.com/O meu disco/dev/secPass/password-manager/node_modules/@sentry/react-native/android/src/main/AndroidManifest.xml:2:5-30
++		INJECTED from /Users/clemiltonsilva/Library/CloudStorage/GoogleDrive-clemiltonsilva@gmail.com/O meu disco/dev/secPass/password-manager/node_modules/@sentry/react-native/android/src/main/AndroidManifest.xml
++	xmlns:android
++		ADDED from /Users/clemiltonsilva/Library/CloudStorage/GoogleDrive-clemiltonsilva@gmail.com/O meu disco/dev/secPass/password-manager/node_modules/@sentry/react-native/android/src/main/AndroidManifest.xml:1:11-69
++uses-permission#android.permission.INTERNET
++ADDED from /Users/clemiltonsilva/Library/CloudStorage/GoogleDrive-clemiltonsilva@gmail.com/O meu disco/dev/secPass/password-manager/node_modules/@sentry/react-native/android/src/main/AndroidManifest.xml:3:5-67
++	android:name
++		ADDED from /Users/clemiltonsilva/Library/CloudStorage/GoogleDrive-clemiltonsilva@gmail.com/O meu disco/dev/secPass/password-manager/node_modules/@sentry/react-native/android/src/main/AndroidManifest.xml:3:22-64
++uses-permission#android.permission.ACCESS_NETWORK_STATE
++ADDED from /Users/clemiltonsilva/Library/CloudStorage/GoogleDrive-clemiltonsilva@gmail.com/O meu disco/dev/secPass/password-manager/node_modules/@sentry/react-native/android/src/main/AndroidManifest.xml:4:5-79
++	android:name
++		ADDED from /Users/clemiltonsilva/Library/CloudStorage/GoogleDrive-clemiltonsilva@gmail.com/O meu disco/dev/secPass/password-manager/node_modules/@sentry/react-native/android/src/main/AndroidManifest.xml:4:22-76
++application
++ADDED from /Users/clemiltonsilva/Library/CloudStorage/GoogleDrive-clemiltonsilva@gmail.com/O meu disco/dev/secPass/password-manager/node_modules/@sentry/react-native/android/src/main/AndroidManifest.xml:5:5-7:19
++meta-data#io.sentry.auto-init
++ADDED from /Users/clemiltonsilva/Library/CloudStorage/GoogleDrive-clemiltonsilva@gmail.com/O meu disco/dev/secPass/password-manager/node_modules/@sentry/react-native/android/src/main/AndroidManifest.xml:6:9-79
++	android:value
++		ADDED from /Users/clemiltonsilva/Library/CloudStorage/GoogleDrive-clemiltonsilva@gmail.com/O meu disco/dev/secPass/password-manager/node_modules/@sentry/react-native/android/src/main/AndroidManifest.xml:6:55-76
++	android:name
++		ADDED from /Users/clemiltonsilva/Library/CloudStorage/GoogleDrive-clemiltonsilva@gmail.com/O meu disco/dev/secPass/password-manager/node_modules/@sentry/react-native/android/src/main/AndroidManifest.xml:6:20-54
++uses-sdk
++INJECTED from /Users/clemiltonsilva/Library/CloudStorage/GoogleDrive-clemiltonsilva@gmail.com/O meu disco/dev/secPass/password-manager/node_modules/@sentry/react-native/android/src/main/AndroidManifest.xml reason: use-sdk injection requested
++INJECTED from /Users/clemiltonsilva/Library/CloudStorage/GoogleDrive-clemiltonsilva@gmail.com/O meu disco/dev/secPass/password-manager/node_modules/@sentry/react-native/android/src/main/AndroidManifest.xml
++INJECTED from /Users/clemiltonsilva/Library/CloudStorage/GoogleDrive-clemiltonsilva@gmail.com/O meu disco/dev/secPass/password-manager/node_modules/@sentry/react-native/android/src/main/AndroidManifest.xml
++	android:targetSdkVersion
++		INJECTED from /Users/clemiltonsilva/Library/CloudStorage/GoogleDrive-clemiltonsilva@gmail.com/O meu disco/dev/secPass/password-manager/node_modules/@sentry/react-native/android/src/main/AndroidManifest.xml
++	android:minSdkVersion
++		INJECTED from /Users/clemiltonsilva/Library/CloudStorage/GoogleDrive-clemiltonsilva@gmail.com/O meu disco/dev/secPass/password-manager/node_modules/@sentry/react-native/android/src/main/AndroidManifest.xml
+diff --git a/node_modules/@sentry/react-native/android/build/tmp/compileDebugJavaWithJavac/previous-compilation-data.bin b/node_modules/@sentry/react-native/android/build/tmp/compileDebugJavaWithJavac/previous-compilation-data.bin
+new file mode 100644
+index 0000000..65887ad
+Binary files /dev/null and b/node_modules/@sentry/react-native/android/build/tmp/compileDebugJavaWithJavac/previous-compilation-data.bin differ
+diff --git a/node_modules/@sentry/react-native/plugin/build/withSentryIOS.js b/node_modules/@sentry/react-native/plugin/build/withSentryIOS.js
+index 1554464..e7db539 100644
+--- a/node_modules/@sentry/react-native/plugin/build/withSentryIOS.js
++++ b/node_modules/@sentry/react-native/plugin/build/withSentryIOS.js
+@@ -75,6 +75,6 @@ exports.modifyExistingXcodeBuildScript = modifyExistingXcodeBuildScript;
+ function addSentryWithBundledScriptsToBundleShellScript(script) {
+     return script.replace(/^.*?(packager|scripts)\/react-native-xcode\.sh\s*(\\'\\\\")?/m, 
+     // eslint-disable-next-line no-useless-escape
+-    (match) => `/bin/sh ${SENTRY_REACT_NATIVE_XCODE_PATH} ${match}`);
++    (match) => `/bin/sh "${SENTRY_REACT_NATIVE_XCODE_PATH}" ${match}`);
+ }
+ exports.addSentryWithBundledScriptsToBundleShellScript = addSentryWithBundledScriptsToBundleShellScript;
+diff --git a/node_modules/@sentry/react-native/scripts/sentry-xcode.sh b/node_modules/@sentry/react-native/scripts/sentry-xcode.sh
+index 73ba666..4b1b4fd 100755
+--- a/node_modules/@sentry/react-native/scripts/sentry-xcode.sh
++++ b/node_modules/@sentry/react-native/scripts/sentry-xcode.sh
+@@ -63,7 +63,7 @@ if [ "$SENTRY_DISABLE_AUTO_UPLOAD" != true ]; then
+   set -x -e # re-enable
+ else
+   echo "SENTRY_DISABLE_AUTO_UPLOAD=true, skipping sourcemaps upload"
+-  /bin/sh -c "$REACT_NATIVE_XCODE"
++  /bin/sh "$REACT_NATIVE_XCODE"
+ fi
+ 
+ [ -z "$SENTRY_COLLECT_MODULES" ] && SENTRY_RN_PACKAGE_PATH=$("$LOCAL_NODE_BINARY" --print "require('path').dirname(require.resolve('@sentry/react-native/package.json'))")

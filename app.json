@@ -56,6 +56,7 @@
       "expo-secure-store",
       "expo-asset",
       "expo-sharing",
+      "./plugins/withSafeShellScriptPaths",
       [
         "@sentry/react-native",
         {
@@ -69,7 +70,18 @@
           "iosUrlScheme": "com.googleusercontent.apps.114456559466-ko4p814or855id67eb000i5ipjojdtrr"
         }
       ],
-      "./plugins/withCloudKitCapability"
+      "./plugins/withCloudKitCapability",
+      "./plugins/withReleaseSigning",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "enableMinifyInReleaseBuilds": true,
+            "enableShrinkResourcesInReleaseBuilds": true,
+            "usesCleartextTraffic": false
+          }
+        }
+      ]
     ],
     "extra": {
       "router": {},

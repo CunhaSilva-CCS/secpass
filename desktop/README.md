@@ -88,11 +88,57 @@ npm run dist
 
 Gera `release/mac/SecPass.app` — roda no seu Mac, mas o Gatekeeper vai
 avisar "desenvolvedor não identificado" ao abrir da primeira vez (clique
-direito → Abrir). Assinatura/notarização para distribuir fora do seu Mac
-ficam para uma etapa futura.
+direito → Abrir).
+
+O script usa `-c.mac.identity=null` de propósito, pra pular a assinatura
+de código completamente (nem ad-hoc). Sem isso, o `electron-builder` tenta
+assinar e depois rodar `codesign --verify --deep --strict` no `.app` — e
+esse projeto vive numa pasta sincronizada pelo Google Drive, cujo File
+Provider marca arquivos com atributos estendidos que o `codesign` rejeita
+("resource fork, Finder information, or similar detritus not allowed").
+Não remova essa flag do `dist` a menos que o projeto seja movido pra fora
+de uma pasta sincronizada.
+
+## Empacotar com assinatura e notarização (distribuição real)
+
+A estrutura já está pronta em `package.json` (`hardenedRuntime`,
+`entitlements`/`entitlementsInherit` apontando pra
+`build/entitlements.mac.plist`) e em `dist:release` (gera `.dmg` e `.zip`,
+não só o `.app` solto) - falta só você fornecer as credenciais reais, que
+não podem ficar no repo:
+
+1. **Certificado de assinatura**: um certificado "Developer ID Application"
+   válido instalado no Keychain do Mac que for rodar o build (via Xcode ou
+   baixado do Apple Developer Portal). O `electron-builder` detecta e usa
+   automaticamente um certificado desse tipo já presente no Keychain - não
+   precisa configurar nada a mais no `package.json` pra isso. Se preferir
+   não depender do Keychain local (ex: rodar isso numa CI), exporte o
+   certificado como `.p12` e defina `CSC_LINK` (caminho ou URL do `.p12`)
+   e `CSC_KEY_PASSWORD` (senha do arquivo) como variáveis de ambiente.
+2. **Notarização**: defina as variáveis de ambiente `APPLE_ID` (seu Apple
+   ID), `APPLE_APP_SPECIFIC_PASSWORD` (gerada em
+   [appleid.apple.com](https://appleid.apple.com) → Segurança → Senhas de
+   app) e `APPLE_TEAM_ID` (`U9U9M3H2AP`, o mesmo do app iOS). O
+   `electron-builder` notariza automaticamente quando essas três variáveis
+   estão presentes e o build foi assinado com um certificado válido - não
+   precisa de script `afterSign` customizado.
+3. Rode:
+
+```bash
+CSC_LINK=... CSC_KEY_PASSWORD=... \
+APPLE_ID=... APPLE_APP_SPECIFIC_PASSWORD=... APPLE_TEAM_ID=U9U9M3H2AP \
+npm run dist:release
+```
+
+**Não testado nesta sessão** (não há certificado real disponível aqui) -
+a primeira vez que isso rodar de verdade, esteja pronto pra ajustar
+`entitlements.mac.plist` se a notarização reclamar de alguma permissão
+faltando (é comum precisar de 1-2 iterações na primeira notarização de
+um app Electron).
 
 ## O que ainda falta (fora desta primeira entrega)
 
 - Proteção contra captura de tela (sem equivalente direto no macOS).
 - Exportar/importar backup e histórico de segurança na UI.
-- Assinatura/notarização Apple.
+- Testar a assinatura/notarização de verdade com um certificado real (ver
+  secção acima - a estrutura existe, mas nunca rodou de ponta a ponta).

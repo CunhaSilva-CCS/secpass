@@ -52,6 +52,11 @@ backend/data/auth-store.json
 .vercel
 builds/
 
+# credenciais de assinatura de release (keystore Android real + senhas) -
+# NUNCA versionar. Faca backup fora do git (ex: gerenciador de senhas) -
+# perder isso impede atualizar o app publicado com a mesma identidade.
+/credentials/
+
 # desktop (Electron)
 desktop/out/
 desktop/release/
