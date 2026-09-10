@@ -1,5 +1,7 @@
 import React, { useMemo, useState } from "react";
+import BrandLogo from "./BrandLogo.jsx";
 import CredentialModal from "./CredentialModal.jsx";
+import { EyeIcon, EyeOffIcon, RefreshIcon } from "./icons.jsx";
 
 // Mesma janela de auto-limpeza usada no app mobile (PasswordCard.js) -
 // deixar uma senha no clipboard indefinidamente e uma fraqueza conhecida
@@ -51,6 +53,12 @@ export default function VaultScreen({
   const [revealedId, setRevealedId] = useState(null);
   const [isSyncBusy, setIsSyncBusy] = useState(false);
   const [isSyncBackendBusy, setIsSyncBackendBusy] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isDeleteAccountOpen, setIsDeleteAccountOpen] = useState(false);
+  const [deleteAccountPassword, setDeleteAccountPassword] = useState("");
+  const [showDeleteAccountPassword, setShowDeleteAccountPassword] = useState(false);
+  const [deleteAccountError, setDeleteAccountError] = useState("");
+  const [isDeletingAccount, setIsDeletingAccount] = useState(false);
 
   const visibleItems = useMemo(() => {
     const term = search.trim().toLowerCase();
@@ -86,7 +94,7 @@ export default function VaultScreen({
   };
 
   const handleDisableSync = async () => {
-    if (!window.confirm("Desativar a sincronizacao com o Google Drive neste Mac?")) {
+    if (!window.confirm("Desativar a sincronizacao com o Google Drive neste computador?")) {
       return;
     }
     await window.secpass.disableDriveSync();
@@ -132,42 +140,89 @@ export default function VaultScreen({
     }
   };
 
-  const handleDeleteAccountClick = async () => {
-    if (
-      !window.confirm(
-        "Isso apaga permanentemente a conta local e todas as credenciais salvas neste Mac. Essa acao nao pode ser desfeita. Deseja excluir tudo agora?",
-      )
-    ) {
-      return;
+  // Cobre o caso da janela ficar aberta enquanto outro aparelho grava no
+  // Drive: o cofre em memoria so e recarregado sozinho no login/desbloqueio
+  // (ver account:unlock em main/index.js), entao sem isso o usuario so veria
+  // a mudanca ao bloquear/sair e voltar.
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      const result = await window.secpass.refreshVault();
+      if (result?.ok) {
+        setItems(result.items);
+      } else if (result?.message) {
+        window.alert(result.message);
+      }
+    } finally {
+      setIsRefreshing(false);
     }
-    await onDeleteAccount();
+  };
+
+  const handleDeleteAccountClick = () => {
+    setDeleteAccountPassword("");
+    setDeleteAccountError("");
+    setIsDeleteAccountOpen(true);
+  };
+
+  // A senha e reverificada no processo principal (ver account:delete em
+  // main/index.js) - o pedido aqui nao e so uma confirmacao de UI, e o
+  // unico jeito de provar que quem esta chamando isso e o dono do cofre
+  // (nao um script injetado por uma dependencia comprometida).
+  const handleConfirmDeleteAccount = async (event) => {
+    event.preventDefault();
+    setIsDeletingAccount(true);
+    setDeleteAccountError("");
+    try {
+      const result = await onDeleteAccount(deleteAccountPassword);
+      if (!result?.ok) {
+        if (result?.cancelled) {
+          setIsDeleteAccountOpen(false);
+          return;
+        }
+        setDeleteAccountError(result?.message || "Nao foi possivel confirmar sua identidade.");
+        return;
+      }
+      setIsDeleteAccountOpen(false);
+    } finally {
+      setIsDeletingAccount(false);
+    }
   };
 
   return (
     <div className="app-shell">
       <header className="app-header">
-        <span className="brand">SecPass</span>
-        <div className="actions">
-          {driveSyncActive && <span className="sync-badge">Drive ativo</span>}
-          <button className="secondary-button" onClick={driveSyncActive ? handleDisableSync : handleEnableSync} disabled={isSyncBusy}>
-            {driveSyncActive ? "Desativar sync" : "Sincronizar com Drive"}
-          </button>
-          <button
-            className="secondary-button"
-            disabled={isSyncBackendBusy || syncBackendPreference === "drive"}
-            onClick={() => handleSelectSyncBackend("drive")}
-            title="Google Drive - funciona com Android, iPhone e Mac"
-          >
-            {syncBackendPreference === "drive" ? "Backend: Google Drive" : "Usar Google Drive"}
-          </button>
-          <button
-            className="secondary-button"
-            disabled={isSyncBackendBusy || syncBackendPreference === "icloud"}
-            onClick={() => handleSelectSyncBackend("icloud")}
-            title="iCloud (CloudKit) - so entre iPhone e Mac"
-          >
-            {syncBackendPreference === "icloud" ? "Backend: iCloud" : "Usar iCloud"}
-          </button>
+        <div className="header-brand-group">
+          <BrandLogo />
+
+          <div className="actions-group">
+            {driveSyncActive && <span className="sync-badge">Drive ativo</span>}
+            <button className="secondary-button" onClick={driveSyncActive ? handleDisableSync : handleEnableSync} disabled={isSyncBusy}>
+              {driveSyncActive ? "Desativar sync" : "Sincronizar com Drive"}
+            </button>
+            <div className="segmented-control" role="group" aria-label="Backend de sincronizacao">
+              <button
+                type="button"
+                className={`segmented-option${syncBackendPreference === "drive" ? " active" : ""}`}
+                disabled={isSyncBackendBusy || syncBackendPreference === "drive"}
+                onClick={() => handleSelectSyncBackend("drive")}
+                title="Google Drive - funciona com Android, iPhone e Mac"
+              >
+                Google Drive
+              </button>
+              <button
+                type="button"
+                className={`segmented-option${syncBackendPreference === "icloud" ? " active" : ""}`}
+                disabled={isSyncBackendBusy || syncBackendPreference === "icloud"}
+                onClick={() => handleSelectSyncBackend("icloud")}
+                title="iCloud (CloudKit) - so entre iPhone e Mac"
+              >
+                iCloud
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div className="actions-group">
           <button className="secondary-button" onClick={onLock}>
             Bloquear
           </button>
@@ -179,22 +234,54 @@ export default function VaultScreen({
 
       <div className="app-content">
         <div className="content-inner">
+          <div className="kpi-row">
+            <div className="kpi-card">
+              <p className="kpi-label">Total</p>
+              <p className="kpi-value">{items.length}</p>
+            </div>
+            {!!search.trim() && (
+              <div className="kpi-card">
+                <p className="kpi-label">Filtrados</p>
+                <p className="kpi-value">{visibleItems.length}</p>
+              </div>
+            )}
+          </div>
+
           <div className="toolbar">
             <input
               className="search-input"
-              placeholder="Buscar credenciais..."
+              placeholder="Pesquisar por titulo ou usuario"
               value={search}
               onChange={(event) => setSearch(event.target.value)}
             />
+            {driveSyncActive && (
+              <button
+                type="button"
+                className="secondary-button icon-button"
+                onClick={handleRefresh}
+                disabled={isRefreshing}
+                title="Buscar atualizacoes do Drive"
+                aria-label="Atualizar"
+              >
+                <RefreshIcon className={isRefreshing ? "spin" : undefined} />
+              </button>
+            )}
             <button className="primary-button" style={{ width: "auto" }} onClick={() => setIsAddingNew(true)}>
               + Nova credencial
             </button>
           </div>
 
+          {items.length > 0 && <p className="list-title">Credenciais salvas</p>}
+
           {visibleItems.length === 0 ? (
-            <p className="empty-state">
-              {items.length === 0 ? "Nenhuma credencial ainda. Adicione a primeira." : "Nada encontrado pra essa busca."}
-            </p>
+            <div className="empty-state">
+              <p className="empty-title">
+                {items.length === 0 ? "Nenhuma credencial ainda" : "Nada encontrado pra essa busca"}
+              </p>
+              {items.length === 0 && (
+                <p className="empty-text">Clique no botao + Nova credencial para criar seu primeiro registro.</p>
+              )}
+            </div>
           ) : (
             <div className="credential-grid">
               {visibleItems.map((item) => (
@@ -247,6 +334,62 @@ export default function VaultScreen({
             setIsAddingNew(false);
           }}
         />
+      )}
+
+      {isDeleteAccountOpen && (
+        <div className="modal-backdrop" onMouseDown={() => !isDeletingAccount && setIsDeleteAccountOpen(false)}>
+          <form
+            className="modal-card"
+            onMouseDown={(event) => event.stopPropagation()}
+            onSubmit={handleConfirmDeleteAccount}
+          >
+            <h2 className="modal-title">Excluir conta e todos os dados</h2>
+            <p className="field-label" style={{ whiteSpace: "normal", fontWeight: 400, marginBottom: 16 }}>
+              Isso apaga permanentemente a conta local e todas as credenciais salvas neste computador, alem do
+              cofre sincronizado no Drive/iCloud (se houver). Essa acao nao pode ser desfeita. Digite sua senha
+              de acesso para confirmar.
+            </p>
+
+            <label className="field-label" htmlFor="delete-account-password">
+              Senha de acesso
+            </label>
+            <div className="password-field">
+              <input
+                id="delete-account-password"
+                className="text-input"
+                type={showDeleteAccountPassword ? "text" : "password"}
+                value={deleteAccountPassword}
+                onChange={(event) => setDeleteAccountPassword(event.target.value)}
+                autoFocus
+                required
+              />
+              <button
+                type="button"
+                className="reveal-toggle"
+                onClick={() => setShowDeleteAccountPassword((prev) => !prev)}
+                aria-label={showDeleteAccountPassword ? "Ocultar senha" : "Mostrar senha"}
+              >
+                {showDeleteAccountPassword ? <EyeOffIcon /> : <EyeIcon />}
+              </button>
+            </div>
+
+            {!!deleteAccountError && <p className="error-text">{deleteAccountError}</p>}
+
+            <div className="modal-actions">
+              <button
+                type="button"
+                className="secondary-button"
+                onClick={() => setIsDeleteAccountOpen(false)}
+                disabled={isDeletingAccount}
+              >
+                Cancelar
+              </button>
+              <button type="submit" className="primary-button danger-button" disabled={isDeletingAccount}>
+                Excluir tudo
+              </button>
+            </div>
+          </form>
+        </div>
       )}
     </div>
   );

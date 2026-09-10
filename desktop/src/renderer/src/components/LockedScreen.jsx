@@ -1,8 +1,14 @@
 import React, { useEffect, useState } from "react";
+import { EyeIcon, EyeOffIcon } from "./icons.jsx";
 
-export default function LockedScreen({ email, onUnlocked, onAccessReset }) {
-  const [needsPassword, setNeedsPassword] = useState(false);
+export default function LockedScreen({ email, canPromptDeviceAuth, onUnlocked, onAccessReset }) {
+  // Sem biometria disponivel (Windows/Linux, ou Mac sem Touch ID), ja
+  // comeca direto no formulario de senha - nao faz sentido tentar
+  // automaticamente nem mostrar um botao/mensagem de "indisponivel" pra
+  // algo que nunca vai funcionar nesse aparelho.
+  const [needsPassword, setNeedsPassword] = useState(!canPromptDeviceAuth);
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [message, setMessage] = useState("");
   const [isBusy, setIsBusy] = useState(false);
 
@@ -27,7 +33,9 @@ export default function LockedScreen({ email, onUnlocked, onAccessReset }) {
   };
 
   useEffect(() => {
-    tryTouchId();
+    if (canPromptDeviceAuth) {
+      tryTouchId();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -49,7 +57,7 @@ export default function LockedScreen({ email, onUnlocked, onAccessReset }) {
 
   const handleForgotPassword = async () => {
     const confirmed = window.confirm(
-      "A senha original nao pode ser recuperada. Redefinir apaga o acesso e o cofre em cache neste Mac, permitindo criar uma senha nova. O cofre sincronizado no Google Drive (se houver) NAO e apagado - continua acessivel normalmente em outro aparelho que ainda saiba a senha antiga. So continue se aceitar perder os dados locais deste Mac ou tiver um backup. Deseja continuar?",
+      "A senha original nao pode ser recuperada. Redefinir apaga o acesso e o cofre em cache neste computador, e desconecta a sincronizacao com o Google Drive neste aparelho, permitindo criar uma senha nova. O cofre sincronizado no Google Drive (se houver) NAO e apagado - continua acessivel normalmente em outro aparelho que ainda saiba a senha antiga (voce pode reconectar o Drive neste computador depois, com a conta nova). So continue se aceitar perder os dados locais deste computador ou tiver um backup. Deseja continuar?",
     );
     if (!confirmed) return;
 
@@ -77,6 +85,10 @@ export default function LockedScreen({ email, onUnlocked, onAccessReset }) {
           {needsPassword ? "Digite sua senha de acesso pra desbloquear." : "Use o Touch ID pra acessar as credenciais."}
         </p>
 
+        {/* Logo apos o subtitulo, antes de qualquer botao - funciona pros
+            dois modos (Touch ID e senha) sem ficar espremido entre botoes. */}
+        {!!message && <p className="error-text lock-error">{message}</p>}
+
         {!needsPassword && (
           <button className="primary-button" onClick={tryTouchId} disabled={isBusy}>
             Desbloquear com Touch ID
@@ -85,15 +97,25 @@ export default function LockedScreen({ email, onUnlocked, onAccessReset }) {
 
         {needsPassword && (
           <form onSubmit={handlePasswordSubmit}>
-            <input
-              className="text-input"
-              type="password"
-              placeholder="Senha de acesso"
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              autoFocus
-              required
-            />
+            <div className="password-field">
+              <input
+                className="text-input"
+                type={showPassword ? "text" : "password"}
+                placeholder="Senha de acesso"
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                autoFocus
+                required
+              />
+              <button
+                type="button"
+                className="reveal-toggle"
+                onClick={() => setShowPassword((prev) => !prev)}
+                aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
+              >
+                {showPassword ? <EyeOffIcon /> : <EyeIcon />}
+              </button>
+            </div>
             <button className="primary-button" type="submit" disabled={isBusy}>
               Desbloquear
             </button>
@@ -105,8 +127,6 @@ export default function LockedScreen({ email, onUnlocked, onAccessReset }) {
             Usar senha de acesso
           </button>
         )}
-
-        {!!message && <p className="error-text">{message}</p>}
 
         {needsPassword && (
           <button type="button" className="link-button" onClick={handleForgotPassword} disabled={isBusy}>

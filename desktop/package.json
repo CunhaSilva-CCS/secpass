@@ -8,7 +8,9 @@
     "build": "electron-vite build",
     "start": "electron-vite preview",
     "dist": "electron-vite build && electron-builder --mac -c.mac.identity=null",
+    "dist:dmg": "electron-vite build && electron-builder --mac dmg --universal -c.mac.identity=null",
     "dist:release": "electron-vite build && electron-builder --mac dmg zip",
+    "dist:win": "electron-vite build && electron-builder --win",
     "test": "jest"
   },
   "dependencies": {
@@ -40,10 +42,26 @@
     "mac": {
       "category": "public.app-category.utilities",
       "target": "dir",
+      "icon": "build/icon.icns",
       "hardenedRuntime": true,
       "gatekeeperAssess": false,
       "entitlements": "build/entitlements.mac.plist",
       "entitlementsInherit": "build/entitlements.mac.plist"
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        }
+      ],
+      "icon": "build/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
     }
   }
 }

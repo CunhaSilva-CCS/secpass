@@ -1,9 +1,10 @@
-# SecPass Desktop (macOS)
+# SecPass Desktop (macOS e Windows)
 
 Cliente desktop do SecPass (Electron), reaproveitando a mesma lógica de
-cofre/criptografia/sync do app mobile (`../src/services`). Cofre local
-protegido por senha de acesso + Touch ID; sincronização opcional via Google
-Drive (mesmo protocolo do Android).
+cofre/criptografia/sync do app mobile (`../src/services`). Mesmo
+código-fonte roda em macOS e Windows. Cofre local protegido por senha de
+acesso (+ Touch ID no macOS); sincronização opcional via Google Drive
+(todas as plataformas) ou iCloud/CloudKit (só macOS, ver abaixo).
 
 ## Configurar
 
@@ -80,15 +81,29 @@ Abre o app em modo desenvolvimento (janela maximizada). Precisa rodar
 direto no terminal do Mac (não funciona a partir de um ambiente sem acesso
 à sessão gráfica).
 
-## Empacotar (build local, sem assinatura/notarização)
+## Empacotar para Windows
 
 ```bash
-npm run dist
+npm run dist:win
 ```
 
-Gera `release/mac/SecPass.app` — roda no seu Mac, mas o Gatekeeper vai
-avisar "desenvolvedor não identificado" ao abrir da primeira vez (clique
-direito → Abrir).
+Gera `release/SecPass Setup x.x.x.exe` (instalador NSIS, arquitetura
+**x64** fixada explicitamente em `package.json` — sem isso o
+electron-builder assume a arquitetura do host, gerando um instalador
+arm64 incompatível com a maioria dos PCs Windows quando compilado num Mac
+Apple Silicon). Sem assinatura Authenticode — o Windows SmartScreen pode
+avisar "editor desconhecido" na primeira execução.
+
+## Empacotar para macOS (build local, sem assinatura/notarização)
+
+```bash
+npm run dist:dmg
+```
+
+Gera `release/SecPass-x.x.x-universal.dmg` — binário universal (Intel +
+Apple Silicon), roda no seu Mac, mas o Gatekeeper vai avisar
+"desenvolvedor não identificado" ao abrir da primeira vez (clique direito
+→ Abrir).
 
 O script usa `-c.mac.identity=null` de propósito, pra pular a assinatura
 de código completamente (nem ad-hoc). Sem isso, o `electron-builder` tenta
@@ -136,9 +151,14 @@ a primeira vez que isso rodar de verdade, esteja pronto pra ajustar
 faltando (é comum precisar de 1-2 iterações na primeira notarização de
 um app Electron).
 
-## O que ainda falta (fora desta primeira entrega)
+## O que ainda falta
 
-- Proteção contra captura de tela (sem equivalente direto no macOS).
-- Exportar/importar backup e histórico de segurança na UI.
 - Testar a assinatura/notarização de verdade com um certificado real (ver
   secção acima - a estrutura existe, mas nunca rodou de ponta a ponta).
+- Assinatura Authenticode do instalador Windows (`.exe` atual não é
+  assinado).
+- Exportar/importar backup e histórico de segurança na UI (existem no
+  mobile, ainda não portados pro desktop).
+
+Ver seção 12 da [documentação técnica](../docs/SecPass-Documentacao-Tecnica.pdf)
+para o checklist completo de prontidão pra produção.

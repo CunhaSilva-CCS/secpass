@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { EyeIcon, EyeOffIcon } from "./icons.jsx";
 
 export default function AuthScreen({
   hasRemoteVault,
@@ -11,6 +12,8 @@ export default function AuthScreen({
   const [email, setEmail] = useState(initialEmail || "");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState("");
 
@@ -71,7 +74,7 @@ export default function AuthScreen({
         <h1 className="auth-title">{isRegisterMode ? "Criar conta no SecPass" : "Entrar no SecPass"}</h1>
         <p className="auth-subtitle">
           {isRegisterMode
-            ? "Crie sua conta local para acessar o cofre neste Mac."
+            ? "Crie sua conta local para acessar o cofre neste computador."
             : "Acesse sua conta para abrir o cofre."}
         </p>
 
@@ -90,28 +93,48 @@ export default function AuthScreen({
         <label className="field-label" htmlFor="password">
           {isRegisterMode ? "Crie sua senha de acesso" : "Senha de acesso"}
         </label>
-        <input
-          id="password"
-          className="text-input"
-          type="password"
-          value={password}
-          onChange={(event) => setPassword(event.target.value)}
-          required
-        />
+        <div className="password-field">
+          <input
+            id="password"
+            className="text-input"
+            type={showPassword ? "text" : "password"}
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+            required
+          />
+          <button
+            type="button"
+            className="reveal-toggle"
+            onClick={() => setShowPassword((prev) => !prev)}
+            aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
+          >
+            {showPassword ? <EyeOffIcon /> : <EyeIcon />}
+          </button>
+        </div>
 
         {isRegisterMode && (
           <>
             <label className="field-label" htmlFor="confirmPassword">
               Confirme sua senha
             </label>
-            <input
-              id="confirmPassword"
-              className="text-input"
-              type="password"
-              value={confirmPassword}
-              onChange={(event) => setConfirmPassword(event.target.value)}
-              required
-            />
+            <div className="password-field">
+              <input
+                id="confirmPassword"
+                className="text-input"
+                type={showConfirmPassword ? "text" : "password"}
+                value={confirmPassword}
+                onChange={(event) => setConfirmPassword(event.target.value)}
+                required
+              />
+              <button
+                type="button"
+                className="reveal-toggle"
+                onClick={() => setShowConfirmPassword((prev) => !prev)}
+                aria-label={showConfirmPassword ? "Ocultar senha" : "Mostrar senha"}
+              >
+                {showConfirmPassword ? <EyeOffIcon /> : <EyeIcon />}
+              </button>
+            </div>
             <p className="info-text">
               Minimo 8 caracteres, com letra, numero e caractere especial. Nao ha recuperacao de senha.
             </p>

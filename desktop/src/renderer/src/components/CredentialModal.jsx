@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { EyeIcon, EyeOffIcon } from "./icons.jsx";
 
 export default function CredentialModal({ initialItem, onClose, onSaved }) {
   const [title, setTitle] = useState(initialItem?.title || "");
@@ -58,17 +59,24 @@ export default function CredentialModal({ initialItem, onClose, onSaved }) {
           Senha
         </label>
         <div className="generate-row">
-          <input
-            id="cred-password"
-            className="text-input"
-            type={showPassword ? "text" : "password"}
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-            required
-          />
-          <button type="button" className="small-icon-button" onClick={() => setShowPassword((prev) => !prev)}>
-            {showPassword ? "Ocultar" : "Ver"}
-          </button>
+          <div className="password-field">
+            <input
+              id="cred-password"
+              className="text-input"
+              type={showPassword ? "text" : "password"}
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              required
+            />
+            <button
+              type="button"
+              className="reveal-toggle"
+              onClick={() => setShowPassword((prev) => !prev)}
+              aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
+            >
+              {showPassword ? <EyeOffIcon /> : <EyeIcon />}
+            </button>
+          </div>
           <button type="button" className="small-icon-button" onClick={handleGenerate}>
             Gerar
           </button>

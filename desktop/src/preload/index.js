@@ -13,10 +13,11 @@ contextBridge.exposeInMainWorld("secpass", {
   unlockWithPassword: (email, password) =>
     ipcRenderer.invoke("account:unlockWithPassword", { email, password }),
   logout: () => ipcRenderer.invoke("account:logout"),
-  deleteAccount: () => ipcRenderer.invoke("account:delete"),
+  deleteAccount: (password) => ipcRenderer.invoke("account:delete", { password }),
   resetLocalAccess: () => ipcRenderer.invoke("account:resetLocalAccess"),
 
   listItems: () => ipcRenderer.invoke("vault:list"),
+  refreshVault: () => ipcRenderer.invoke("vault:refresh"),
   addItem: (title, username, password) => ipcRenderer.invoke("vault:add", { title, username, password }),
   updateItem: (id, title, username, password) =>
     ipcRenderer.invoke("vault:update", { id, title, username, password }),
@@ -31,4 +32,14 @@ contextBridge.exposeInMainWorld("secpass", {
 
   getSyncBackendPreference: () => ipcRenderer.invoke("sync:getPreference"),
   setSyncBackend: (backend) => ipcRenderer.invoke("sync:setBackend", { backend }),
+
+  // Push do processo principal quando o cofre trava sozinho (inatividade ou
+  // o Mac dormiu/tela bloqueou - ver core/index.js) - o renderer nao pediu
+  // isso, entao precisa de um listener em vez de so um invoke/response.
+  // Retorna uma funcao de unsubscribe pro efeito no App.jsx poder limpar.
+  onAutoLocked: (callback) => {
+    const listener = (_event, payload) => callback(payload);
+    ipcRenderer.on("session:autoLocked", listener);
+    return () => ipcRenderer.removeListener("session:autoLocked", listener);
+  },
 });

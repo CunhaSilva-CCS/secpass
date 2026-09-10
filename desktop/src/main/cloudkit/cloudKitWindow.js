@@ -3,6 +3,7 @@
 // Protocolo request/response por id sobre IPC, mesmo principio do resto do
 // app (ver ipcMain.handle em src/main/index.js).
 import { BrowserWindow, ipcMain } from "electron";
+import { is } from "@electron-toolkit/utils";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -81,6 +82,7 @@ const createWorkerWindow = () => {
       // (que e copiado como asset estatico, sem passar pelo Rollup).
       preload: join(__dirname, "../preload/cloudkit/worker-preload.js"),
       partition: "persist:cloudkit",
+      devTools: is.dev,
     },
   });
 

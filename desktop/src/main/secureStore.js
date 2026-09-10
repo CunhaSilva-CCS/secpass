@@ -1,6 +1,7 @@
 // Armazenamento local seguro pro Electron, equivalente ao expo-secure-store
-// do app mobile: cada chave vira um arquivo cifrado via safeStorage (que no
-// macOS usa o Keychain do sistema para proteger a chave de criptografia).
+// do app mobile: cada chave vira um arquivo cifrado via safeStorage, que
+// usa o cofre de credenciais nativo de cada SO pra proteger a chave de
+// criptografia (Keychain no macOS, DPAPI no Windows, libsecret no Linux).
 import { app, safeStorage } from "electron";
 import { existsSync, mkdirSync, readFileSync, unlinkSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
@@ -34,15 +35,15 @@ export const secureGet = (key) => {
 };
 
 export const secureSet = (key, value) => {
-  // Nunca grava em texto claro silenciosamente: se o Keychain do macOS
-  // estiver indisponivel (VM sem Keychain provisionado, conta sem chave de
-  // login, Keychain corrompido/bloqueado), isso protegeria a conta local
-  // (hash da senha) e o refresh token do Google Drive com nada alem de
-  // permissoes de arquivo - recusa a escrita em vez de degradar a
-  // seguranca sem avisar ninguem.
+  // Nunca grava em texto claro silenciosamente: se o cofre de credenciais
+  // do sistema estiver indisponivel (VM sem Keychain/DPAPI provisionado,
+  // conta sem chave de login, cofre corrompido/bloqueado), isso protegeria
+  // a conta local (hash da senha) e o refresh token do Google Drive com
+  // nada alem de permissoes de arquivo - recusa a escrita em vez de
+  // degradar a seguranca sem avisar ninguem.
   if (!safeStorage.isEncryptionAvailable()) {
     throw new Error(
-      "Nao foi possivel salvar com seguranca: o Keychain do macOS esta indisponivel neste momento.",
+      "Nao foi possivel salvar com seguranca: o cofre de credenciais do sistema esta indisponivel neste momento.",
     );
   }
 

@@ -26,6 +26,11 @@ body,
   margin: 0;
 }
 
+#root {
+  display: flex;
+  flex-direction: column;
+}
+
 body {
   background: var(--bg);
   color: var(--text);
@@ -42,14 +47,56 @@ textarea {
   user-select: text;
 }
 
+.app-frame {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Reserva o espaco dos botoes nativos de fechar/minimizar/maximizar
+   (titleBarStyle "hiddenInset", so no macOS - ver main/index.js) - sem essa
+   faixa, qualquer conteudo perto do canto superior esquerdo fica por baixo
+   deles. Presente em toda tela (loading/auth/locked/vault), definida uma
+   unica vez aqui. No Windows/Linux a janela usa o frame padrao do sistema
+   (com seus proprios botoes), entao so precisa de um respiro pequeno. */
+.title-bar {
+  flex-shrink: 0;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  padding-left: 16px;
+  -webkit-app-region: drag;
+}
+
+:root[data-platform="darwin"] .title-bar {
+  padding-left: 84px;
+}
+
+.title-bar-brand {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  color: var(--text-muted);
+}
+
+.screen-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
 .app-shell {
-  height: 100vh;
+  flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
 }
 
 .centered-screen {
   flex: 1;
+  min-height: 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -102,6 +149,51 @@ textarea {
   border-color: var(--accent);
 }
 
+/* Campo de senha com icone de olho embutido (dentro do proprio input, no
+   canto direito) em vez de um botao separado ao lado - padrao mais comum
+   em formularios modernos. */
+.password-field {
+  position: relative;
+  margin-bottom: 16px;
+}
+
+/* A margem inferior vive no wrapper (acima), nao mais no input em si - o
+   input, sozinho, preenche exatamente a altura de .password-field, entao o
+   botao do olho pode se alinhar com top/bottom 0 sem precisar adivinhar
+   quanto de margem existe em cada contexto (o bug original: o calculo
+   assumia sempre 16px de margem no input, mas dentro de .generate-row essa
+   margem e zerada, desalinhando o botao). */
+.password-field .text-input {
+  margin-bottom: 0;
+  padding-right: 42px;
+}
+
+.generate-row .password-field {
+  flex: 1;
+  margin-bottom: 0;
+}
+
+.reveal-toggle {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 4px;
+  width: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  border-radius: 8px;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.reveal-toggle:hover {
+  color: var(--text-soft);
+  background: var(--card-soft);
+}
+
 .primary-button {
   width: 100%;
   background: var(--accent);
@@ -130,6 +222,31 @@ textarea {
   cursor: pointer;
 }
 
+.secondary-button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.icon-button .spin {
+  animation: spin 0.8s linear infinite;
+}
+
 .link-button {
   background: none;
   border: none;
@@ -137,6 +254,7 @@ textarea {
   font-size: 13px;
   cursor: pointer;
   padding: 8px 0;
+  margin-top: 6px;
   display: block;
   text-align: center;
   width: 100%;
@@ -146,6 +264,13 @@ textarea {
   color: var(--danger);
   font-size: 13px;
   margin: -8px 0 16px;
+}
+
+/* Usado na tela de bloqueio, onde o erro fica logo apos o subtitulo (nao
+   colado a um campo/formulario) - sem a margem negativa pensada pra esse
+   outro contexto. */
+.lock-error {
+  margin: 0 0 16px;
 }
 
 .info-text {
@@ -158,21 +283,58 @@ textarea {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 20px 40px;
+  gap: 16px;
+  row-gap: 12px;
+  flex-wrap: wrap;
+  padding: 16px 40px;
   border-bottom: 1px solid var(--border);
-  -webkit-app-region: drag;
 }
 
-.app-header .brand {
-  font-size: 18px;
-  font-weight: 800;
-  letter-spacing: 0.3px;
-}
-
-.app-header .actions {
+.header-brand-group {
   display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+  row-gap: 12px;
+}
+
+.actions-group {
+  display: flex;
+  align-items: center;
   gap: 10px;
+  flex-wrap: wrap;
   -webkit-app-region: no-drag;
+}
+
+.segmented-control {
+  display: flex;
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.segmented-option {
+  background: var(--card-soft);
+  color: var(--text-muted);
+  border: none;
+  border-left: 1px solid var(--border-strong);
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.segmented-option:first-child {
+  border-left: none;
+}
+
+.segmented-option.active {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.segmented-option:disabled {
+  cursor: default;
 }
 
 .app-content {
@@ -257,9 +419,24 @@ textarea {
 }
 
 .empty-state {
-  color: var(--text-muted);
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
   text-align: center;
-  padding: 80px 20px;
+  padding: 56px 20px;
+}
+
+.empty-title {
+  color: var(--text);
+  font-weight: 700;
+  font-size: 15px;
+  margin: 0 0 6px;
+}
+
+.empty-text {
+  color: var(--text-soft);
+  font-size: 13px;
+  margin: 0;
 }
 
 .modal-backdrop {
@@ -319,6 +496,128 @@ textarea {
 
 .danger-text {
   color: var(--danger);
+}
+
+.danger-button {
+  background: var(--danger);
+}
+
+.danger-button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+/* Cadeado desenhado com formas, igual ao BrandLogo.tsx do app mobile
+   (arco/shackle + corpo com fechadura), pra manter a mesma marca visual
+   entre Android e Mac sem depender de um arquivo de imagem. */
+.brand-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.brand-mark {
+  width: 38px;
+  flex-shrink: 0;
+  border: 1px solid var(--border-strong);
+  border-radius: 14px;
+  background: var(--card-soft);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 0 5px;
+}
+
+.brand-shackle {
+  width: 18px;
+  height: 18px;
+  border: 3px solid var(--accent);
+  border-bottom: none;
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+  margin-bottom: -2px;
+}
+
+.brand-body {
+  width: 74%;
+  height: 24px;
+  border-radius: 8px;
+  background: var(--accent);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.brand-keyhole-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--card-soft);
+}
+
+.brand-keyhole-wedge {
+  width: 0;
+  height: 0;
+  border-left: 2px solid transparent;
+  border-right: 2px solid transparent;
+  border-top: 4px solid var(--card-soft);
+  margin-top: -1px;
+}
+
+.brand-wordmark-wrap {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.brand-wordmark {
+  font-size: 19px;
+  font-weight: 800;
+  letter-spacing: 0.2px;
+  line-height: 1.15;
+  color: var(--text);
+}
+
+.brand-tagline {
+  margin-top: -1px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.kpi-row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.kpi-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 18px;
+}
+
+.kpi-label {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin: 0 0 2px;
+}
+
+.kpi-value {
+  font-size: 20px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.list-title {
+  font-size: 15px;
+  font-weight: 700;
+  margin: 0 0 14px;
 }
 
 .sync-badge {
