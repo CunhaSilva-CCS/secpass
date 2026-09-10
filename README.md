@@ -2,218 +2,154 @@
 
 ![CI](https://github.com/CunhaSilva-CCS/secpass/actions/workflows/ci.yml/badge.svg)
 
-Aplicativo Android de gerenciamento de senhas com cofre local criptografado no dispositivo.
+Gerenciador de senhas multiplataforma com cofre criptografado de ponta a
+ponta (E2E) client-side: **Android, iOS, macOS e Windows**. Os quatro
+clientes compartilham o mesmo formato de cofre cifrado e a mesma lógica de
+criptografia/sincronização — uma credencial criada em um aparelho aparece,
+já decifrada, em qualquer outro.
 
-## Escopo Atual (Mobile-Only)
+Para a documentação técnica completa (arquitetura, criptografia, auditoria
+de segurança, estado de prontidão para produção), ver
+[`docs/SecPass-Documentacao-Tecnica.pdf`](docs/SecPass-Documentacao-Tecnica.pdf).
 
-- Plataforma atual: Android (Expo/React Native). O código iOS permanece no repositório, mas não faz parte desta entrega.
-- Armazenamento: local no celular, com `expo-secure-store` e autenticação do aparelho.
-- Cofre: payload criptografado (`encrypted_vault`) com PBKDF2 + AES-256-GCM (AEAD).
-- Bloqueio: sem seletor de segundos; o bloqueio ocorre pelo ciclo nativo do app (background/foreground) e desbloqueio biométrico.
-- Sem dependência de backend para login/cofre no fluxo principal.
+## Plataformas
 
-## Segurança Aplicada
-
-- Dados protegidos em `SecureStore` (Keychain/Keystore), acessíveis apenas
-  com o aparelho desbloqueado (`keychainAccessible: WHEN_UNLOCKED_THIS_DEVICE_ONLY`).
-  O acesso ao conteúdo sensível (abrir o cofre, revelar/copiar/editar uma
-  senha, excluir a conta) é gated por um único ponto de autenticação
-  explícito no app (Face ID, Touch ID ou senha do aparelho), em vez de pedir
-  autenticação do sistema a cada leitura/escrita interna do Keychain.
-- Criptografia consolidada em uma única lib nativa (`react-native-quick-crypto`):
-  PBKDF2, AES-256-GCM, SHA-256 e geração de bytes aleatórios (CSPRNG) usam
-  todos o mesmo módulo, substituindo `crypto-js` (JS puro, descontinuado) e
-  `expo-crypto`. Menos dependências, uma única superfície de código
-  criptográfico para auditar.
-- Cofre cifrado com AES-256-GCM (AEAD): o authTag do GCM autentica
-  ciphertext + IV + dados associados (versão, salt, iterações) em uma única
-  primitiva, em vez de uma construção manual encrypt-then-MAC. Cofres e
-  backups no formato antigo (AES-CBC + HMAC-SHA256) continuam abrindo
-  normalmente — a leitura é retrocompatível por versão de envelope.
-- Credenciais locais com hash PBKDF2-SHA256 (600000 iterações, baseline
-  OWASP atual), calculado em código nativo via `react-native-quick-crypto`
-  (a mesma quantidade de iterações em JavaScript puro levava dezenas de
-  segundos por operação em dispositivos reais; nativo leva ~80ms). Contas
-  criadas com uma contagem de iterações mais antiga continuam válidas — a
-  verificação lê o valor gravado no próprio registro — e são promovidas
-  para o valor atual de forma transparente no primeiro login bem-sucedido
-  após a atualização.
-- Bloqueio automático do cofre: ao sair do app (ida para background) e após
-  2 minutos de inatividade com o app aberto.
-- Proteção contra captura de tela: bloqueia screenshot/gravação (Android e
-  iOS 13+) e borra o preview do app no app-switcher do iOS.
-- Política de senha local forte:
-  - mínimo 8 caracteres (sem limite artificial de tamanho, até 64)
-  - ao menos 1 letra
-  - ao menos 1 número
-  - ao menos 1 caractere especial
-- Bloqueio progressivo de tentativas de login inválidas.
-- Gerador de senhas usa CSPRNG nativo (`react-native-quick-crypto`), não `Math.random`.
-- Senha copiada para a área de transferência é apagada automaticamente após 30s
-  (somente se o clipboard ainda contiver o valor copiado).
-- Backup local: exportação/importação do cofre cifrado (mesmo formato
-  `encrypted_vault`) via compartilhamento nativo, para mitigar a perda total
-  de dados em caso de troca/perda do aparelho. Ver seção "Backup".
-- Exclusão de conta pelo próprio app (`"Excluir conta e todos os dados"`,
-  com biometria + confirmação), exigida pela Apple para apps com criação de
-  conta (App Store Review Guideline 5.1.1(v)) e recomendada pelo Google Play.
-- Histórico de segurança visível no app (`"Ver historico de seguranca"`, na
-  tela principal): lista os últimos eventos registrados localmente (login,
-  criação de conta, exportação/importação de backup, captura de tela
-  detectada, etc.), com opção de limpar o histórico.
+| Cliente | Tecnologia | Pasta |
+|---|---|---|
+| Android | React Native + Expo (SDK 57) | raiz do repositório |
+| iOS | React Native + Expo + módulo nativo Swift | raiz do repositório |
+| macOS | Electron | [`desktop/`](desktop/) |
+| Windows | Electron (mesmo código do macOS) | [`desktop/`](desktop/) |
 
 ## Sincronização entre dispositivos
 
-> **Status atual: não disponível no Android.** O módulo iOS existe no
-> repositório, mas não faz parte do build atual e o app Android funciona
-> exclusivamente com armazenamento local.
+O usuário escolhe, por aparelho, qual backend usar (armazenado localmente,
+migrável a qualquer momento):
 
-O módulo iOS de CloudKit está desativado:
-> `cloudKitEntitlementConfigured` em
-> [`modules/secure-vault-cloudkit/ios/SecureVaultCloudKitModule.swift`](modules/secure-vault-cloudkit/ios/SecureVaultCloudKitModule.swift)
-> esta fixo em `false` — o app nunca chama `CKContainer`, entao roda 100%
-> local mesmo em iOS (mesmo comportamento do Android). Isso e proposital:
-> `CKContainer(identifier:)` trava o processo (`EXC_BREAKPOINT`) se chamado
-> sem o entitlement de iCloud assinado no binario, e times pessoais/gratuitos
-> da Apple **nao tem permissao para essa capability** — so times inscritos no
-> Apple Developer Program (pago). O `ios/SecPass/SecPass.entitlements` (fora
-> do controle de versao, gerado no prebuild) tambem precisa declarar
-> `com.apple.developer.icloud-services`/`icloud-container-identifiers` para
-> isso funcionar.
->
-> Para reativar: (1) confirmar que a assinatura do Apple Developer Program da
-> conta `cortexistech@gmail.com` (team `U9U9M3H2AP`) esta ativa — nao so
-> criada; (2) no Xcode, Signing & Capabilities do target SecPass, adicionar a
-> capability iCloud com CloudKit marcado e o container
-> `iCloud.com.cortexistech.secpass`; (3) voltar `cloudKitEntitlementConfigured`
-> para `true`. Sem os tres passos, qualquer tentativa de usar CloudKit volta a
-> travar o app.
+- **Google Drive** (pasta oculta `appDataFolder`) — funciona entre Android,
+  iOS, macOS e Windows. Autenticação nativa (SDK GoogleSignIn) no iOS;
+  OAuth 2.0 + PKCE via navegador do sistema no Android (ver nota abaixo) e
+  no desktop.
+- **iCloud (CloudKit)** — só entre iPhone e Mac, nativo via CloudKit no iOS
+  e via CloudKit Web Services (janela oculta do Electron) no macOS.
+  Atualmente **desativado no build padrão do iOS** por exigir um perfil de
+  provisionamento com capacidade iCloud, indisponível sem conta paga do
+  Apple Developer Program — ver seção 11.1 da documentação técnica.
 
-Quando reativado, em iOS/macOS o cofre sincroniza pela **base privada do
-CloudKit** da conta iCloud do usuario — sem servidor proprio. A Apple ID
-identifica o dono; a senha do SecPass so destrava o ciphertext no aparelho.
+> **Nota sobre o Android**: a autenticação com o Google Drive não usa mais
+> o SDK nativo (`@react-native-google-signin/google-signin`), que falhava
+> de forma consistente ao pedir o escopo `drive.appdata` em builds fora da
+> Play Store (`AutoManageHelper: Unresolved error while connecting
+> client`). A solução foi um fluxo OAuth via navegador, com o mesmo
+> princípio já usado no desktop — ver seção 6.1.1 da documentação técnica
+> para a investigação completa.
 
-- Um registro `VaultMeta` (salt, iteracoes, verifier) e um `Credential`
-  cifrado por item.
-- No segundo aparelho o app detecta o cofre existente e mostra
-  "Abrir cofre iCloud" em vez de criar conta do zero.
-- Android continua 100% local: nao ha CloudKit.
-- Exclusao de uma credencial so acontece por tombstone explicito
-  (`{id, tombstone: true, deletedAt}`, sincronizado como upsert normal) ou
-  pelo wipe total de "Excluir conta e todos os dados" (gated por
-  biometria). O sync nunca infere exclusao pela ausencia de um id no
-  payload local — um fetch remoto que falhe por rede nao pode apagar
-  credenciais que so existem no outro aparelho.
+## Segurança
 
-O item legado no iCloud Keychain ainda e lido uma vez para migrar para o
-CloudKit; gravacoes novas vao so para o CloudKit + cache local no Keychain
-deste aparelho.
+- Cofre cifrado com **AES-256-GCM** (AEAD), chave derivada via
+  **PBKDF2-SHA256 com 600.000 iterações**. Formato de envelope v3 vincula
+  `id`/`updatedAt`/`tombstone` como dados associados autenticados,
+  impedindo que um backend comprometido force o "rollback" de um item para
+  uma versão antiga porém genuína.
+- Merge entre dispositivos por `last-write-wins` (sem servidor arbitrando
+  conflitos — Google Drive/iCloud são armazenamento cego).
+- Log de auditoria de segurança local, protegido por selo HMAC encadeado
+  (detecta adulteração feita por quem tem acesso ao armazenamento mas não
+  sabe a senha).
+- Bloqueio automático do cofre ao sair do app/inatividade; desbloqueio por
+  biometria (Face ID/Touch ID/impressão digital) é conveniência sobre uma
+  chave já derivada — nunca substitui a senha mestra de verdade.
+- Proteção contra captura de tela (mobile e desktop).
+- Bloqueio progressivo de tentativas de login inválidas — **limitação
+  conhecida e documentada**: por não haver servidor, esse contador
+  depende do relógio do próprio aparelho, então não é a defesa real contra
+  força bruta (essa é o custo computacional do PBKDF2). Ver seção 9.3/13.4
+  da documentação técnica.
+- Revisão de segurança adversarial completa realizada em duas fases (11 +
+  3 achados identificados e corrigidos) — ver seção 9 da documentação
+  técnica para o histórico completo.
 
-## Backup
+## Rodar localmente
 
-O cofre em si não depende de nenhum servidor — a sincronização entre
-aparelhos Apple (quando disponível) é feita pelo CloudKit da conta iCloud,
-não por uma infraestrutura própria do SecPass. Para reduzir o risco de perda
-total de dados:
-
-- **Exportar**: no topo da tela principal, toque em "Exportar". O app gera um
-  backup cifrado (mesmo envelope `encrypted_vault` usado no armazenamento
-  local) e abre o compartilhamento nativo do sistema para salvar/enviar o
-  arquivo.
-- **Importar**: toque em "Importar", cole o conteúdo do backup exportado e
-  confirme. Só funciona com a mesma conta (email + senha) usada na
-  exportação, pois a chave de descriptografia é derivada dessas credenciais.
-- **Atenção**: recriar a conta local (fluxo "Esqueci minha senha") invalida o
-  acesso ao cofre salvo com a senha anterior. Sem um backup exportado, esses
-  dados são perdidos permanentemente — o app avisa isso antes de prosseguir.
-
-## Execução Android
-
-Instalar dependências:
+Instalar dependências (mobile):
 
 ```bash
 npm install
 ```
 
-Rodar app Android:
+```bash
+npm run android          # Android (emulador/dispositivo padrão)
+npm run android:device   # Android, escolhendo o dispositivo
+npm run ios               # iOS (Simulador)
+npm run ios:device        # iOS, escolhendo o dispositivo
+```
+
+Desktop (macOS/Windows):
 
 ```bash
+cd desktop
+npm install
 npm run dev
 ```
 
-Atalhos Android:
+Ver [`desktop/README.md`](desktop/README.md) para configuração de
+sincronização (Google Drive/iCloud) e empacotamento (DMG universal, NSIS
+Windows, assinatura/notarização).
+
+## Testes e qualidade
 
 ```bash
-npm run android
-npm run android:device
-```
-
-## Testes e Qualidade
-
-```bash
-npm run test
+npm run test    # mobile — 210 testes
 npm run lint
+
+cd desktop && npm run test   # desktop — 64 testes
 ```
 
-Vulnerabilidades de dependências (`npm audit`) restantes estão todas em
-toolchain de build (Expo CLI / Metro / plugins de config), não em código que
-roda no app final, e só têm correção disponível via downgrade major do Expo
-(`--force`). Rode `npm audit` periodicamente e avalie upgrades do Expo SDK
-como uma decisão deliberada, não uma correção automática.
+Vulnerabilidades de dependências (`npm audit`) restantes estão em
+toolchain de build (Expo CLI/Metro/electron-builder) ou exigem downgrade
+major — avaliar upgrade como decisão deliberada, não correção automática
+(ver seção 12.2 da documentação técnica).
 
-## Release Android
+## Build de produção
 
-- Workflow: [.github/workflows/deploy-app-eas.yml](.github/workflows/deploy-app-eas.yml)
-- Disparo manual (`workflow_dispatch`): escolher `profile`; a plataforma é Android.
-- Disparo por tag: ao criar tag `v*`, o workflow executa build Android com `production` automaticamente.
-- Formato de versao aceito: `vMAJOR.MINOR.PATCH` (ex: `v1.2.0`, `v1.2.0-rc1`).
-
-Comandos locais equivalentes:
+Builds locais são preferidos aos builds em nuvem do EAS por serem dezenas
+de vezes mais rápidos:
 
 ```bash
-npm run build:preview
-npm run build:preview:android
-npm run build:prod
+# Android (release assinado)
+SENTRY_DISABLE_AUTO_UPLOAD=true npx expo run:android --device "<nome>" --variant release
+
+# iOS (Release, dispositivo físico)
+SENTRY_DISABLE_AUTO_UPLOAD=true npx expo run:ios --device "<nome>" --configuration Release
+
+# macOS (DMG universal) e Windows (instalador NSIS x64)
+cd desktop
+npm run dist:dmg
+npm run dist:win
 ```
 
-`preview` gera um APK para testes internos. `production` gera um AAB para
-publicação no Google Play.
+Artefatos finais organizados por plataforma em [`builds/`](builds/) (fora
+do controle de versão — ver `.gitignore`).
 
-Checklist de release:
-
-1. Atualizar `version` em [app.json](app.json).
-2. Rodar `npm run lint` e `npm run test` localmente.
-3. Criar tag semver (`vMAJOR.MINOR.PATCH`) ou disparar workflow manual com `release_version` valida.
-4. Executar build EAS (preview/prod) e validar artefatos gerados.
-5. Publicar nas lojas (App Store / Play Console) conforme ambiente de release.
-6. Em caso de rollback: publicar nova versao corretiva com tag superior (ex: `v1.2.1`).
-
-## Estrutura Relevante
+## Estrutura relevante
 
 ```text
 src/
-  app/
-    _layout.tsx
-    index.tsx
-  screens/
-    HomeScreen.js
-  services/
-    account.js
-    loginGuard.js
-    securityAudit.js
-    session.js
-    storage.js
-    vaultCrypto.js
-  utils/
-    biometricAuth.js
-    loginThrottle.js
-    passwordGenerator.js
-    securityPolicy.js
+  app/                    # Rotas do Expo Router
+  screens/HomeScreen.js   # Tela principal (cofre, sync, config)
+  services/               # Criptografia, storage, auth, sync, auditoria
+  utils/                  # Throttle de login, gerador de senha, etc.
+modules/
+  secure-vault-sync/      # Módulo nativo Swift (Google Drive, iOS)
+  secure-vault-cloudkit/  # Módulo nativo Swift (CloudKit, iOS)
+plugins/                  # Config plugins do Expo (assinatura, OAuth Android, etc.)
+desktop/
+  src/main/core/          # Portas Node.js dos mesmos serviços do mobile
+  src/main/cloudkit/      # Janela oculta rodando CloudKit JS (macOS)
+  src/renderer/           # Interface React do app desktop
+builds/                   # Artefatos finais de produção, por SO
+docs/                     # Documentação técnica completa (PDF)
 ```
-
-## Observações
-
-- O repositório foi consolidado para mobile-only; infraestrutura web/backend legada foi removida.
 
 ## Legal
 
@@ -222,6 +158,5 @@ src/
 - [Termos de Uso](TERMS_OF_SERVICE.md)
 
 Ambos os documentos precisam de revisão jurídica antes da publicação nas
-lojas (App Store / Play Store exigem uma URL pública para a política de
-privacidade — publique este arquivo, por exemplo, via GitHub Pages ou um
-link direto ao arquivo no repositório).
+lojas (App Store/Play Store exigem uma URL pública para a política de
+privacidade).

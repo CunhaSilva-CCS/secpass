@@ -1,6 +1,6 @@
 # Termos de Uso do SecPass
 
-Última atualização: 17 de agosto de 2026
+Última atualização: 10 de setembro de 2026
 
 > **Aviso**: este documento foi redigido para refletir o funcionamento
 > atual do Aplicativo e não substitui aconselhamento jurídico. Recomenda-se
@@ -15,9 +15,13 @@ continue usando o Aplicativo.
 ## 1. Descrição do serviço
 
 O SecPass é um aplicativo de gerenciamento de senhas que armazena
-credenciais de forma criptografada **localmente no seu dispositivo** iOS ou
-Android. O Aplicativo não depende de servidor remoto para funcionar e não
-sincroniza dados entre dispositivos.
+credenciais de forma criptografada **localmente no seu dispositivo**
+(Android, iOS, macOS ou Windows). O Aplicativo não depende de servidor
+próprio para funcionar. Opcionalmente, você pode ativar a sincronização
+do cofre (sempre já cifrado) entre os seus próprios aparelhos, usando a
+sua própria conta Google (Google Drive) ou Apple (iCloud) como meio de
+transporte — nunca infraestrutura do desenvolvedor. Ver a
+[Política de Privacidade](PRIVACY_POLICY.md), Seção 2.6, para os detalhes.
 
 ## 2. Elegibilidade
 
@@ -49,11 +53,13 @@ Você é o único responsável por:
 
 ## 5. Ausência de recuperação de conta
 
-O SecPass não possui backend, conta em nuvem ou processo de recuperação de
-senha via e-mail/SMS. **Perder a senha mestra sem um backup exportado
-significa perda permanente e irreversível dos dados do cofre.** Ao usar o
-fluxo "Esqueci minha senha", você reconhece que uma nova conta local será
-criada e que o cofre anterior se tornará inacessível.
+O SecPass não possui backend próprio, conta em nuvem operada pelo
+desenvolvedor ou processo de recuperação de senha via e-mail/SMS. **Perder
+a senha mestra sem um backup exportado (ou sem outro aparelho seu ainda
+com sessão ativa e sincronização ligada) significa perda permanente e
+irreversível dos dados do cofre.** Ao usar o fluxo "Esqueci minha senha",
+você reconhece que uma nova conta local será criada e que o cofre anterior
+se tornará inacessível neste aparelho.
 
 ## 6. Isenção de garantias
 
@@ -89,11 +95,13 @@ Termos.
 
 Você pode encerrar o uso do Aplicativo a qualquer momento pela função
 **"Excluir conta e todos os dados"**, disponível no próprio Aplicativo
-(apaga conta, cofre e demais dados locais após confirmação), ou
-desinstalando o Aplicativo do seu dispositivo — ambas as ações removem
-permanentemente todos os dados armazenados localmente e não podem ser
-desfeitas. O desenvolvedor pode descontinuar o Aplicativo ou seu suporte a
-qualquer momento, mediante aviso razoável quando possível.
+(apaga conta, cofre e demais dados locais após confirmação com sua senha
+de acesso — e, quando a sincronização estiver ativa, também a cópia
+cifrada na sua conta Google/iCloud), ou desinstalando o Aplicativo do seu
+dispositivo (remove os dados locais, mas não uma cópia já sincronizada
+para sua conta Google/iCloud). Essas ações não podem ser desfeitas. O
+desenvolvedor pode descontinuar o Aplicativo ou seu suporte a qualquer
+momento, mediante aviso razoável quando possível.
 
 ## 11. Usuários fora do Brasil
 
@@ -102,8 +110,9 @@ outras jurisdições, direitos cogentes de proteção ao consumidor e de
 proteção de dados local (por exemplo, GDPR, CCPA/CPRA) prevalecem sobre
 qualquer disposição destes Termos que os contrarie. Consulte a
 [Política de Privacidade](PRIVACY_POLICY.md) para o tratamento desses
-direitos, que na prática são exercidos diretamente no Aplicativo por não
-haver dados armazenados fora do seu dispositivo.
+direitos, que na prática são exercidos diretamente no Aplicativo — o
+desenvolvedor não armazena dados fora do seu dispositivo ou da sua própria
+conta Google/Apple (quando a sincronização opcional está ativa).
 
 ## 12. Lei aplicável
 
