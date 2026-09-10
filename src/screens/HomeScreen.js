@@ -16,6 +16,7 @@ import {
   Modal,
   Platform,
   Pressable,
+  RefreshControl,
   ScrollView,
   Share,
   StatusBar,
@@ -38,6 +39,7 @@ import CortexisCredit from "../components/CortexisCredit";
 import { useColorScheme } from "../hooks/use-color-scheme";
 import { authenticateVaultAccess } from "../utils/biometricAuth";
 import {
+  clearLocalVaultCache,
   clearVault,
   getVaultModuleForBackend,
   loadPasswords,
@@ -216,6 +218,7 @@ export default function HomeScreen() {
   const [isRegisterMode, setIsRegisterMode] = useState(false);
   const [isDriveSyncActive, setIsDriveSyncActive] = useState(false);
   const [isDriveSyncBusy, setIsDriveSyncBusy] = useState(false);
+  const [isPullingToRefresh, setIsPullingToRefresh] = useState(false);
   const [email, setEmail] = useState("");
   const [accessPassword, setAccessPassword] = useState("");
   const [confirmAccessPassword, setConfirmAccessPassword] = useState("");
@@ -307,6 +310,20 @@ export default function HomeScreen() {
       // Mantem os dados locais atuais; nova tentativa no proximo desbloqueio.
     }
   }, [vaultSecret]);
+
+  // Gesto de puxar-para-atualizar: cobre o caso do app ficar aberto em
+  // primeiro plano enquanto outro aparelho grava no Drive - o pull
+  // automatico so acontece ao desbloquear (ver requestAppUnlock), entao
+  // sem isso o usuario so veria a mudanca ao sair e voltar ao app.
+  const handlePullToRefresh = useCallback(async () => {
+    if (!isDriveSyncActive) return;
+    setIsPullingToRefresh(true);
+    try {
+      await pullRemoteVaultUpdates();
+    } finally {
+      setIsPullingToRefresh(false);
+    }
+  }, [isDriveSyncActive, pullRemoteVaultUpdates]);
 
   const requestAppUnlock = useCallback(
     async (secretOverride) => {
@@ -936,13 +953,22 @@ export default function HomeScreen() {
 
     Alert.alert(
       "Redefinir acesso com segurança",
-      "A senha original não pode ser recuperada. A redefinição apaga o acesso ao cofre atual. Só continue se você tiver um backup ou aceitar perder os dados antigos.",
+      "A senha original não pode ser recuperada. A redefinição apaga o cache do cofre neste aparelho e desconecta a sincronização com o Google Drive aqui, permitindo criar uma senha nova. O cofre sincronizado no Drive (se houver) não é apagado - continua acessível normalmente em outro aparelho que ainda saiba a senha antiga (você pode reconectar o Drive neste aparelho depois, com a conta nova). Só continue se você tiver um backup ou aceitar perder os dados antigos daqui.",
       [
         { text: "Cancelar", style: "cancel" },
         {
           text: "Continuar mesmo assim",
           style: "destructive",
-          onPress: () => {
+          onPress: async () => {
+            // Sem isso, o cache local antigo (cifrado com a senha anterior)
+            // continua em SecureStore e a proxima loadPasswords() com a
+            // conta nova falha com "Falha de integridade do cofre." - o
+            // reset so trocava a tela pra cadastro, sem limpar o que ficava
+            // pra tras (mesmo bug ja corrigido no app desktop).
+            await clearLocalVaultCache();
+            await signOutDrive().catch(() => {});
+            needsVaultReloadRef.current = true;
+            setIsDriveSyncActive(false);
             setIsRegisterMode(true);
             setAccessPassword("");
             setConfirmAccessPassword("");
@@ -1153,7 +1179,13 @@ export default function HomeScreen() {
                 return;
               }
               if (vaultSecret && hasLoadedData) {
+                // Empurra o que so existe localmente (pra nao perder nada
+                // se este for o primeiro aparelho a conectar), depois puxa
+                // o que ja estava no remoto - sem isso, credenciais criadas
+                // em outro aparelho so apareciam aqui depois de fechar e
+                // abrir o app de novo (o proximo loadPasswords natural).
                 await savePasswords(items, { vaultSecret });
+                await pullRemoteVaultUpdates();
               }
               setIsDriveSyncActive(true);
               logSecurityEvent({ type: "sync_enabled", status: "info" }).catch(
@@ -2032,6 +2064,15 @@ export default function HomeScreen() {
           contentContainerStyle={styles.listContent}
           data={filtered}
           keyExtractor={(item) => item.id}
+          refreshControl={
+            isDriveSyncActive ? (
+              <RefreshControl
+                refreshing={isPullingToRefresh}
+                onRefresh={handlePullToRefresh}
+                tintColor={theme.textMuted}
+              />
+            ) : undefined
+          }
           ListHeaderComponent={
             <View>
               <View style={styles.header}>

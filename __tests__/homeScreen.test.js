@@ -105,6 +105,7 @@ jest.mock("../src/services/storage", () => ({
   loadPasswords: jest.fn(),
   savePasswords: jest.fn().mockResolvedValue(),
   clearVault: jest.fn().mockResolvedValue(),
+  clearLocalVaultCache: jest.fn().mockResolvedValue(),
   peekRemoteVault: jest.fn().mockResolvedValue({
     available: false,
     status: "unsupported",

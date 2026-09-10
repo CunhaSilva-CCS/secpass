@@ -1,3 +1,16 @@
+// LIMITACAO ACEITA (achado de seguranca, severidade media): todo este
+// bloqueio compara `lockUntil` contra `Date.now()`, o relogio do proprio
+// aparelho - sem servidor, nao ha como impor um limite real de tentativas.
+// Quem tem o aparelho fisicamente desbloqueado pode ir em Ajustes,
+// adiantar o relogio do sistema alem de `lockUntil` e pular a espera na
+// hora (repetivel). Verificar a hora contra um servidor nao resolve de
+// verdade: o mesmo atacante liga o modo aviao antes de mexer no relogio,
+// e o app tem que confiar no relogio local mesmo assim (senao travaria
+// qualquer usuario legitimo offline). A defesa real contra forca bruta
+// e o custo computacional do PBKDF2 (600 mil iteracoes, ver
+// vaultCrypto.js) - esse contador aqui so cobre o caso comum de alguem
+// tentando adivinhar de cabeca, nao um atacante que sabe manipular o
+// relogio do sistema.
 export const MAX_LOGIN_ATTEMPTS = 5;
 const BASE_LOCK_MS = 30 * 1000;
 const MAX_LOCK_MS = 15 * 60 * 1000;

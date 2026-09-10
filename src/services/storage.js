@@ -106,6 +106,22 @@ const writeLocalVault = async (payload) => {
   await SecureStore.setItemAsync(KEY, payload, SECURE_STORE_OPTIONS);
 };
 
+// Usado so pelo reset de "esqueci minha senha": apaga o cache local (que
+// ficaria inutil, cifrado com a senha antiga) sem tocar no cofre remoto -
+// outro aparelho que ainda saiba a senha antiga continua acessando o cofre
+// sincronizado normalmente. Sem isso, a proxima loadPasswords() neste
+// aparelho ainda encontra o blob antigo em SecureStore e tenta decifra-lo
+// com o vaultSecret da conta NOVA, falhando com "Falha de integridade do
+// cofre." (mesmo bug ja corrigido no app desktop, ver account:resetLocalAccess).
+export const clearLocalVaultCache = async () => {
+  try {
+    await SecureStore.deleteItemAsync(KEY, SECURE_STORE_OPTIONS);
+  } catch {
+    // Best-effort - proxima gravacao sobrescreve de qualquer forma.
+  }
+  await AsyncStorage.removeItem(KEY);
+};
+
 const readLegacyKeychainVault = async () => {
   const vaultSync = getLegacyKeychainSyncModule();
   if (!vaultSync) {
